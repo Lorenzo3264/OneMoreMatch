@@ -12,7 +12,7 @@
 #define PORT 8041
 #define BUFDIM 1024
 
-int main(int argc, void* argv) {
+int main(int argc, char* argv[]) {
 	//inserisci codice
 	return 0;
 }
