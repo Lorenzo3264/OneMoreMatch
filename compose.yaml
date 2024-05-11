@@ -1,0 +1,46 @@
+
+services:
+    gateway:
+        build:
+            context: ./gateway/
+        image: gcc:latest
+        volumes:
+            - ./gateway:/gateway
+        container_name: gateway
+        command: bin/bash /gateway/start.sh
+        depends_on:
+            - dribbling
+            - infortunio
+            - tiro
+        ports: 
+            - 8080:8080
+
+    dribbling:
+        build:
+            context: ./dribbling/
+        image: gcc:latest
+        volumes:
+            - ./dribbling:/dribbling
+        container_name: dribbling
+        command: bin/bash /dribbling/start.sh
+        network_mode: host
+
+    infortunio:
+        build:
+            context: ./infortunio/
+        image: gcc:latest
+        volumes:
+            - ./infortunio:/infortunio
+        container_name: infortunio
+        command: bin/bash /infortunio/start.sh
+        network_mode: host
+
+    tiro:
+        build:
+            context: ./tiro/
+        image: gcc:latest
+        volumes:
+            - ./tiro:/tiro
+        container_name: tiro
+        command: bin/bash /tiro/start.sh
+        network_mode: host
