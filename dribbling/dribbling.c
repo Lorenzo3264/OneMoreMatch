@@ -13,6 +13,7 @@
 #define BUFDIM 1024
 
 int main(int argc, char* argv[]) {
+	printf("Hello world!");
 	//inserisci codice
 	return 0;
 }

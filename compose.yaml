@@ -1,6 +1,7 @@
 
 services:
     gateway:
+        tty: true
         build:
             context: ./gateway/
         image: gcc:latest

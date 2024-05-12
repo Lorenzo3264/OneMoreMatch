@@ -15,43 +15,11 @@
 #define TIROPORT 8077
 #define BUFDIM 1024
 
-//pulisce la stringa dai caratteri vuoti, usato da subString
-void trim(char* str)
-{
-	int len = strlen(str);
-	int i = 0;
-	while (isspace(str[i])) {  // Rimuovi gli spazi iniziali
-		i++;
-	}
-	if (i > 0) {
-		memmove(str, str + i, len - i + 1);  // Sposta la stringa
-		len -= i;
-	}
-	i = len - 1;
-	while (i >= 0 && isspace(str[i])) {  // Rimuovi gli spazi finali
-		str[i] = '\0';
-		i--;
-	}
-}
-
-//procedura per la separazione delle stringhe
-char* subString(char* string, char* posIniziale, char* posFinale)
-{
-	int len = (posFinale - posIniziale) - 1;
-	char* subString = malloc(len + 1); // +1 per il carattere di terminazione
-
-	strncpy(subString, posIniziale, len);
-	subString[len] = '\0'; // aggiungi il carattere di terminazione
-
-	trim(subString);
-
-	return subString;
-}
 
 /*
 	In questo script verranno gestiti i giocatori e gli eventi della partita.
-	Gestirà i giocatori come thread, insieme all'arbitro che è sempre attivo,
-	il giocatore con la palla è l'unico thread giocatore attivo che dopo un intervallo casuale
+	Gestira' i giocatori come thread, insieme all'arbitro che e' sempre attivo,
+	il giocatore con la palla e' l'unico thread giocatore attivo che dopo un intervallo casuale
 	genera un evento di dribbling (vedi dribbling.c).
 	*/
 
@@ -71,13 +39,15 @@ int activePlayer = 0;
 void* playerThread(void* arg) {
 	//codice thread giocatore
 	int id = *(int*)arg;
-	while (N > 0) { //fino a quando non finisce la partita
+	free(arg);
+	printf("ciao sono il thread del giocatore numero %d\n", id);
+	/*
+	while (0) { //fino a quando non finisce la partita
 		while (pthread_mutex_trylock(&pallone)) {
 			//deve interrompersi in attesa del suo turno
 		}
-		
 		pthread_mutex_unlock(&pallone);
-	}
+	}*/
 }
 
 void* refereeThread(void* arg) {
@@ -86,8 +56,7 @@ void* refereeThread(void* arg) {
 
 int main(int argc, char* argv[]) {
 
-	//gli id(interi) delle squadre vengono conservati
-	
+	printf("Starting...\n");
 
 	//punteggio delle due squadre
 	int puntiA = 0;
@@ -119,7 +88,7 @@ int main(int argc, char* argv[]) {
 	bind(mySocket, (struct sockaddr*)&myaddr, sizeof(myaddr));
 	listen(mySocket, 12);
 
-	//mysocket è pronta ad accettare richieste
+	//mysocket e' pronta ad accettare richieste
 
 	inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
 
@@ -128,31 +97,32 @@ int main(int argc, char* argv[]) {
 	inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
 	printf("request from client %s\n", buffer);
 
-	read(s_fd, buffer, BUFDIM);
+	read(clientSocket, buffer, BUFDIM);
+	write(clientSocket, "hewwo! uwu\0", 12);
 	/*
 		Qui bisogna stabilire il formato del messaggio e il modo di
 		interpretarlo. esempio messaggio 1538042967 i primi cinque
 		numeri sono la prima squadra e gli altri sono l'altra squadra
 	*/
 
-	int id; //id del giocatore
-	for (int i = 0; i <= 10; i++) {
-		id = buffer[i];
+	pthread_mutex_init(&pallone, NULL);
+	int* id; //id del giocatore
+	for (int i = 0; i < 10; i++) {
+		id = malloc(sizeof(int));
+		*id = buffer[i] - '0'; //ottengo il valore intero del carattere
 		if (i < 5) {
-			pthread_create(&squadraA[i], NULL, playerThread, (void*)&id);
+			pthread_create(&squadraA[i], NULL, playerThread, (void*)id);
+			printf("thread id: %d lanciato\n", *id);
 		}
 		else {
-			pthread_create(&squadraB[i%5], NULL, playerThread, (void*)&id);
+			pthread_create(&squadraB[i%5], NULL, playerThread, (void*)id);
+			printf("thread id: %d lanciato\n", *id);
 		}
-		
 	}
-
-	pthread_mutex_init(&pallone, NULL);
-	while (N > 0) {
-		
-
+	for (int i = 0; i < 5; i++) {
+		pthread_join(squadraA[i],NULL);
+		pthread_join(squadraB[i],NULL);
 	}
-
 	close(mySocket);
 	return 0;
 }
