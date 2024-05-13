@@ -8,12 +8,14 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <time.h>
 
 #define PORT 8080
 #define DRIBBLINGPORT 8033
 #define INFORTUNIOPORT 8041
 #define TIROPORT 8077
 #define BUFDIM 1024
+#define NPLAYERS 10
 
 
 /*
@@ -34,20 +36,29 @@ pthread_t squadraB[5];
 int N = 50; 
 
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
-int activePlayer = 0;
+int activePlayer = -1;
 
 void* playerThread(void* arg) {
 	//codice thread giocatore
 	int id = *(int*)arg;
 	free(arg);
 	printf("ciao sono il thread del giocatore numero %d\n", id);
-	/*
-	while (0) { //fino a quando non finisce la partita
-		while (pthread_mutex_trylock(&pallone)) {
-			//deve interrompersi in attesa del suo turno
+	int possesso = -1;
+
+	while (N) { //fino a quando non finisce la partita
+		if (activePlayer == id && possesso) {
+			pthread_mutex_lock(&pallone);
+			printf("il giocatore %d ha la palla, possesso: %d\n", id, possesso);
+			possesso++;
 		}
-		pthread_mutex_unlock(&pallone);
-	}*/
+		if (activePlayer != id && !possesso) {
+			pthread_mutex_unlock(&pallone);
+			printf("il giocatore %d è scarso :(, possesso: %d\n", id, possesso);
+			possesso--;
+			sleep(3);
+		}
+		
+	}
 }
 
 void* refereeThread(void* arg) {
@@ -105,10 +116,16 @@ int main(int argc, char* argv[]) {
 		numeri sono la prima squadra e gli altri sono l'altra squadra
 	*/
 
+	time_t t;
+	srand((unsigned)time(&t));
 	pthread_mutex_init(&pallone, NULL);
 	int* id; //id del giocatore
-	for (int i = 0; i < 10; i++) {
+	pthread_mutex_lock(&pallone);
+	for (int i = 0; i < NPLAYERS; i++) {
 		id = malloc(sizeof(int));
+		/* Intializes random number generator */
+		
+		
 		*id = buffer[i] - '0'; //ottengo il valore intero del carattere
 		if (i < 5) {
 			pthread_create(&squadraA[i], NULL, playerThread, (void*)id);
@@ -118,7 +135,31 @@ int main(int argc, char* argv[]) {
 			pthread_create(&squadraB[i%5], NULL, playerThread, (void*)id);
 			printf("thread id: %d lanciato\n", *id);
 		}
+		
 	}
+	
+	activePlayer = rand() % 10;
+	pthread_mutex_unlock(&pallone);
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+
+	//TESTING
+	sleep(3);
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+	sleep(3);
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+	sleep(3);
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+	sleep(3);
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+	sleep(3);
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+
+	
 	for (int i = 0; i < 5; i++) {
 		pthread_join(squadraA[i],NULL);
 		pthread_join(squadraB[i],NULL);
