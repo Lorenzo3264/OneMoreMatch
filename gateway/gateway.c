@@ -63,7 +63,7 @@ void* playerThread(void* arg) {
 		}
 		if (activePlayer != id && !possesso) {
 			pthread_mutex_unlock(&pallone);
-			printf("il giocatore %d è scarso :(, possesso: %d\n", id, possesso);
+			printf("il giocatore %d ï¿½ scarso :(, possesso: %d\n", id, possesso);
 			possesso--;
 		}
 	}
@@ -75,28 +75,34 @@ void* playerThread(void* arg) {
 void* refereeThread(void* arg) {
 	//codice thread arbitro
 	char buf[BUFDIM];
+	int flag;
+	int TIRO;
+	// LORENZO DEFINISCI STA ROBA CHE MANCO IO HO CAPITO CHE E' STO FLAG == TIRO A CASO
 	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
 	while (N) {
 		if (flag == TIRO) {
 			//abbiamo active player e l'evento ;)
 		}
 	}
-	buf = "partitaTerminata\0"
+	
+	//buf = "partitaTerminata\0"; DA ERRORE
+	strcpy(buf,"partitaTerminata\0");
+	
 	write(s_fd, buf, BUFDIM);
 }
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port) {
 	*serviceSocket = socket(AF_INET, SOCK_STREAM, 0);
 
-	*serviceAddr.sin_family = AF_INET;
+	serviceAddr->sin_family = AF_INET;
 
-	*serviceAddr.sin_port = htons(port);
+	serviceAddr->sin_port = htons(port);
 
-	inet_aton("127.0.0.1", serviceAddr.sin_addr);
+	inet_aton("127.0.0.1", &serviceAddr->sin_addr);
 
 	if (connect(*serviceSocket, (struct sockaddr*)serviceAddr, sizeof(*serviceAddr))) {
 		perror("connect() failed\n");
-		return 1;
+		return;
 	}
 }
 
