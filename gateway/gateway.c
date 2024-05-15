@@ -51,9 +51,9 @@ void* playerThread(void* arg) {
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
 
-	serviceInit(&socketTiro, &addrTiro, TIROPORT);
-	serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
-	serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
+	//serviceInit(&socketTiro, &addrTiro, TIROPORT);
+	//serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
+	//serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 
 	while (N) { //fino a quando non finisce la partita
 		if (activePlayer == id && possesso) {
@@ -135,24 +135,48 @@ int main(int argc, char* argv[]) {
 	listen(mySocket, 12);
 
 	//mysocket e' pronta ad accettare richieste
-
+	int* id; //id del giocatore
 	inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
 
-	printf("Accepting as %s with port %d...\n", buffer, PORT);
-	clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
-	inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
-	printf("request from client %s\n", buffer);
+	//indici per inserire i giocatori nelle squadre
+	int i = 0;
+	int j = 0;
 
-	read(clientSocket, buffer, BUFDIM);
-	/*
+	//attesa di richieste per i giocatori
+	while (i >=0) {
+		id = malloc(sizeof(int));
+		printf("Accepting as %s with port %d...\n", buffer, PORT);
+		clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
+		inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
+		printf("request from client %s\n", buffer);
+		read(clientSocket, buffer, BUFDIM);
+		/*
 		Qui bisogna stabilire il formato del messaggio e il modo di
-		interpretarlo. esempio messaggio 1538042967 i primi cinque
-		numeri sono la prima squadra e gli altri sono l'altra squadra
-	*/
+		interpretarlo. esempio messaggio A3 indicano la squadra (A, B) 
+		e id giocatore (0..9)
+		*/
+		
 
-	//creato il thread dell'arbitro, gestisce la comunicazione col client.
-	pthread_create(&arbitro, NULL, refereeThread, (void*)clientSocket); 
-
+		if (buffer[0] = 'A') {
+			*id = buffer[1] - '0';
+			pthread_create(&squadraA[i], NULL, playerThread, (void*)id);
+			i++;
+		}
+		else{
+			if (buffer[0] = 'B') {
+				*id = buffer[1] - '0';
+				pthread_create(&squadraB[j], NULL, playerThread, (void*)id);
+				j++;
+			}
+			else {
+				//creato il thread dell'arbitro, gestisce la comunicazione col client.
+				pthread_create(&arbitro, NULL, refereeThread, (void*)clientSocket);
+				i = -1;
+			}
+		}
+		
+		
+	}
 	
 
 	/* Intializes random number generator */
@@ -160,14 +184,14 @@ int main(int argc, char* argv[]) {
 	srand((unsigned)time(&t));
 
 	pthread_mutex_init(&pallone, NULL);
-	int* id; //id del giocatore
+	
 	pthread_mutex_lock(&pallone);
 	for (int i = 0; i < NPLAYERS; i++) {
-		id = malloc(sizeof(int));
+		
 		
 		*id = buffer[i] - '0'; //ottengo il valore intero del carattere
 		if (i < 5) {
-			pthread_create(&squadraA[i], NULL, playerThread, (void*)id);
+			
 			printf("thread id: %d lanciato\n", *id);
 		}
 		else {
