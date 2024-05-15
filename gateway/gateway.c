@@ -16,6 +16,7 @@
 #define TIROPORT 8077
 #define BUFDIM 1024
 #define NPLAYERS 10
+#define WAIT 5
 
 
 /*
@@ -33,10 +34,12 @@ pthread_t squadraA[5];
 pthread_t squadraB[5];
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
-int N = 50; 
+int N = 90; 
 
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
 int activePlayer = -1;
+
+void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port);
 
 void* playerThread(void* arg) {
 	//codice thread giocatore
@@ -44,6 +47,13 @@ void* playerThread(void* arg) {
 	free(arg);
 	printf("ciao sono il thread del giocatore numero %d\n", id);
 	int possesso = -1;
+
+	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
+	int socketTiro, socketInfortunio, socketDribbling;
+
+	serviceInit(&socketTiro, &addrTiro, TIROPORT);
+	serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
+	serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 
 	while (N) { //fino a quando non finisce la partita
 		if (activePlayer == id && possesso) {
@@ -55,14 +65,39 @@ void* playerThread(void* arg) {
 			pthread_mutex_unlock(&pallone);
 			printf("il giocatore %d è scarso :(, possesso: %d\n", id, possesso);
 			possesso--;
-			sleep(3);
 		}
-		
 	}
+
+	//partita terminata
+
 }
 
 void* refereeThread(void* arg) {
 	//codice thread arbitro
+	char buf[BUFDIM];
+	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
+	while (N) {
+		if (flag == TIRO) {
+			//abbiamo active player e l'evento ;)
+		}
+	}
+	buf = "partitaTerminata\0"
+	write(s_fd, buf, BUFDIM);
+}
+
+void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port) {
+	*serviceSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+	*serviceAddr.sin_family = AF_INET;
+
+	*serviceAddr.sin_port = htons(port);
+
+	inet_aton("127.0.0.1", serviceAddr.sin_addr);
+
+	if (connect(*serviceSocket, (struct sockaddr*)serviceAddr, sizeof(*serviceAddr))) {
+		perror("connect() failed\n");
+		return 1;
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -73,7 +108,7 @@ int main(int argc, char* argv[]) {
 	int puntiA = 0;
 	int puntiB = 0;
 
-	
+	pthread_t arbitro;
 
 	//definizione dati e procedura per le socket
 	struct sockaddr_in myaddr, client;
@@ -109,22 +144,26 @@ int main(int argc, char* argv[]) {
 	printf("request from client %s\n", buffer);
 
 	read(clientSocket, buffer, BUFDIM);
-	write(clientSocket, "hewwo! uwu\0", 12);
 	/*
 		Qui bisogna stabilire il formato del messaggio e il modo di
 		interpretarlo. esempio messaggio 1538042967 i primi cinque
 		numeri sono la prima squadra e gli altri sono l'altra squadra
 	*/
 
+	//creato il thread dell'arbitro, gestisce la comunicazione col client.
+	pthread_create(&arbitro, NULL, refereeThread, (void*)clientSocket); 
+
+	
+
+	/* Intializes random number generator */
 	time_t t;
 	srand((unsigned)time(&t));
+
 	pthread_mutex_init(&pallone, NULL);
 	int* id; //id del giocatore
 	pthread_mutex_lock(&pallone);
 	for (int i = 0; i < NPLAYERS; i++) {
 		id = malloc(sizeof(int));
-		/* Intializes random number generator */
-		
 		
 		*id = buffer[i] - '0'; //ottengo il valore intero del carattere
 		if (i < 5) {
@@ -141,24 +180,6 @@ int main(int argc, char* argv[]) {
 	activePlayer = rand() % 10;
 	pthread_mutex_unlock(&pallone);
 	printf("al giocatore %d viene dato il pallone\n", activePlayer);
-
-	//TESTING
-	sleep(3);
-	activePlayer = rand() % 10;
-	printf("al giocatore %d viene dato il pallone\n", activePlayer);
-	sleep(3);
-	activePlayer = rand() % 10;
-	printf("al giocatore %d viene dato il pallone\n", activePlayer);
-	sleep(3);
-	activePlayer = rand() % 10;
-	printf("al giocatore %d viene dato il pallone\n", activePlayer);
-	sleep(3);
-	activePlayer = rand() % 10;
-	printf("al giocatore %d viene dato il pallone\n", activePlayer);
-	sleep(3);
-	activePlayer = rand() % 10;
-	printf("al giocatore %d viene dato il pallone\n", activePlayer);
-
 	
 	for (int i = 0; i < 5; i++) {
 		pthread_join(squadraA[i],NULL);
