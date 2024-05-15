@@ -51,10 +51,11 @@ void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port);
 
 void* playerThread(void* arg) {
 	//codice thread giocatore
-	int id = *(int*)arg;
-	free(arg);
-	printf("ciao sono il thread del giocatore numero %d\n", id);
-
+	char* player = (char *)arg;
+	char squadra = player[0];
+	int id = player[1] - '0';
+	printf("giocatore %d, squadra %c\n", id, squadra);
+	free(player);
 	//per permettere singole operazioni di accesso e liberazione risorsa
 	int possesso = -1; 
 
@@ -161,7 +162,7 @@ int main(int argc, char* argv[]) {
 	listen(mySocket, 12);
 
 	//mysocket e' pronta ad accettare richieste
-	int* id; //id del giocatore
+	
 	
 
 	//indici per inserire i giocatori nelle squadre
@@ -170,7 +171,7 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_lock(&pallone);
 	//attesa di richieste per i giocatori
 	while (i >=0) {
-		id = malloc(sizeof(int));
+		char* player = malloc(2*sizeof(char)); //info del giocatore
 		/*
 			inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
 			printf("Accepting as %s with port %d...\n", buffer, PORT);
@@ -188,17 +189,17 @@ int main(int argc, char* argv[]) {
 			e id giocatore (0..9)
 		*/
 		
-		
-		//printf("buffer: %s\n", buffer);
-		if (buffer[0] = 'A') {
-			*id = buffer[1] - '0';
-			pthread_create(&squadraA[i], NULL, playerThread, (void*)id);
+		if (buffer[0] == 'A') {
+			player[0] = 'A';
+			player[1] = buffer[1];
+			pthread_create(&squadraA[i], NULL, playerThread, (void*)player);
 			i++;
 		}
 		else{
-			if (buffer[0] = 'B') {
-				*id = buffer[1] - '0';
-				pthread_create(&squadraB[j], NULL, playerThread, (void*)id);
+			if (buffer[0] == 'B') {
+				player[0] = 'B';
+				player[1] = buffer[1];
+				pthread_create(&squadraB[j], NULL, playerThread, (void*)player);
 				j++;
 			}
 			else {
