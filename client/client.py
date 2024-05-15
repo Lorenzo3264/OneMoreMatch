@@ -18,7 +18,7 @@ def playerThread(idg, sq, conn):
         sys.exit()
     invia_giocatore(s,idg,sq)
 
-def refereeThread(conn)
+def refereeThread(conn):
     try:
         s = socket.socket()
         s.connect(conn)
@@ -29,7 +29,7 @@ def refereeThread(conn)
     comando = "sono l'arbitro"
     s.send(comando.encode())
 
-def invia_giocatore(s,idg,sq)
+def invia_giocatore(s,idg,sq):
     comando = f"{sq}{idg}"
     print(f"comando inviato: {comando}\n")
     invia_comandi(s,comando)
@@ -45,7 +45,10 @@ def playergen(conn):
             sq = "A"
         else:
             sq = "B"
-        th = threading.thread(target=playerThread, args=(i,sq,conn,))
+        th = threading.Thread(target=playerThread, args=(i,sq,conn,))
+        th.start()
+        th.join()
+    
         
 
 if __name__ == '__main__':

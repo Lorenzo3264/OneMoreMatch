@@ -90,7 +90,6 @@ void* playerThread(void* arg) {
 */
 void* refereeThread(void* arg) {
 	//codice thread arbitro
-	int s_fd = *(int*)arg;
 	char buf[BUFDIM];
 	
 	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
@@ -163,19 +162,25 @@ int main(int argc, char* argv[]) {
 
 	//mysocket e' pronta ad accettare richieste
 	int* id; //id del giocatore
-	inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
+	
 
 	//indici per inserire i giocatori nelle squadre
 	int i = 0;
 	int j = 0;
-
+	pthread_mutex_lock(&pallone);
 	//attesa di richieste per i giocatori
 	while (i >=0) {
 		id = malloc(sizeof(int));
-		printf("Accepting as %s with port %d...\n", buffer, PORT);
+		/*
+			inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
+			printf("Accepting as %s with port %d...\n", buffer, PORT);
+		*/
+		
 		clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
-		inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
-		printf("request from client %s\n", buffer);
+		/*
+			inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
+			printf("request from client %s\n", buffer);
+		*/
 		read(clientSocket, buffer, BUFDIM);
 		/*
 			Qui bisogna stabilire il formato del messaggio e il modo di
@@ -183,7 +188,8 @@ int main(int argc, char* argv[]) {
 			e id giocatore (0..9)
 		*/
 		
-
+		
+		//printf("buffer: %s\n", buffer);
 		if (buffer[0] = 'A') {
 			*id = buffer[1] - '0';
 			pthread_create(&squadraA[i], NULL, playerThread, (void*)id);
@@ -197,7 +203,7 @@ int main(int argc, char* argv[]) {
 			}
 			else {
 				//creato il thread dell'arbitro, gestisce la comunicazione col client.
-				pthread_create(&arbitro, NULL, refereeThread, (void*)clientSocket);
+				pthread_create(&arbitro, NULL, refereeThread, (void*)&clientSocket);
 				i = -1;
 			}
 		}
@@ -212,21 +218,7 @@ int main(int argc, char* argv[]) {
 
 	pthread_mutex_init(&pallone, NULL);
 	
-	pthread_mutex_lock(&pallone);
-	for (int i = 0; i < NPLAYERS; i++) {
-		
-		
-		*id = buffer[i] - '0'; //ottengo il valore intero del carattere
-		if (i < 5) {
-			
-			printf("thread id: %d lanciato\n", *id);
-		}
-		else {
-			pthread_create(&squadraB[i%5], NULL, playerThread, (void*)id);
-			printf("thread id: %d lanciato\n", *id);
-		}
-		
-	}
+	
 	
 	activePlayer = rand() % 10;
 	pthread_mutex_unlock(&pallone);
