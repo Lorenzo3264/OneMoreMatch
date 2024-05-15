@@ -18,6 +18,11 @@
 #define NPLAYERS 10
 #define WAIT 5
 
+//servono per identificare il tipo di evento per l'arbitro
+#define TIRO 0
+#define INFORTUNIO 1
+#define DRIBBLING 2
+
 
 /*
 	In questo script verranno gestiti i giocatori e gli eventi della partita.
@@ -39,6 +44,9 @@ int N = 90;
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
 int activePlayer = -1;
 
+//indica quale azione avviene
+int azione = -1;
+
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port);
 
 void* playerThread(void* arg) {
@@ -46,7 +54,9 @@ void* playerThread(void* arg) {
 	int id = *(int*)arg;
 	free(arg);
 	printf("ciao sono il thread del giocatore numero %d\n", id);
-	int possesso = -1;
+
+	//per permettere singole operazioni di accesso e liberazione risorsa
+	int possesso = -1; 
 
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
@@ -60,10 +70,11 @@ void* playerThread(void* arg) {
 			pthread_mutex_lock(&pallone);
 			printf("il giocatore %d ha la palla, possesso: %d\n", id, possesso);
 			possesso++;
+			
 		}
 		if (activePlayer != id && !possesso) {
 			pthread_mutex_unlock(&pallone);
-			printf("il giocatore %d � scarso :(, possesso: %d\n", id, possesso);
+			printf("il giocatore %d e' scarso :(, possesso: %d\n", id, possesso);
 			possesso--;
 		}
 	}
@@ -72,20 +83,30 @@ void* playerThread(void* arg) {
 
 }
 
+/*
+	l'arbitro gestisce le comunicazioni con il thread arbitro lato client. 
+	Manda a quest'ultimo gli esiti di ogni evento. In qualche modo deve, quindi,
+	ricevere i risultati delle azioni dai thread giocatori
+*/
 void* refereeThread(void* arg) {
 	//codice thread arbitro
+	int s_fd = *(int*)arg;
 	char buf[BUFDIM];
-	int flag;
-	int TIRO;
-	// LORENZO DEFINISCI STA ROBA CHE MANCO IO HO CAPITO CHE E' STO FLAG == TIRO A CASO
+	
 	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
 	while (N) {
-		if (flag == TIRO) {
-			//abbiamo active player e l'evento ;)
+		switch (azione) {
+			case TIRO:
+				break;
+			case DRIBBLING:
+				break;
+			case INFORTUNIO:
+				break;
+			default:
+				break;
 		}
 	}
 	
-	//buf = "partitaTerminata\0"; DA ERRORE
 	strcpy(buf,"partitaTerminata\0");
 	
 	write(s_fd, buf, BUFDIM);
@@ -157,9 +178,9 @@ int main(int argc, char* argv[]) {
 		printf("request from client %s\n", buffer);
 		read(clientSocket, buffer, BUFDIM);
 		/*
-		Qui bisogna stabilire il formato del messaggio e il modo di
-		interpretarlo. esempio messaggio A3 indicano la squadra (A, B) 
-		e id giocatore (0..9)
+			Qui bisogna stabilire il formato del messaggio e il modo di
+			interpretarlo. esempio messaggio A3 indicano la squadra (A, B) 
+			e id giocatore (0..9)
 		*/
 		
 
