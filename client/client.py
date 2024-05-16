@@ -27,6 +27,7 @@ def refereeThread(conn):
         print(f"qualcosa e' andato storto err: {errore}, sto uscendo... \n")
         sys.exit()
     comando = "sono l'arbitro"
+    comando += "\0"
     s.send(comando.encode())
 
 def invia_giocatore(s,idg,sq):
@@ -47,6 +48,9 @@ def playergen(conn):
             sq = "B"
         th = threading.Thread(target=playerThread, args=(i,sq,conn,))
         th.start()
+        ref = threading.Thread(target=refereeThread, args=(conn,))
+        ref.start()
+        ref.join()
         th.join()
     
         

@@ -39,10 +39,10 @@ pthread_t squadraA[5];
 pthread_t squadraB[5];
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
-int N = 90; 
+volatile int N = 90; 
 
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
-int activePlayer = -1;
+volatile int activePlayer = -1;
 
 //indica quale azione avviene
 int azione = -1;
@@ -56,28 +56,25 @@ void* playerThread(void* arg) {
 	int id = player[1] - '0';
 	printf("giocatore %d, squadra %c\n", id, squadra);
 	free(player);
-	//per permettere singole operazioni di accesso e liberazione risorsa
-	int possesso = -1; 
 
-	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
-	int socketTiro, socketInfortunio, socketDribbling;
+	//struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
+	//int socketTiro, socketInfortunio, socketDribbling;
 
 	//serviceInit(&socketTiro, &addrTiro, TIROPORT);
 	//serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
 	//serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 
 	while (N) { //fino a quando non finisce la partita
-		if (activePlayer == id && possesso) {
-			pthread_mutex_lock(&pallone);
-			printf("il giocatore %d ha la palla, possesso: %d\n", id, possesso);
-			possesso++;
-			
+		
+		pthread_mutex_lock(&pallone);
+		while (activePlayer == id) {
+			printf("Thread %d is doing work.\n", id);
+			// Simula lavoro
+			sleep(1);
 		}
-		if (activePlayer != id && !possesso) {
-			pthread_mutex_unlock(&pallone);
-			printf("il giocatore %d e' scarso :(, possesso: %d\n", id, possesso);
-			possesso--;
-		}
+		pthread_mutex_unlock(&pallone);
+		// Yield per evitare consumi eccessivi di CPU
+		sched_yield();
 	}
 
 	//partita terminata
@@ -162,15 +159,17 @@ int main(int argc, char* argv[]) {
 	listen(mySocket, 12);
 
 	//mysocket e' pronta ad accettare richieste
-	
-	
+
+
+	pthread_mutex_init(&pallone, NULL);
+	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 	//indici per inserire i giocatori nelle squadre
 	int i = 0;
 	int j = 0;
-	pthread_mutex_lock(&pallone);
+	short ref = 0;
 	//attesa di richieste per i giocatori
-	while (i >=0) {
+	while (i < 5 || j < 5 || !ref) {
 		char* player = malloc(2*sizeof(char)); //info del giocatore
 		/*
 			inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
@@ -205,7 +204,7 @@ int main(int argc, char* argv[]) {
 			else {
 				//creato il thread dell'arbitro, gestisce la comunicazione col client.
 				pthread_create(&arbitro, NULL, refereeThread, (void*)&clientSocket);
-				i = -1;
+				ref = 1;
 			}
 		}
 		
@@ -217,12 +216,27 @@ int main(int argc, char* argv[]) {
 	time_t t;
 	srand((unsigned)time(&t));
 
-	pthread_mutex_init(&pallone, NULL);
+	
 	
 	
 	
 	activePlayer = rand() % 10;
 	pthread_mutex_unlock(&pallone);
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+
+	sleep(WAIT + 1);
+
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+
+	sleep(WAIT + 1);
+
+	activePlayer = rand() % 10;
+	printf("al giocatore %d viene dato il pallone\n", activePlayer);
+
+	sleep(WAIT + 1);
+
+	activePlayer = rand() % 10;
 	printf("al giocatore %d viene dato il pallone\n", activePlayer);
 	
 	for (int i = 0; i < 5; i++) {
