@@ -121,7 +121,7 @@ void* playerThread(void* arg) {
 
 			//inizializzo i dati dell'altro giocatore
 			altroPlayer = buffer[1] - '0';
-			altraSquadra = suqadre[altroPlayer];
+			altraSquadra = squadre[altroPlayer];
 
 			//switch per l'evento del dribbling
 			switch (buffer[0]) {
@@ -133,7 +133,7 @@ void* playerThread(void* arg) {
 				/*
 					formato messaggio infortunio: IXXXPXXX\0
 					I precede il tempo di infortunio
-					P precede il tempo di penalità
+					P precede il tempo di penalita'
 				*/
 
 				i++;
@@ -245,7 +245,7 @@ void* refereeThread(void* arg) {
 	
 
 	while (activePlayer == -1);
-	strcpy(buf, "La partita è cominciata!\n");
+	strcpy(buf, "La partita e' cominciata!\n");
 	write(s_fd, buf, BUFDIM);
 
 	
