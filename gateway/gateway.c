@@ -9,8 +9,10 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <time.h>
+#include <wchar.h>
 
 #define PORT 8080
+#define REFEREEPORT 8088
 #define DRIBBLINGPORT 8033
 #define INFORTUNIOPORT 8041
 #define TIROPORT 8077
@@ -19,9 +21,9 @@
 #define WAIT 5
 
 //servono per identificare il tipo di evento per l'arbitro
-#define TIRO 0
-#define INFORTUNIO 1
-#define DRIBBLING 2
+#define TIRO 't'
+#define INFORTUNIO 'i'
+#define DRIBBLING 'd'
 
 
 /*
@@ -48,59 +50,84 @@ volatile int N = 90;
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
 volatile int activePlayer = -1;
 
-//indica quale azione avviene
-int azione = -1;
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port);
+void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, int port);
 
 void* playerThread(void* arg) {
 	//codice thread giocatore
+
+	//informazioni giocatore
 	char* player = (char *)arg;
 	char squadra = player[0];
 	int id = player[1] - '0';
-	tempoFallo[id] = 0;
-	tempoInfortunio[id] = 0;
-	squadre[id] = squadra;
-	char buffer[BUFDIM];
-	//printf("giocatore %d, squadra %c\n", id, squadra);
-	free(player);
 
+	//inizializzo informazioni globali
+	tempoFallo[id] = -1;
+	tempoInfortunio[id] = -1;
+	squadre[id] = squadra;
+
+	char buffer[BUFDIM]; //buffer per le comunicazioni coi servizi
+	//printf("giocatore %d, squadra %c\n", id, squadra);
+	free(player); //libero la struttura usata per le info del giocatore
+
+	//inizializzo il random number generator
 	time_t t;
 	srand((unsigned)time(&t));
 
+	//preparo le socket per i servizi
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
 
-	serviceInit(&socketTiro, &addrTiro, TIROPORT);
-	serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
-	serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
+	
+	
+	
 
-	int chance;
+	int chance; //chance di tiro
+
+	//info del giocatore che entra in tackle
 	int altroPlayer;
 	char altraSquadra;
+
+	//strutture di supporto per infortunio e fallo
 	int i = 0;
 	int j = 0;
 	char time[5];
 
+	//dato del numero di dribbling riusciti, finalizzato per il tiro
+	short nDribbling = 0;
+
 	while (N) { //fino a quando non finisce la partita
 		
-		pthread_mutex_lock(&pallone);
-		while (activePlayer == id) {
+		pthread_mutex_lock(&pallone); //attende di ricevere possesso del pallone
+		while (activePlayer == id) { //controlla se il possesso del pallone e' legale
+
+			serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
+			serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
+			serviceInit(&socketTiro, &addrTiro, TIROPORT);
+
+			printf("Il giocatore %d della squadra %c ha la palla!\n", id, squadra);
+
+			//informo il servizio Dribbling dell'evento
 			
-			printf("Il giocatore %d della squadra %c ha la palla!.\n", id, squadra);
-			sprintf_s(buffer, BUFDIM, "%c%d\0", squadra, id);
+			sprintf(buffer,"%d\0", id);
 			write(socketDribbling, buffer, BUFDIM);
 			read(socketDribbling, buffer, BUFDIM);
 			/*
-				formato messaggio dribbling: "x%c%d" 
+				formato messaggio dribbling: "x%d" 
 				(x = s = successo, x = f = fallimento, x = i = infortunio)
-				%c%d = squadra e giocatore avversari
+				%d = giocatore avversario
 			*/
-			altroPlayer = buffer[2] - '0';
-			altraSquadra = buffer[1];
-			if (buffer[0] == 'i') {
+
+			//inizializzo i dati dell'altro giocatore
+			altroPlayer = buffer[1] - '0';
+			altraSquadra = suqadre[altroPlayer];
+
+			//switch per l'evento del dribbling
+			switch (buffer[0]) {
+			case 'i':
 				//messaggio inviato a infortunio per decidere i tempi
-				sprintf_s(buffer, BUFDIM, "%c%d%c%d\0", squadra, id, altraSquadra, altroPlayer);
+				sprintf(buffer, "%d%d\0", id, altroPlayer);
 				write(socketInfortunio, buffer, BUFDIM);
 				read(socketInfortunio, buffer, BUFDIM);
 				/*
@@ -108,8 +135,7 @@ void* playerThread(void* arg) {
 					I precede il tempo di infortunio
 					P precede il tempo di penalità
 				*/
-				
-				
+
 				i++;
 				while (buffer[i] != 'P') {
 					time[j] = buffer[i];
@@ -129,63 +155,70 @@ void* playerThread(void* arg) {
 				j = 0;
 				i = 0;
 				tempoFallo[altroPlayer] = atoi(time);
-				
+
 				/*
 					inviamo ai servizi informazioni sullo stato
 					dei giocatori in fallo e infortunati
 				*/
-				sprintf_s(buffer, BUFDIM, "i%c%d",squadra,id);
-				write(socketInfortunio, buffer, BUFDIM);
-				write(socketTiro, buffer, BUFDIM);
+				sprintf(buffer, "i%d\0", id);
 				write(socketDribbling, buffer, BUFDIM);
-				sprintf_s(buffer, BUFDIM, "f%c%d", altraSquadra, altroPlayer);
-				write(socketInfortunio, buffer, BUFDIM);
-				write(socketTiro, buffer, BUFDIM);
+				sprintf(buffer, "f%d\0", altroPlayer);
 				write(socketDribbling, buffer, BUFDIM);
-				
-				while(squadre[activePlayer] != squadra && tempoInfortunio[activePlayer] > 0 && tempoFallo[activePlayer] > 0{
+
+				while (squadre[activePlayer] != squadra && tempoInfortunio[activePlayer] > 0 && tempoFallo[activePlayer] > 0){
 					activePlayer = rand() % 10;
 				}
-				//adesso ad avere il pallone e' un giocatore diverso della propria squadra
-			}
-			else {
-				if (buffer[0] == 'f') {
-					activePlayer = altroPlayer;
-					//il giocatore a perso la palla a un giocatore avversario
-				}
-				else {
-					if (buffer[0] == 's') {
-						//non perde la palla (tenta un tiro?)
+				//adesso ad avere il pallone e' un giocatore della propria squadra
+				break;
+			case 'f':
+				activePlayer = altroPlayer;
+				//il giocatore a perso la palla a un giocatore avversario
+				break;
+			case 's':
+				//non perde la palla (tenta un tiro?)
+				chance = rand() % 100;
+				chance = chance + (nDribbling * 30);
+				nDribbling++;
+				if (chance > 70) {
+					//tenta un tiro
+					sprintf(buffer, "%d\0", id);
+					write(socketTiro, buffer, BUFDIM);
+					while (squadre[activePlayer] == squadra && tempoInfortunio[activePlayer] > 0 && tempoFallo[activePlayer] > 0) {
+						activePlayer = rand() % 10;
 					}
+					//il pallone viene dato ad un giocatore della squadra avversaria quando avviene un tiro.
+
 				}
+				break;
 			}
-			
-			
-			
 
 			//prima che perda il pallone o ricominci
 			N--;
-			if (tempoInfortunio[id] > 0) tempoInfortunio[id]--;
-			else {
-				if (tempoInfortunio[id] == 0) {
-					sprintf_s(buffer, BUFDIM, "a%c%d", squadra, id);
-					write(socketInfortunio, buffer, BUFDIM);
-					write(socketTiro, buffer, BUFDIM);
-					write(socketDribbling, buffer, BUFDIM);
+			for (int k = 0; k < 10; k++) {
+				if (tempoInfortunio[k] > 0) tempoInfortunio[k]--;
+				else {
+					if (tempoInfortunio[k] == 0) {
+						tempoInfortunio[k] = -1;
+						sprintf(buffer, "a%d\0", k);
+						write(socketDribbling, buffer, BUFDIM);
+					}
+				}
+				if (tempoFallo[k] > 0) tempoFallo[k]--;
+				else {
+					if (tempoFallo[k] == 0) {
+						tempoFallo[k] = -1;
+						sprintf(buffer, "a%d\0", k);
+						write(socketDribbling, buffer, BUFDIM);
+					}
 				}
 			}
-			if (tempoFallo[id] > 0) tempoFallo[id]--;
-			else {
-				if (tempoFallo[id] == 0) {
-					sprintf_s(buffer, BUFDIM, "a%c%d", squadra, id);
-					write(socketInfortunio, buffer, BUFDIM);
-					write(socketTiro, buffer, BUFDIM);
-					write(socketDribbling, buffer, BUFDIM);
-				}
-			}
+			close(socketDribbling);
+			close(socketInfortunio);
+			close(socketTiro);
 		}
+		
+		nDribbling = 0;
 		pthread_mutex_unlock(&pallone);
-		// Yield per evitare consumi eccessivi di CPU
 		sched_yield();
 	}
 
@@ -200,30 +233,65 @@ void* playerThread(void* arg) {
 */
 void* refereeThread(void* arg) {
 	//codice thread arbitro
+	char azione;
 	char buf[BUFDIM];
+	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
+	int eventSocket, serviceSocket, len, player, opponent;
+	struct sockaddr_in eventAddr, serviceAddr;
+	serverInit(&eventSocket, &eventAddr, REFEREEPORT);
+	bind(eventSocket, (struct sockaddr*)&eventAddr, sizeof(eventAddr));
+	listen(eventSocket, 12);
+	len = sizeof(serviceAddr);
+	
 
 	while (activePlayer == -1);
 	strcpy(buf, "La partita è cominciata!\n");
 	write(s_fd, buf, BUFDIM);
 
-	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
+	
 	while (N) {
+		serviceSocket = accept(eventSocket, (struct sockaddr*)&serviceAddr, &len);
+		read(serviceSocket, buf, BUFDIM);
+		/*
+			formato messaggio: x%d(%d)(r)\0
+			x = tipo di azione
+			%d = giocatore attivo
+			(%d) opzionale = giocatore in tackle/fallo
+			(r) opzionale = risultato tiro/dribbling (y = successo, f = fallimento)
+		*/
+		azione = buf[0];
+		player = buf[1];
 		switch (azione) {
 			case TIRO:
-				sprintf_s(buf, BUFDIM, "il giocatore %d ha effettuato un tiro ed\n", activePlayer);
+				if (buf[2] == 'y') {
+					sprintf(buf, "il giocatore %d tira... ed e' GOAL!!!\n", player);
+				}
+				else {
+					sprintf(buf, "il giocatore %d tira... e ha mancato la porta...\n", player);
+				}
 				write(s_fd, buf, BUFDIM);
 				azione = -1;
 				break;
+
 			case DRIBBLING:
-				sprintf_s(buf, BUFDIM, "il giocatore %d scarta l'avversario\n", activePlayer);
+				opponent = buf[2];
+				if (buf[3] == 'y') {
+					sprintf(buf, "il giocatore %d scarta il giocatore %d\n", player, opponent);
+				}
+				else {
+					sprintf(buf, "il giocatore %d prende la palla da %d\n", opponent, player);
+				}
 				write(s_fd, buf, BUFDIM);
 				azione = -1;
 				break;
+
 			case INFORTUNIO:
-				sprintf_s(buf, BUFDIM, "il giocatore %d e' vittima di un infortunio\n", activePlayer);
+				opponent = buf[2];
+				sprintf(buf, "il giocatore %d e' vittima di un infortunio da parte di %d\n", player, opponent);
 				write(s_fd, buf, BUFDIM);
 				azione = -1;
 				break;
+
 			default:
 				break;
 		}
@@ -248,6 +316,14 @@ void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port) 
 	}
 }
 
+void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, int port) {
+	*serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	serverAddr->sin_family = AF_INET;
+	serverAddr->sin_port = htons(port);
+	inet_aton("0.0.0.0", &(serverAddr->sin_addr));
+	memset(&(serverAddr->sin_zero), '\0', 8);
+}
+
 int main(int argc, char* argv[]) {
 
 	printf("Starting...\n");
@@ -263,19 +339,23 @@ int main(int argc, char* argv[]) {
 	char buffer[BUFDIM];
 	int mySocket, clientSocket, len;
 
-	mySocket = socket(AF_INET, SOCK_STREAM, 0);
+	/*
+		mySocket = socket(AF_INET, SOCK_STREAM, 0);
 
-	//host byte order
-	myaddr.sin_family = AF_INET;
+		//host byte order
+		myaddr.sin_family = AF_INET;
 
-	//short, network byte order
-	myaddr.sin_port = htons(PORT);
+		//short, network byte order
+		myaddr.sin_port = htons(PORT);
 
-	//long, network byte order
-	inet_aton("0.0.0.0", &(myaddr.sin_addr));
+		//long, network byte order
+		inet_aton("0.0.0.0", &(myaddr.sin_addr));
 
-	// a zero tutto il resto
-	memset(&(myaddr.sin_zero), '\0', 8);
+		// a zero tutto il resto
+		memset(&(myaddr.sin_zero), '\0', 8);
+	*/
+	
+	serverInit(&mySocket, &myaddr, PORT);
 
 	len = sizeof(client);
 
