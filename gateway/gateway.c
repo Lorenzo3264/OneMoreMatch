@@ -329,6 +329,10 @@ void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, 
 
 	inet_aton(ip, &serviceAddr->sin_addr);
 
+	char buf[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &serviceAddr->sin_addr, buf, sizeof(buf));
+	printf("Connecting to %s with port %d...\n", buf, port);
+
 	if (connect(*serviceSocket, (struct sockaddr*)serviceAddr, sizeof(*serviceAddr))) {
 		perror("connect() failed\n");
 		return;
@@ -349,24 +353,30 @@ int main(int argc, char* argv[]) {
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
 	struct hostent* hent, *hentDribbling, *hentInfortunio, *hentTiro;
-	hent = gethostbyname(hostname);
-	hentDribbling = gethostbyname("dribbling");
-	hentInfortunio = gethostbyname("infortunio");
-	hentTiro = gethostbyname("tiro");
 	char ip[40], ipTiro[40], ipDribbling[40], ipInfortunio[40];
+	hent = gethostbyname(hostname);
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	hentDribbling = gethostbyname("dribbling");
 	inet_ntop(AF_INET, (void*)hentDribbling->h_addr_list[0], ipDribbling, 15);
+	hentInfortunio = gethostbyname("infortunio");
 	inet_ntop(AF_INET, (void*)hentInfortunio->h_addr_list[0], ipInfortunio, 15);
+	hentTiro = gethostbyname("tiro");
 	inet_ntop(AF_INET, (void*)hentTiro->h_addr_list[0], ipTiro, 15);
+	
+	
+	
+	
 	
 
 	//inizializzo i servizi
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
 
-	printf("main: inizializza i servizi\n");
+	printf("main: inizializza tiro\n");
 	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
+	printf("main: inizializza infortunio\n");
 	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+	printf("main: inizializza dribbling\n");
 	serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 	printf("main: inizializzati i servizi\n");
 

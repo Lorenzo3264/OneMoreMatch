@@ -79,7 +79,10 @@ int main(int argc, char* argv[]) {
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, 12);
 
-	printf("Accepting...\n");
+	char buf[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
+
+	printf("Accepting as %s:%d...\n", buf, PORT);
 	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 	int i = 0, j = 0;
 	while (i < 5%j < 5){
