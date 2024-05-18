@@ -53,3 +53,4 @@ dkms.conf
 
 # Visual studio temp files
 .vs
+.vscode
