@@ -157,13 +157,9 @@ void* playerThread(void* arg) {
 				tempoFallo[altroPlayer] = atoi(time);
 
 				/*
-					inviamo ai servizi informazioni sullo stato
-					dei giocatori in fallo e infortunati
+					Non e' necessario inviare a dribbling la notifica dell'infortunio o fallo
+					perche' dribbling ha generato l'evento e gia' lo sa
 				*/
-				sprintf(buffer, "i%d\0", id);
-				write(socketDribbling, buffer, BUFDIM);
-				sprintf(buffer, "f%d\0", altroPlayer);
-				write(socketDribbling, buffer, BUFDIM);
 
 				while (squadre[activePlayer] != squadra && tempoInfortunio[activePlayer] > 0 && tempoFallo[activePlayer] > 0){
 					activePlayer = rand() % 10;
@@ -200,6 +196,8 @@ void* playerThread(void* arg) {
 					if (tempoInfortunio[k] == 0) {
 						tempoInfortunio[k] = -1;
 						sprintf(buffer, "a%d\0", k);
+						close(socketDribbling);
+						serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 					}
 				}
@@ -208,6 +206,7 @@ void* playerThread(void* arg) {
 					if (tempoFallo[k] == 0) {
 						tempoFallo[k] = -1;
 						sprintf(buffer, "a%d\0", k);
+						serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 					}
 				}
