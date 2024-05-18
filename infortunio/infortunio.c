@@ -20,6 +20,11 @@ void* service(void *arg){
 	struct sockaddr_in client_addr;
 	s_fd = *(int*)arg;
 
+	struct hostent* hent;
+	hent = gethostbyname("gateway");
+	char ip[40];
+	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+
 	read(s_fd, buffer, BUFDIM);
 	player = buffer[0];
 	opponent = buffer[1];
@@ -40,7 +45,7 @@ void* service(void *arg){
 	client_fd = socket(AF_INET, SOCK_STREAM, 0);
 	client_addr.sin_family = AF_INET;
 	client_addr.sin_port = htons(REFEREEPORT);
-	inet_aton("127.0.0.1", &client_addr.sin_addr);
+	inet_aton(ip, &client_addr.sin_addr);
     if (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))) {
 		perror("connect() failed\n");
 	}
@@ -58,10 +63,17 @@ int main(int argc, char* argv[]) {
 	pthread_t player;
 	char squadre[10];
 
+	char hostname[1023] = { '\0' };
+	gethostname(hostname, 1023);
+	struct hostent* hent;
+	hent = gethostbyname(hostname);
+	char ip[40];
+	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+
 	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
-	inet_aton("0.0.0.0", &(serverAddr.sin_addr));
+	inet_aton(ip, &(serverAddr.sin_addr));
 	memset(&(serverAddr.sin_zero), '\0', 8);
 
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
