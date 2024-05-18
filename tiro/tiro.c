@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <netdb.h>
 
 #define PORT 8077
 #define BUFDIM 1024
@@ -64,6 +65,7 @@ int main(int argc, char* argv[]) {
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, 12);
 
+	printf("Accepting...\n");
 	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 	int i = 0, j = 0;
 	while (i < 5%j < 5){

@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <wchar.h>
+#include <netdb.h>
 
 #define PORT 8080
 #define REFEREEPORT 8088
@@ -52,10 +53,19 @@ volatile int activePlayer = -1;
 
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port);
-void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, int port);
+void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int port);
 
 void* playerThread(void* arg) {
 	//codice thread giocatore
+	struct hostent* hentDribbling, hentInfortunio, hentTiro;
+	hentDribbling = gethostbyname("dribbling");
+	hentInfortunio = gethostbyname("infortunio");
+	hentTiro = gethostbyname("tiro");
+	char ipTiro[40], ipDribbling[40], ipInfortunio[40];
+	inet_ntop(AF_INET, (void*)hentDribbling->h_addr_list[0], ipDribbling, 15);
+	inet_ntop(AF_INET, (void*)hentInfortunio->h_addr_list[0], ipInfortunio, 15);
+	inet_ntop(AF_INET, (void*)hentTiro->h_addr_list[0], ipTiro, 15);
+
 
 	//informazioni giocatore
 	char* player = (char *)arg;
@@ -75,12 +85,11 @@ void* playerThread(void* arg) {
 	time_t t;
 	srand((unsigned)time(&t));
 
-	//preparo le socket per i servizi
-	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
-	int socketTiro, socketInfortunio, socketDribbling;
+	
 
 	
-	
+	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
+	int socketTiro, socketInfortunio, socketDribbling;
 	
 
 	int chance; //chance di tiro
@@ -102,9 +111,10 @@ void* playerThread(void* arg) {
 		pthread_mutex_lock(&pallone); //attende di ricevere possesso del pallone
 		while (activePlayer == id) { //controlla se il possesso del pallone e' legale
 
-			serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
-			serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
-			serviceInit(&socketTiro, &addrTiro, TIROPORT);
+			printf("player %d: inizializza i servizi\n",id);
+			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+			serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+			serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 
 			printf("Il giocatore %d della squadra %c ha la palla!\n", id, squadra);
 
@@ -197,7 +207,7 @@ void* playerThread(void* arg) {
 						tempoInfortunio[k] = -1;
 						sprintf(buffer, "a%d\0", k);
 						close(socketDribbling);
-						serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
+						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 					}
 				}
@@ -207,7 +217,7 @@ void* playerThread(void* arg) {
 						tempoFallo[k] = -1;
 						sprintf(buffer, "a%d\0", k);
 						close(socketDribbling);
-						serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
+						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 					}
 				}
@@ -233,12 +243,21 @@ void* playerThread(void* arg) {
 */
 void* refereeThread(void* arg) {
 	//codice thread arbitro
+	char hostname[1023] = { '\0' };
+	gethostname(hostname, 1023);
+	struct hostent* hent;
+	hent = gethostbyname(hostname);
+	char ip[40];
+	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+
+
 	char azione;
 	char buf[BUFDIM];
 	int s_fd = *(int*)arg; //socket file descriptor del client/arbitro
 	int eventSocket, serviceSocket, len, player, opponent;
 	struct sockaddr_in eventAddr, serviceAddr;
-	serverInit(&eventSocket, &eventAddr, REFEREEPORT);
+
+	serverInit(&eventSocket, &eventAddr, ip, REFEREEPORT);
 	bind(eventSocket, (struct sockaddr*)&eventAddr, sizeof(eventAddr));
 	listen(eventSocket, 12);
 	len = sizeof(serviceAddr);
@@ -301,14 +320,14 @@ void* refereeThread(void* arg) {
 	write(s_fd, buf, BUFDIM);
 }
 
-void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port) {
+void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, int port) {
 	*serviceSocket = socket(AF_INET, SOCK_STREAM, 0);
 
 	serviceAddr->sin_family = AF_INET;
 
 	serviceAddr->sin_port = htons(port);
 
-	inet_aton("127.0.0.1", &serviceAddr->sin_addr);
+	inet_aton(ip, &serviceAddr->sin_addr);
 
 	if (connect(*serviceSocket, (struct sockaddr*)serviceAddr, sizeof(*serviceAddr))) {
 		perror("connect() failed\n");
@@ -316,18 +335,43 @@ void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port) 
 	}
 }
 
-void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, int port) {
+void serverInit(int* serverSocket, struct sockaddr_in* serverAddr,char* ip, int port) {
 	*serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	serverAddr->sin_family = AF_INET;
 	serverAddr->sin_port = htons(port);
-	inet_aton("0.0.0.0", &(serverAddr->sin_addr));
+	inet_aton(ip, &(serverAddr->sin_addr));
 	memset(&(serverAddr->sin_zero), '\0', 8);
 }
 
 int main(int argc, char* argv[]) {
 
-	printf("Starting...\n");
+	/* Set IP address to localhost */
+	char hostname[1023] = { '\0' };
+	gethostname(hostname, 1023);
+	struct hostent* hent, hentDribbling, hentInfortunio, hentTiro;
+	hent = gethostbyname(hostname);
+	hentDribbling = gethostbyname("dribbling");
+	hentInfortunio = gethostbyname("infortunio");
+	hentTiro = gethostbyname("tiro");
+	char ip[40], ipTiro[40], ipDribbling[40], ipInfortunio[40];
+	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	inet_ntop(AF_INET, (void*)hentDribbling->h_addr_list[0], ipDribbling, 15);
+	inet_ntop(AF_INET, (void*)hentInfortunio->h_addr_list[0], ipInfortunio, 15);
+	inet_ntop(AF_INET, (void*)hentTiro->h_addr_list[0], ipTiro, 15);
+	
 
+	//inizializzo i servizi
+	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
+	int socketTiro, socketInfortunio, socketDribbling;
+
+	printf("main: inizializza i servizi\n");
+	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
+	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+	serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+	printf("main: inizializzati i servizi\n");
+
+
+	printf("Starting...\n");
 	//punteggio delle due squadre
 	int puntiA = 0;
 	int puntiB = 0;
@@ -355,18 +399,17 @@ int main(int argc, char* argv[]) {
 		memset(&(myaddr.sin_zero), '\0', 8);
 	*/
 	
-	serverInit(&mySocket, &myaddr, PORT);
+	serverInit(&mySocket, &myaddr, ip, PORT);
 
 	len = sizeof(client);
 
 	bind(mySocket, (struct sockaddr*)&myaddr, sizeof(myaddr));
 	listen(mySocket, 12);
 
-	//mysocket e' pronta ad accettare richieste
-	/*
+	
 			inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
 			printf("Accepting as %s with port %d...\n", buffer, PORT);
-	*/
+	
 	clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
 	/*
 		inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
@@ -374,12 +417,7 @@ int main(int argc, char* argv[]) {
 	*/
 	
 
-	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
-	int socketTiro, socketInfortunio, socketDribbling;
-
-	serviceInit(&socketTiro, &addrTiro, TIROPORT);
-	serviceInit(&socketInfortunio, &addrInfortunio, INFORTUNIOPORT);
-	serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
+	
 
 	//inviamo anche ai servizi le informazioni delle squadre
 	

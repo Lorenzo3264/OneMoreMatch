@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <netdb.h>
 
 
 #define PORT 8033
@@ -29,6 +30,11 @@ void* service(void* arg) {
 		in attesa con read, quando riceve info esegue codice e risponde con write
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
+	struct hostent* hent;
+	hent = gethostbyname("gateway");
+	char ip[40];
+	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+
 	char buffer[BUFDIM];
 	int s_fd, player, opponent, chance, c_fd;
 	struct sockaddr_in c_addr;
@@ -40,7 +46,7 @@ void* service(void* arg) {
 
 	c_addr.sin_port = htons(REFEREEPORT);
 
-	inet_aton("127.0.0.1", &c_addr.sin_addr);
+	inet_aton(ip, &c_addr.sin_addr);
 
 	if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 		perror("non sono riuscito a connettermi con l'arbitro\n");
@@ -89,6 +95,14 @@ void* service(void* arg) {
 
 
 int main(int argc, char* argv[]) {
+
+	char hostname[1023] = { '\0' };
+	gethostname(hostname, 1023);
+	struct hostent* hent;
+	hent = gethostbyname(hostname);
+	char ip[40];
+	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+
 	int serverSocket, client, len;
 	struct sockaddr_in serverAddr, clientAddr;
 	char buffer[BUFDIM];
@@ -98,13 +112,18 @@ int main(int argc, char* argv[]) {
 	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
-	inet_aton("0.0.0.0", &(serverAddr.sin_addr));
+	inet_aton(ip, &(serverAddr.sin_addr));
 	memset(&(serverAddr.sin_zero), '\0', 8);
 
 	bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, 12);
 
+	char buf[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
+
+	printf("Accepting as %s:%d...\n",buf,PORT);
 	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+	printf("ACCEPTED!\n");
 	int i = 0;
 	int j = 0;
 	while (i < 5 || j < 5) {

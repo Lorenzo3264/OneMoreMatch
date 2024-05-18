@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <netdb.h>
 
 #define PORT 8041
 #define BUFDIM 1024
@@ -34,6 +35,7 @@ void* service(void *arg){
 
 	//formato messaggio infortunio: IXXXPXXX\0
 	sprintf(buffer, "I%dP%d\0", tempoI, tempoP);
+	write(s_fd, buffer, BUFDIM);
 
 	client_fd = socket(AF_INET, SOCK_STREAM, 0);
 	client_addr.sin_family = AF_INET;
@@ -43,6 +45,7 @@ void* service(void *arg){
 		perror("connect() failed\n");
 	}
     
+	sprintf(buffer, "i%d%d\0", player, opponent);
 	write(client_fd, buffer, BUFDIM);
 
 }
@@ -64,6 +67,7 @@ int main(int argc, char* argv[]) {
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, 12);
 
+	printf("Accepting...\n");
 	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 	int i = 0, j = 0;
 	while (i < 5%j < 5){

@@ -1,15 +1,19 @@
 
-
+networks:
+    omm:
+        name: omm
 
 services:
 
     gateway:
+        hostname: gateway
         deploy:
           resources:
             limits:
               cpus: '0.1'
               memory: 50M
         tty: true
+        
         build:
             context: ./gateway/
         image: gcc:latest
@@ -23,8 +27,12 @@ services:
             - tiro
         ports: 
             - 8080:8080
+        networks:
+            - omm
 
     dribbling:
+        hostname: dribbling
+        tty: true
         build:
             context: ./dribbling/
         image: gcc:latest
@@ -32,9 +40,14 @@ services:
             - ./dribbling:/dribbling
         container_name: dribbling
         command: bin/bash /dribbling/start.sh
-        network_mode: host
+        networks:
+            - omm
+        ports: 
+            - 8033:8033
 
     infortunio:
+        hostname: infortunio
+        tty: true
         build:
             context: ./infortunio/
         image: gcc:latest
@@ -42,9 +55,14 @@ services:
             - ./infortunio:/infortunio
         container_name: infortunio
         command: bin/bash /infortunio/start.sh
-        network_mode: host
+        networks:
+            - omm
+        ports: 
+            - 8041:8041
 
     tiro:
+        hostname: tiro
+        tty: true
         build:
             context: ./tiro/
         image: gcc:latest
@@ -52,4 +70,7 @@ services:
             - ./tiro:/tiro
         container_name: tiro
         command: bin/bash /tiro/start.sh
-        network_mode: host
+        networks:
+            - omm
+        ports: 
+            - 8077:8077
