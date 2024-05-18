@@ -206,6 +206,7 @@ void* playerThread(void* arg) {
 					if (tempoFallo[k] == 0) {
 						tempoFallo[k] = -1;
 						sprintf(buffer, "a%d\0", k);
+						close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 					}

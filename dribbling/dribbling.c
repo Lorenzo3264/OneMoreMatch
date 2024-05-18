@@ -59,19 +59,19 @@ void* service(void* arg) {
 		} while (squadre[opponent] == squadre[player] && stato[opponent] != 'a');
 		chance = rand() % 100;
 		if (chance >= 0 && chance < 30) {
-			sprintf(buffer, "d%d%df", player,opponent);
+			sprintf(buffer, "d%d%df\0", player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			sprintf(buffer, "f%d", opponent);
 			
 		}
 		if (chance >= 30 && chance < 85) {
-			sprintf(buffer, "d%d%dy",player,opponent);
+			sprintf(buffer, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			sprintf(buffer, "s%d", opponent);
 			
 		}
 		if (chance >= 85 && chance < 100) {
-			sprintf(buffer, "i%d", opponent);
+			sprintf(buffer, "i%d\0", opponent);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
 		}
