@@ -372,12 +372,7 @@ int main(int argc, char* argv[]) {
 		inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
 		printf("request from client %s\n", buffer);
 	*/
-	read(clientSocket, buffer, BUFDIM);
-	/*
-		Qui bisogna stabilire il formato del messaggio e il modo di
-		interpretarlo. esempio messaggio A3 indicano la squadra (A, B)
-		e id giocatore (0..9)
-	*/
+	
 
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
@@ -387,9 +382,7 @@ int main(int argc, char* argv[]) {
 	serviceInit(&socketDribbling, &addrDribbling, DRIBBLINGPORT);
 
 	//inviamo anche ai servizi le informazioni delle squadre
-	write(socketTiro, buffer, BUFDIM);
-	write(socketInfortunio, buffer, BUFDIM);
-	write(socketDribbling, buffer, BUFDIM);
+	
 
 	pthread_mutex_init(&pallone, NULL);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
@@ -401,7 +394,17 @@ int main(int argc, char* argv[]) {
 	//attesa di richieste per i giocatori
 	while (i < 5 || j < 5 || !ref) {
 		char* player = malloc(2*sizeof(char)); //info del giocatore
-		
+
+		read(clientSocket, buffer, BUFDIM);
+		/*
+			Qui bisogna stabilire il formato del messaggio e il modo di
+			interpretarlo. esempio messaggio A3 indicano la squadra (A, B)
+			e id giocatore (0..9)
+		*/
+
+		write(socketTiro, buffer, BUFDIM);
+		write(socketInfortunio, buffer, BUFDIM);
+		write(socketDribbling, buffer, BUFDIM);
 		
 		if (buffer[0] == 'A') {
 			player[0] = 'A';
