@@ -52,12 +52,12 @@ volatile int N = 90;
 volatile int activePlayer = -1;
 
 
-void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, int port);
+void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, int port);
 void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int port);
 
 void* playerThread(void* arg) {
 	//codice thread giocatore
-	struct hostent* hentDribbling, hentInfortunio, hentTiro;
+	struct hostent* hentDribbling, *hentInfortunio, *hentTiro;
 	hentDribbling = gethostbyname("dribbling");
 	hentInfortunio = gethostbyname("infortunio");
 	hentTiro = gethostbyname("tiro");
@@ -348,7 +348,7 @@ int main(int argc, char* argv[]) {
 	/* Set IP address to localhost */
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
-	struct hostent* hent, hentDribbling, hentInfortunio, hentTiro;
+	struct hostent* hent, *hentDribbling, *hentInfortunio, *hentTiro;
 	hent = gethostbyname(hostname);
 	hentDribbling = gethostbyname("dribbling");
 	hentInfortunio = gethostbyname("infortunio");
