@@ -30,6 +30,8 @@ void* service(void* arg) {
 		in attesa con read, quando riceve info esegue codice e risponde con write
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
+	printf("service: starting...\n");
+
 	struct hostent* hent;
 	hent = gethostbyname("gateway");
 	char ip[40];
@@ -48,32 +50,41 @@ void* service(void* arg) {
 
 	inet_aton(ip, &c_addr.sin_addr);
 
+	printf("service: connecting to referee %s:%d...\n",ip,REFEREEPORT);
 	if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-		perror("non sono riuscito a connettermi con l'arbitro\n");
+		printf("connect() failed to %s:%d\n",ip,REFEREEPORT);
 	}
-
+	
+	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
 	read(s_fd, buffer, BUFDIM); 
 
+	printf("service: received message: %s\n",buffer);
+
 	if (buffer[0] != 'a') {
-		player = buffer[0];
+		printf("service: player action\n");
+		player = buffer[0] - '0';
 
 		time_t t;
 		srand((unsigned)time(&t));
 		do {
 			opponent = rand() % 10;
-		} while (squadre[opponent] == squadre[player] && stato[opponent] != 'a');
+		} while (squadre[opponent] == squadre[player] || stato[opponent] != 'a');
+		printf("service: opponent = %c%d\n", squadre[opponent], opponent);
+		printf("service: player = %c%d\n", squadre[player], player);
 		chance = rand() % 100;
 		if (chance >= 0 && chance < 30) {
 			sprintf(buffer, "d%d%df\0", player,opponent);
 			write(c_fd, buffer, BUFDIM);
-			sprintf(buffer, "f%d", opponent);
+			printf("service: sent message to referee: %s\n", buffer);
+			sprintf(buffer, "f%d\0", opponent);
 			
 		}
 		if (chance >= 30 && chance < 85) {
 			sprintf(buffer, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
-			sprintf(buffer, "s%d", opponent);
+			printf("service: sent message to referee: %s\n", buffer);
+			sprintf(buffer, "s%d\0", opponent);
 			
 		}
 		if (chance >= 85 && chance < 100) {
@@ -82,9 +93,10 @@ void* service(void* arg) {
 			stato[opponent] = 'f';
 		}
 		write(s_fd, buffer, BUFDIM);
-		
+		printf("service: sent message to player: %s\n", buffer);
 	}
 	else {
+		printf("service: player status update\n");
 		player = buffer[1];
 		stato[player] = 'a';
 	}
@@ -120,28 +132,36 @@ int main(int argc, char* argv[]) {
 
 	char buf[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
-
-	printf("Accepting as %s:%d...\n",buf,PORT);
-	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
-	printf("ACCEPTED!\n");
+	printf("main: Accepting as %s:%d...\n",buf,PORT);
+	
 	int i = 0;
 	int j = 0;
+	int id;
 	while (i < 5 || j < 5) {
+		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		read(client, buffer, BUFDIM);
+		printf("main: creazione squadre: %c%c\n", buffer[0],buffer[1]);
+		id = buffer[1] - '0';
 		if (buffer[0] == 'A') {
-			squadre[buffer[1]] = 'A';
+			squadre[id] = 'A';
+			i++;
 		}
 		if (buffer[0] == 'B') {
-			squadre[buffer[1]] = 'B';
+			squadre[id] = 'B';
+			j++;
 		}
-		stato[buffer[1]] = 'a';
+		stato[id] = 'a';
 	}
 
 	while (1) {
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+		printf("main: connection accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
+		printf("main: thread creato!\n");
 		pthread_join(player, NULL);
+		printf("main: richiesta del player terminata\n");
 	}
+
 	close(client);
 	
 	return 0;
