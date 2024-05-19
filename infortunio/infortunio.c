@@ -47,7 +47,7 @@ void* service(void *arg){
 	client_addr.sin_port = htons(REFEREEPORT);
 	inet_aton(ip, &client_addr.sin_addr);
     if (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))) {
-		perror("connect() failed\n");
+		printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
 	}
     
 	sprintf(buffer, "i%d%d\0", player, opponent);

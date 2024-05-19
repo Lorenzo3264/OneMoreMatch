@@ -48,10 +48,11 @@ def playergen(conn):
             sq = "B"
         th = threading.Thread(target=playerThread, args=(i,sq,conn,))
         th.start()
-        ref = threading.Thread(target=refereeThread, args=(conn,))
-        ref.start()
-        ref.join()
         th.join()
+    ref = threading.Thread(target=refereeThread, args=(conn,))
+    ref.start()
+    ref.join()
+    
     
         
 
