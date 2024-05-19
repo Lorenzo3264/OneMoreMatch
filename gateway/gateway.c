@@ -88,9 +88,7 @@ void* playerThread(void* arg) {
 	//printf("giocatore %d, squadra %c\n", id, squadra);
 	free(player); //libero la struttura usata per le info del giocatore
 
-	//inizializzo il random number generator
-	time_t t;
-	srand((unsigned)time(&t));
+	
 
 	
 
@@ -398,6 +396,10 @@ void serverInit(int* serverSocket, struct sockaddr_in* serverAddr,char* ip, int 
 }
 
 int main(int argc, char* argv[]) {
+
+	//inizializzo il random number generator
+	time_t t;
+	srand((unsigned)time(&t));
 
 	/* Set IP address to localhost */
 	char hostname[1023] = { '\0' };
