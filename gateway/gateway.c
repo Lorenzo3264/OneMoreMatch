@@ -541,9 +541,7 @@ int main(int argc, char* argv[]) {
 	
 	printf("la partita sta per cominciare\n");
 
-	/* Intializes random number generator */
-	time_t t;
-	srand((unsigned)time(&t));
+	
 	
 	activePlayer = rand() % 10;
 	while (refServer != 0);
