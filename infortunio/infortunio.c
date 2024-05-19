@@ -26,11 +26,11 @@ void* service(void *arg){
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
 	read(s_fd, buffer, BUFDIM);
-	player = buffer[0];
-	opponent = buffer[1];
+	printf("service: from player buffer = %s\n", buffer);
+	player = buffer[0] - '0';
+	opponent = buffer[1] - '0';
 
-	time_t t;
-	srand((unsigned)time(&t));
+	
 
 	tempoI = rand() % 15;
 	while(tempoI <= 5){
@@ -41,6 +41,7 @@ void* service(void *arg){
 	//formato messaggio infortunio: IXXXPXXX\0
 	sprintf(buffer, "I%dP%d\0", tempoI, tempoP);
 	write(s_fd, buffer, BUFDIM);
+	printf("service: to player buffer = %s\n", buffer);
 
 	client_fd = socket(AF_INET, SOCK_STREAM, 0);
 	client_addr.sin_family = AF_INET;
@@ -52,10 +53,15 @@ void* service(void *arg){
     
 	sprintf(buffer, "i%d%d\0", player, opponent);
 	write(client_fd, buffer, BUFDIM);
+	printf("service: to referee buffer = %s\n");
 
+	close(client_fd);
 }
  
 int main(int argc, char* argv[]) {
+	time_t t;
+	srand((unsigned)time(&t));
+
 	int serverSocket, client, len, id;
 	struct sockaddr_in serverAddr, clientAddr;
 	char buffer[BUFDIM];
@@ -83,20 +89,28 @@ int main(int argc, char* argv[]) {
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
-	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+	
 	int i = 0, j = 0;
-	while (i < 5%j < 5){
+	
+	while (i < 5 || j < 5){
+		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		read(client, buffer, BUFDIM);
+		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
+		id = buffer[0] - '0';
 		if(buffer[0] == 'A'){
-			squadre[buffer[1]] = 'A';
+			squadre[id] = 'A';
+			i++;
 		}
 		if(buffer[0] == 'B'){
-			squadre[buffer[1]] = 'B';
+			squadre[id] = 'B';
+			j++;
 		}
 	}
     
 	while(1){
+		printf("main: waiting for player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+		printf("main: player found!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
         pthread_join(player, NULL);
 	}

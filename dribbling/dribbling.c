@@ -61,33 +61,41 @@ void* service(void* arg) {
 
 	printf("service: received message: %s\n",buffer);
 
+	for (int i = 0; i < 10; i++) {
+		printf("%c%d=%c, ", squadre[i], i, stato[i]);
+	}
+
 	if (buffer[0] != 'a') {
 		printf("service: player action\n");
 		player = buffer[0] - '0';
 
-		time_t t;
-		srand((unsigned)time(&t));
+		/*
+			probabilita' fallimento = 35%
+			probabilita' successo = 60%
+			probabilita' infortunio = 5%
+		*/
+		
 		do {
 			opponent = rand() % 10;
 		} while (squadre[opponent] == squadre[player] || stato[opponent] != 'a');
 		printf("service: opponent = %c%d\n", squadre[opponent], opponent);
 		printf("service: player = %c%d\n", squadre[player], player);
 		chance = rand() % 100;
-		if (chance >= 0 && chance < 30) {
+		if (chance >= 0 && chance < 35) {
 			sprintf(buffer, "d%d%df\0", player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
 			sprintf(buffer, "f%d\0", opponent);
 			
 		}
-		if (chance >= 30 && chance < 85) {
+		if (chance >= 35 && chance < 95) {
 			sprintf(buffer, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
 			sprintf(buffer, "s%d\0", opponent);
 			
 		}
-		if (chance >= 85 && chance < 100) {
+		if (chance >= 95 && chance < 100) {
 			sprintf(buffer, "i%d\0", opponent);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
@@ -107,6 +115,9 @@ void* service(void* arg) {
 
 
 int main(int argc, char* argv[]) {
+
+	time_t t;
+	srand((unsigned)time(&t));
 
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);

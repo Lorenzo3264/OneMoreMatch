@@ -16,7 +16,7 @@
 
 void* service(void *arg){
 	char buffer[BUFDIM];
-    int s_fd, player, chance, client_fd, id;
+    int s_fd, player, chance, client_fd;
 	struct sockaddr_in client_addr;
 	s_fd = *(int*)arg;
 
@@ -26,19 +26,19 @@ void* service(void *arg){
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
 	read(s_fd, buffer, BUFDIM);
-	player = buffer[0];
+	printf("service: from player buffer = %s\n",buffer);
+	player = buffer[0] - '0';
 
-	time_t t;
-	srand((unsigned)time(&t));
+	
 	chance = rand() % 100;
 	if(chance < 50){
 		//fallito
 		//  t%d(r)\0
-        sprintf(buffer, "t%df\0", id);
+        sprintf(buffer, "t%df\0", player);
 	}else{
 		//goal
 		//  t%d(r)\0
-        sprintf(buffer, "t%dy\0", id);
+        sprintf(buffer, "t%dy\0", player);
 	}
 
     client_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -50,10 +50,16 @@ void* service(void *arg){
 	}
     
 	write(client_fd, buffer, BUFDIM);
+	printf("service: to referee buffer = %s\n", buffer);
+
+	close(client_fd);
 	
 }
 
 int main(int argc, char* argv[]) {
+	time_t t;
+	srand((unsigned)time(&t));
+
     int serverSocket, client, len, id;
 	struct sockaddr_in serverAddr, clientAddr;
 	char buffer[BUFDIM];
@@ -81,21 +87,30 @@ int main(int argc, char* argv[]) {
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
-	client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+	
 	int i = 0, j = 0;
-	while (i < 5%j < 5){
+	
+	while (i < 5 || j < 5){
+		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		read(client, buffer, BUFDIM);
+		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
+		id = buffer[1] - '0';
 		if(buffer[0] == 'A'){
-			squadre[buffer[1]] = 'A';
+			squadre[id] = 'A';
+			i++;
 		}
 		if(buffer[0] == 'B'){
-			squadre[buffer[1]] = 'B';
+			squadre[id] = 'B';
+			j++;
 		}
 	}
     
 	while(1){
+		printf("main: accepting player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+		printf("main: player accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
+		printf("main: player stopped\n");
         pthread_join(player, NULL);
 	}
 
