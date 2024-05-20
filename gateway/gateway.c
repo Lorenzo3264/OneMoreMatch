@@ -19,7 +19,7 @@
 #define TIROPORT 8077
 #define BUFDIM 1024
 #define NPLAYERS 10
-#define WAIT 5
+#define WAIT 1
 
 //servono per identificare il tipo di evento per l'arbitro
 #define TIRO 't'
@@ -119,11 +119,6 @@ void* playerThread(void* arg) {
 		while (activePlayer == id && N > 0) { //controlla se il possesso del pallone e' legale
 
 			printf("player %d thread: 4\n",id);
-
-			
-			
-			
-
 
 			printf("Il giocatore %d della squadra %c ha la palla!\n", id, squadra);
 
@@ -225,6 +220,7 @@ void* playerThread(void* arg) {
 			printf("player %d thread: 6\n",id);
 
 			//prima che perda il pallone o ricominci
+			sleep(WAIT);
 			N--;
 			for (int k = 0; k < 10; k++) {
 				printf("%c%d=%d:%d, ", squadre[k], k, tempoInfortunio[k],tempoFallo[k]);
@@ -318,7 +314,7 @@ void* refereeThread(void* arg) {
 			(%d) opzionale = giocatore in tackle/fallo
 			(r) opzionale = risultato tiro/dribbling (y = successo, f = fallimento)
 		*/
-		azione = buf[0] - '0';
+		azione = buf[0];
 		player = buf[1] - '0';
 		switch (azione) {
 			case TIRO:
@@ -553,6 +549,17 @@ int main(int argc, char* argv[]) {
 		pthread_join(squadraA[i],NULL);
 		pthread_join(squadraB[i],NULL);
 	}
+
+	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
+	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+	serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+
+	sprintf(buffer, "partita terminata\0");
+
+	write(socketTiro, buffer, BUFDIM);
+	write(socketInfortunio, buffer, BUFDIM);
+	write(socketDribbling, buffer, BUFDIM);
+
 	close(mySocket);
 	return 0;
 }
