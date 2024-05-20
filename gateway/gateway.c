@@ -602,6 +602,8 @@ int main(int argc, char* argv[]) {
 		pthread_join(squadraA[i],NULL);
 		pthread_join(squadraB[i],NULL);
 	}
+	pthread_join(arbitro, NULL);
+
 	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
 	serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
