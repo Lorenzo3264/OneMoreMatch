@@ -36,6 +36,10 @@ void* service(void* arg) {
 
 	struct hostent* hent;
 	hent = gethostbyname("gateway");
+	if (hent == NULL) {
+		perror("gethostbyname");
+		pthread_exit(NULL); // Exit the thread if gethostbyname fails
+	}
 	char ip[40];
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
@@ -62,7 +66,7 @@ void* service(void* arg) {
 	read(s_fd, buffer, BUFDIM); 
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
-		exit(1);
+		pthread_exit(NULL);
 	}
 
 	printf("service: received message: %s\n",buffer);
@@ -89,21 +93,21 @@ void* service(void* arg) {
 		printf("service: player = %c%d\n", squadre[player], player);
 		chance = rand() % 100;
 		if (chance >= 0 && chance < 35) {
-			sprintf(buffer, "d%d%df\0", player,opponent);
+			snprintf(buffer, BUFDIM, "d%d%df\0", player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
-			sprintf(buffer, "f%d\0", opponent);
+			snprintf(buffer, BUFDIM, "f%d\0", opponent);
 			
 		}
 		if (chance >= 35 && chance < 95) {
-			sprintf(buffer, "d%d%dy\0",player,opponent);
+			snprintf(buffer, BUFDIM, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
-			sprintf(buffer, "s%d\0", opponent);
+			snprintf(buffer, BUFDIM, "s%d\0", opponent);
 			
 		}
 		if (chance >= 95 && chance < 100) {
-			sprintf(buffer, "i%d\0", opponent);
+			snprintf(buffer, BUFDIM, "i%d\0", opponent);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
 		}
@@ -130,6 +134,10 @@ int main(int argc, char* argv[]) {
 	gethostname(hostname, 1023);
 	struct hostent* hent;
 	hent = gethostbyname(hostname);
+	if (hent == NULL) {
+		perror("gethostbyname");
+		exit(1); // Exit the thread if gethostbyname fails
+	}
 	char ip[40];
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
@@ -179,6 +187,10 @@ int main(int argc, char* argv[]) {
 		pthread_join(player, NULL);
 		printf("main: richiesta del player terminata\n");
 	}
+
+	snprintf(buffer, BUFDIM, "e\0");
+	write(client, buffer, BUFDIM);
+	printf("main: sent end match\n");
 
 	close(client);
 	
