@@ -14,6 +14,8 @@
 #define BUFDIM 1024
 #define REFEREEPORT 8088 
 
+volatile short stop = -1;
+
 void* service(void *arg){
 	char buffer[BUFDIM];
     int s_fd, player, chance, client_fd;
@@ -26,6 +28,10 @@ void* service(void *arg){
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
 	read(s_fd, buffer, BUFDIM);
+	if (strcmp(buffer, "partita terminata\0") == 0) {
+		stop = 0;
+		exit(1);
+	}
 	printf("service: from player buffer = %s\n",buffer);
 	player = buffer[0] - '0';
 
@@ -105,7 +111,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
     
-	while(1){
+	while(stop == -1){
 		printf("main: accepting player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: player accepted!\n");

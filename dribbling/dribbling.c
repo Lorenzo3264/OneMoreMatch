@@ -15,8 +15,10 @@
 #define BUFDIM 1024
 #define REFEREEPORT 8088
 
-char squadre[10];
-char stato[10];
+volatile char squadre[10];
+volatile char stato[10];
+
+volatile short stop = -1;
 
 /*
 	Ogni giocatore crea una connessione quindi ogni giocatore e' in attesa
@@ -58,6 +60,10 @@ void* service(void* arg) {
 	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
 	read(s_fd, buffer, BUFDIM); 
+	if (strcmp(buffer, "partita terminata\0") == 0) {
+		stop = 0;
+		exit(1);
+	}
 
 	printf("service: received message: %s\n",buffer);
 
@@ -66,6 +72,7 @@ void* service(void* arg) {
 	}
 
 	if (buffer[0] != 'a') {
+		
 		printf("service: player action\n");
 		player = buffer[0] - '0';
 
@@ -105,7 +112,7 @@ void* service(void* arg) {
 	}
 	else {
 		printf("service: player status update\n");
-		player = buffer[1];
+		player = buffer[1] - '0';
 		stato[player] = 'a';
 	}
 	close(c_fd);
@@ -164,7 +171,7 @@ int main(int argc, char* argv[]) {
 		stato[id] = 'a';
 	}
 
-	while (1) {
+	while (stop == -1) {
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: connection accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
