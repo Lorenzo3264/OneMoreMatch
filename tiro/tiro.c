@@ -12,7 +12,7 @@
 
 #define PORT 8077
 #define BUFDIM 1024
-#define REFEREEPORT 8088 
+#define REFEREEPORT 8088
 
 volatile short stop = -1;
 
@@ -39,7 +39,7 @@ void* service(void *arg){
 	printf("service: from player buffer = %s\n",buffer);
 	player = buffer[0] - '0';
 
-	
+
 	chance = rand() % 100;
 	if(chance < 50){
 		//fallito
@@ -58,12 +58,12 @@ void* service(void *arg){
     if (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))) {
 		printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
 	}
-    
+
 	write(client_fd, buffer, BUFDIM);
 	printf("service: to referee buffer = %s\n", buffer);
 
 	close(client_fd);
-	
+
 }
 
 int main(int argc, char* argv[]) {
@@ -101,9 +101,9 @@ int main(int argc, char* argv[]) {
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
-	
+
 	int i = 0, j = 0;
-	
+
 	while (i < 5 || j < 5){
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		read(client, buffer, BUFDIM);
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
 			j++;
 		}
 	}
-    
+
 	while(stop == -1){
 		printf("main: accepting player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
