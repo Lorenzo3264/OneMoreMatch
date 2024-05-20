@@ -60,10 +60,10 @@ void* service(void* arg) {
 	if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 		printf("connect() failed to %s:%d\n",ip,REFEREEPORT);
 	}
-	
+
 	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
-	read(s_fd, buffer, BUFDIM); 
+	read(s_fd, buffer, BUFDIM);
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
 		pthread_exit(NULL);
@@ -76,7 +76,7 @@ void* service(void* arg) {
 	}
 
 	if (buffer[0] != 'a') {
-		
+
 		printf("service: player action\n");
 		player = buffer[0] - '0';
 
@@ -85,7 +85,7 @@ void* service(void* arg) {
 			probabilita' successo = 60%
 			probabilita' infortunio = 5%
 		*/
-		
+
 		do {
 			opponent = rand() % 10;
 		} while (squadre[opponent] == squadre[player] || stato[opponent] != 'a');
@@ -97,14 +97,14 @@ void* service(void* arg) {
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
 			snprintf(buffer, BUFDIM, "f%d\0", opponent);
-			
+
 		}
 		if (chance >= 35 && chance < 95) {
 			snprintf(buffer, BUFDIM, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
 			snprintf(buffer, BUFDIM, "s%d\0", opponent);
-			
+
 		}
 		if (chance >= 95 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 	char buf[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 	printf("main: Accepting as %s:%d...\n",buf,PORT);
-	
+
 	int i = 0;
 	int j = 0;
 	int id;
@@ -193,6 +193,6 @@ int main(int argc, char* argv[]) {
 	printf("main: sent end match\n");
 
 	close(client);
-	
+
 	return 0;
 }

@@ -10,7 +10,6 @@ import re
 # l'arbitro manterra' la connessione attiva fino al termine della partita.
 
 
-
 def playerThread(idg, sq, conn):
     try:
         s = socket.socket()
@@ -32,6 +31,16 @@ def refereeThread(conn):
     comando = "sono l'arbitro"
     comando += "\0"
     s.send(comando.encode())
+    data = s.recv(4096)
+    print(f"{data}");
+    pattern = re.compile("GOAL")
+    match = re.search(pattern, data)
+    if(match):
+        player = re.findall(r'\d+',data)
+        if player < 5:
+            puntiA += 1
+        else:
+            puntiB += 1
 
     log = open("log.txt","w")
     stop = True
@@ -72,7 +81,7 @@ def invia_giocatore(s,idg,sq):
 def invia_comandi(s, comando):
     comando += "\0"
     s.send(comando.encode())
-    
+
 
 def playergen(conn):
     for i in range(10):
@@ -86,9 +95,9 @@ def playergen(conn):
     ref = threading.Thread(target=refereeThread, args=(conn,))
     ref.start()
     ref.join()
-    
-    
-        
+
+
+
 
 if __name__ == '__main__':
     playergen(("127.0.0.1", 8080))

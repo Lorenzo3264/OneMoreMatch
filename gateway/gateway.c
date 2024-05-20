@@ -46,7 +46,7 @@ volatile int tempoFallo[10] = { -1 };
 volatile int tempoInfortunio[10] = { -1 };
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
-volatile int N = 90; 
+volatile int N = 90;
 
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
 volatile int activePlayer = -1;
@@ -106,7 +106,7 @@ void* playerThread(void* arg) {
 
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
-	
+
 
 	int chance; //chance di tiro
 
@@ -125,7 +125,7 @@ void* playerThread(void* arg) {
 	printf("player %d thread: 3\n",id);
 	playerCount--;
 	while (N > 0) { //fino a quando non finisce la partita
-		
+
 		pthread_mutex_lock(&pallone); //attende di ricevere possesso del pallone
 		while (activePlayer == id && N > 0) { //controlla se il possesso del pallone e' legale
 
@@ -134,7 +134,7 @@ void* playerThread(void* arg) {
 			printf("Il giocatore %d della squadra %c ha la palla!\n", id, squadra);
 
 			//informo il servizio Dribbling dell'evento
-			
+
 			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 			snprintf(buffer, BUFDIM, "%d\0", id);
 			write(socketDribbling, buffer, BUFDIM);
@@ -143,7 +143,7 @@ void* playerThread(void* arg) {
 			printf("player %d thread: dribbling buffer = %s\n", id, buffer);
 			close(socketDribbling);
 			/*
-				formato messaggio dribbling: "x%d" 
+				formato messaggio dribbling: "x%d"
 				(x = s = successo, x = f = fallimento, x = i = infortunio)
 				%d = giocatore avversario
 			*/
@@ -240,7 +240,7 @@ void* playerThread(void* arg) {
 			N--;
 			for (int k = 0; k < 10; k++) {
 				printf("%c%d=%d:%d, ", squadre[k], k, tempoInfortunio[k],tempoFallo[k]);
-				
+
 				if (tempoInfortunio[k] > 0) tempoInfortunio[k]--;
 				else {
 					if (tempoInfortunio[k] == 0) {
@@ -266,13 +266,13 @@ void* playerThread(void* arg) {
 					}
 				}
 			}
-			
-			
+
+
 
 
 			printf("player %d thread: tempo rimanente %d\n", id, N);
 		}
-		
+
 		nDribbling = 0;
 		pthread_mutex_unlock(&pallone);
 	}
@@ -282,7 +282,7 @@ void* playerThread(void* arg) {
 }
 
 /*
-	l'arbitro gestisce le comunicazioni con il thread arbitro lato client. 
+	l'arbitro gestisce le comunicazioni con il thread arbitro lato client.
 	Manda a quest'ultimo gli esiti di ogni evento. In qualche modo deve, quindi,
 	ricevere i risultati delle azioni dai thread giocatori
 */
@@ -308,15 +308,15 @@ void* refereeThread(void* arg) {
 	bind(eventSocket, (struct sockaddr*)&eventAddr, sizeof(eventAddr));
 	listen(eventSocket, 12);
 	len = sizeof(serviceAddr);
-	
+
 	printf("referee thread: server inizializzato\n");
 
 	while (activePlayer == -1);
 	strcpy(buf, "La partita e' cominciata!\n");
 	write(s_fd, buf, BUFDIM);
 
-	printf("referee thread: la partita è cominciata!\n");
-	
+	printf("referee thread: la partita ï¿½ cominciata!\n");
+
 	refServer = 0;
 	while (N > 0) {
 		printf("referee thread: waiting for event\n");
@@ -371,7 +371,7 @@ void* refereeThread(void* arg) {
 
 			case INFORTUNIO:
 				opponent = buf[2] - '0';
-				if (opponent > 9) 
+				if (opponent > 9)
 				{
 					perror("wrong id");
 					exit(EXIT_FAILURE);
@@ -392,9 +392,9 @@ void* refereeThread(void* arg) {
 		printf("referee thread: chiudo la socket dell'evento puntatore: %p\n",&serviceSocket);
 		close(serviceSocket);
 	}
-	
-	
-	
+
+
+
 }
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, int port) {
@@ -463,17 +463,17 @@ int main(int argc, char* argv[]) {
 		exit(1); // Exit the thread if gethostbyname fails
 	}
 	inet_ntop(AF_INET, (void*)hentTiro->h_addr_list[0], ipTiro, 15);
-	
-	
-	
-	
-	
+
+
+
+
+
 
 	//inizializzo i servizi
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
 
-	
+
 
 
 	printf("Starting...\n");
@@ -503,7 +503,7 @@ int main(int argc, char* argv[]) {
 		// a zero tutto il resto
 		memset(&(myaddr.sin_zero), '\0', 8);
 	*/
-	
+
 	serverInit(&mySocket, &myaddr, ip, PORT);
 
 	len = sizeof(client);
@@ -511,20 +511,20 @@ int main(int argc, char* argv[]) {
 	bind(mySocket, (struct sockaddr*)&myaddr, sizeof(myaddr));
 	listen(mySocket, 12);
 
-	
-	
+
+
 	/*
 		inet_ntop(AF_INET, &client.sin_addr, buffer, sizeof(buffer));
 		printf("request from client %s\n", buffer);
 	*/
-	
+
 
 
 	inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
 	printf("Accepting as %s with port %d...\n", buffer, PORT);
 
 	//inviamo anche ai servizi le informazioni delle squadre
-	
+
 
 	pthread_mutex_init(&pallone, NULL);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
@@ -546,7 +546,7 @@ int main(int argc, char* argv[]) {
 			interpretarlo. esempio messaggio A3 indicano la squadra (A, B)
 			e id giocatore (0..9)
 		*/
-		
+
 
 		if (buffer[0] == 'A') {
 			player[0] = 'A';
@@ -587,11 +587,11 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-	
+
 	printf("la partita sta per cominciare\n");
 
-	
-	
+
+
 	activePlayer = rand() % 10;
 	while (refServer != 0);
 	while (playerCount > 0);
@@ -614,7 +614,7 @@ int main(int argc, char* argv[]) {
 
 	pthread_join(arbitro, NULL);
 
-	
+
 
 	close(mySocket);
 	close(clientSocket);
