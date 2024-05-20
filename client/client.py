@@ -36,8 +36,18 @@ def refereeThread(conn):
     log = open("log.txt","w")
     stop = True
     while stop:
-        data = s.recv(1024)
-        msg = print(str(data, "utf-8"))
+        try:
+            # Riceve i dati dal server
+            data = s.recv(1024)
+            if not data:
+                # Il server ha chiuso la connessione
+                print("Connessione chiusa dal server.")
+                break
+            print("Messaggio ricevuto:", data.decode())
+        except Exception as e:
+            print("Errore nella ricezione dei dati:", e)
+            break
+        msg = str(data, "utf-8")
         print(f"{msg}\n");
         log.write(f"{msg}\n")
         pattern = re.compile("GOAL")
@@ -51,9 +61,9 @@ def refereeThread(conn):
             else:
                 puntiB += 1
             log.write(f"punteggio attuale {puntiA}:{puntiB}\n")
-        if(msg == "partitaTerminata\0"):
+        if(msg == "partitaTerminata"):
             print(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
-            sys.exit()
+            stop = False
 
 def invia_giocatore(s,idg,sq):
     comando = f"{sq}{idg}"

@@ -24,13 +24,17 @@ void* service(void *arg){
 
 	struct hostent* hent;
 	hent = gethostbyname("gateway");
+	if (hent == NULL) {
+		perror("gethostbyname");
+		pthread_exit(NULL); // Exit the thread if gethostbyname fails
+	}
 	char ip[40];
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
 	read(s_fd, buffer, BUFDIM);
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
-		exit(1);
+		pthread_exit(NULL);
 	}
 	printf("service: from player buffer = %s\n",buffer);
 	player = buffer[0] - '0';
@@ -40,11 +44,11 @@ void* service(void *arg){
 	if(chance < 50){
 		//fallito
 		//  t%d(r)\0
-        sprintf(buffer, "t%df\0", player);
+        snprintf(buffer, BUFDIM, "t%df\0", player);
 	}else{
 		//goal
 		//  t%d(r)\0
-        sprintf(buffer, "t%dy\0", player);
+        snprintf(buffer, BUFDIM, "t%dy\0", player);
 	}
 
     client_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -77,6 +81,10 @@ int main(int argc, char* argv[]) {
 	gethostname(hostname, 1023);
 	struct hostent* hent;
 	hent = gethostbyname(hostname);
+	if (hent == NULL) {
+		perror("gethostbyname");
+		exit(1); // Exit the thread if gethostbyname fails
+	}
 	char ip[40];
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 

@@ -24,13 +24,17 @@ void* service(void *arg){
 
 	struct hostent* hent;
 	hent = gethostbyname("gateway");
+	if (hent == NULL) {
+		perror("gethostbyname");
+		pthread_exit(NULL); // Exit the thread if gethostbyname fails
+	}
 	char ip[40];
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
 	read(s_fd, buffer, BUFDIM);
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
-		exit(1);
+		pthread_exit(NULL);
 	}
 	printf("service: from player buffer = %s\n", buffer);
 	player = buffer[0] - '0';
@@ -45,7 +49,7 @@ void* service(void *arg){
 	tempoP = (tempoI/2);
 
 	//formato messaggio infortunio: IXXXPXXX\0
-	sprintf(buffer, "I%dP%d\0", tempoI, tempoP);
+	snprintf(buffer, BUFDIM, "I%dP%d\0", tempoI, tempoP);
 	write(s_fd, buffer, BUFDIM);
 	printf("service: to player buffer = %s\n", buffer);
 
@@ -57,7 +61,7 @@ void* service(void *arg){
 		printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
 	}
     
-	sprintf(buffer, "i%d%d\0", player, opponent);
+	snprintf(buffer, BUFDIM, "i%d%d\0", player, opponent);
 	write(client_fd, buffer, BUFDIM);
 	printf("service: to referee buffer = %s\n");
 
@@ -79,6 +83,10 @@ int main(int argc, char* argv[]) {
 	gethostname(hostname, 1023);
 	struct hostent* hent;
 	hent = gethostbyname(hostname);
+	if (hent == NULL) {
+		perror("gethostbyname");
+		exit(1); // Exit the thread if gethostbyname fails
+	}
 	char ip[40];
 	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
 
