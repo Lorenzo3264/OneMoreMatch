@@ -54,3 +54,6 @@ dkms.conf
 # Visual studio temp files
 .vs
 .vscode
+
+# One More Match
+log.txt

@@ -19,7 +19,7 @@
 #define TIROPORT 8077
 #define BUFDIM 1024
 #define NPLAYERS 10
-#define WAIT 1
+#define WAIT 0
 
 //servono per identificare il tipo di evento per l'arbitro
 #define TIRO 't'
@@ -41,9 +41,9 @@ pthread_mutex_t pallone;
 pthread_t squadraA[5];
 pthread_t squadraB[5];
 
-char squadre[10];
-int tempoFallo[10];
-int tempoInfortunio[10];
+volatile char squadre[10];
+volatile int tempoFallo[10];
+volatile int tempoInfortunio[10];
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
 volatile int N = 90; 
@@ -319,10 +319,10 @@ void* refereeThread(void* arg) {
 		switch (azione) {
 			case TIRO:
 				if (buf[2] == 'y') {
-					sprintf(buf, "il giocatore %d tira... ed e' GOAL!!!\n", player);
+					sprintf(buf, "il giocatore %d tira... ed e' GOAL!!!\0", player);
 				}
 				else {
-					sprintf(buf, "il giocatore %d tira... e ha mancato la porta...\n", player);
+					sprintf(buf, "il giocatore %d tira... e ha mancato la porta...\0", player);
 				}
 				write(s_fd, buf, BUFDIM);
 				printf("referee thread: to client buffer = %s\n", buf);
@@ -330,12 +330,12 @@ void* refereeThread(void* arg) {
 				break;
 
 			case DRIBBLING:
-				opponent = buf[2];
+				opponent = buf[2] - '0';
 				if (buf[3] == 'y') {
-					sprintf(buf, "il giocatore %d scarta il giocatore %d\n", player, opponent);
+					sprintf(buf, "il giocatore %d scarta il giocatore %d\0", player, opponent);
 				}
 				else {
-					sprintf(buf, "il giocatore %d prende la palla da %d\n", opponent, player);
+					sprintf(buf, "il giocatore %d prende la palla da %d\0", opponent, player);
 				}
 				write(s_fd, buf, BUFDIM);
 				printf("referee thread: to client buffer = %s\n", buf);
@@ -343,8 +343,8 @@ void* refereeThread(void* arg) {
 				break;
 
 			case INFORTUNIO:
-				opponent = buf[2];
-				sprintf(buf, "il giocatore %d e' vittima di un infortunio da parte di %d\n", player, opponent);
+				opponent = buf[2] - '0';
+				sprintf(buf, "il giocatore %d e' vittima di un infortunio da parte di %d\0", player, opponent);
 				write(s_fd, buf, BUFDIM);
 				printf("referee thread: to client buffer = %s\n", buf);
 				azione = -1;
@@ -353,9 +353,11 @@ void* refereeThread(void* arg) {
 			default:
 				break;
 		}
+		close(serviceSocket);
 	}
 	
-	strcpy(buf,"partitaTerminata\0");
+	
+	sprintf(buf,"partitaTerminata\0");
 	write(s_fd, buf, BUFDIM);
 	printf("referee thread: to client buffer = %s\n", buf);
 }
@@ -549,6 +551,7 @@ int main(int argc, char* argv[]) {
 		pthread_join(squadraA[i],NULL);
 		pthread_join(squadraB[i],NULL);
 	}
+	pthread_join(arbitro, NULL);
 
 	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
