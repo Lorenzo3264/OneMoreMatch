@@ -9,8 +9,7 @@ import re
 # richiesta al gateway con un messaggio contenente informazioni delle squadre.
 # l'arbitro manterra' la connessione attiva fino al termine della partita.
 
-puntiA = 0
-puntiB = 0
+
 
 def playerThread(idg, sq, conn):
     try:
@@ -22,6 +21,8 @@ def playerThread(idg, sq, conn):
     invia_giocatore(s,idg,sq)
 
 def refereeThread(conn):
+    puntiA = 0
+    puntiB = 0
     try:
         s = socket.socket()
         s.connect(conn)
@@ -31,16 +32,28 @@ def refereeThread(conn):
     comando = "sono l'arbitro"
     comando += "\0"
     s.send(comando.encode())
-    data = s.recv(4096)
-    print(f"{data}");
-    pattern = re.compile("GOAL")
-    match = re.search(pattern, data)
-    if(match):
-        player = re.findall(r'\d+',data)
-        if player < 5:
-            puntiA += 1
-        else:
-            puntiB += 1
+
+    log = open("log.txt","w")
+    stop = True
+    while stop:
+        data = s.recv(1024)
+        msg = print(str(data, "utf-8"))
+        print(f"{msg}\n");
+        log.write(f"{msg}\n")
+        pattern = re.compile("GOAL")
+        match = re.search(pattern, msg)
+        if(match):
+            players = re.findall(r'\d+',msg)
+            playerstr = players[0]
+            player = int(playerstr)
+            if player < 5:
+                puntiA += 1
+            else:
+                puntiB += 1
+            log.write(f"punteggio attuale {puntiA}:{puntiB}\n")
+        if(msg == "partitaTerminata\0"):
+            print(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
+            sys.exit()
 
 def invia_giocatore(s,idg,sq):
     comando = f"{sq}{idg}"
