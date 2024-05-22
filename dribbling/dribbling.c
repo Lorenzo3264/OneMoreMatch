@@ -56,10 +56,7 @@ void* service(void* arg) {
 
 	inet_aton(ip, &c_addr.sin_addr);
 
-	printf("service: connecting to referee %s:%d...\n",ip,REFEREEPORT);
-	if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-		printf("connect() failed to %s:%d\n",ip,REFEREEPORT);
-	}
+	
 
 	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
@@ -93,6 +90,10 @@ void* service(void* arg) {
 		printf("service: player = %c%d\n", squadre[player], player);
 		chance = rand() % 100;
 		if (chance >= 0 && chance < 35) {
+			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
+			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+				printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
+			}
 			snprintf(buffer, BUFDIM, "d%d%df\0", player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
@@ -100,6 +101,10 @@ void* service(void* arg) {
 
 		}
 		if (chance >= 35 && chance < 95) {
+			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
+			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+				printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
+			}
 			snprintf(buffer, BUFDIM, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
@@ -180,6 +185,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	while (stop == -1) {
+		printf("main: waiting for player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: connection accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);

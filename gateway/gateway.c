@@ -36,14 +36,15 @@
 
 //risorsa pallone, solo un thread giocatore attivo
 pthread_mutex_t pallone;
+pthread_mutex_t globalVar;//trattare in maniera sicura variabili globali
 
 //al loro interno ci sono gli id delle squadre
 pthread_t squadraA[5];
 pthread_t squadraB[5];
 
 volatile char squadre[10] = { 0 };
-volatile int tempoFallo[10] = { -1 };
-volatile int tempoInfortunio[10] = { -1 };
+volatile int tempoFallo[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+volatile int tempoInfortunio[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
 volatile int N = 90;
@@ -61,6 +62,22 @@ void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int
 
 void* playerThread(void* arg) {
 	printf("player thread: 1\n");
+	//informazioni giocatore
+	char* player = (char*)arg;
+	char squadra = player[0];
+	int id = player[1] - '0';
+	if (id > 9 && id < 0)
+	{
+		perror("player: wrong id");
+		exit(EXIT_FAILURE);
+	}
+
+	
+
+	char buffer[BUFDIM]; //buffer per le comunicazioni coi servizi
+	//printf("giocatore %d, squadra %c\n", id, squadra);
+	free(player); //libero la struttura usata per le info del giocatore
+
 
 	//codice thread giocatore
 	struct hostent* hentDribbling, *hentInfortunio, *hentTiro;
@@ -87,22 +104,7 @@ void* playerThread(void* arg) {
 
 	printf("player thread: 2\n");
 
-	//informazioni giocatore
-	char* player = (char *)arg;
-	char squadra = player[0];
-	int id = player[1] - '0';
-	if (id > 9)
-	{
-		perror("wrong id");
-		exit(EXIT_FAILURE);
-	}
-
-	//inizializzo informazioni globali
-	squadre[id] = squadra;
-
-	char buffer[BUFDIM]; //buffer per le comunicazioni coi servizi
-	//printf("giocatore %d, squadra %c\n", id, squadra);
-	free(player); //libero la struttura usata per le info del giocatore
+	
 
 	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
 	int socketTiro, socketInfortunio, socketDribbling;
@@ -123,7 +125,13 @@ void* playerThread(void* arg) {
 	short nDribbling = 0;
 
 	printf("player %d thread: 3\n",id);
+
+	//modifichiamo informazioni globali
+	pthread_mutex_lock(&globalVar);
+	squadre[id] = squadra;
 	playerCount--;
+	pthread_mutex_unlock(&globalVar);
+
 	while (N > 0) { //fino a quando non finisce la partita
 
 		pthread_mutex_lock(&pallone); //attende di ricevere possesso del pallone
@@ -141,7 +149,7 @@ void* playerThread(void* arg) {
 			printf("player %d thread: read dribbling\n",id);
 			read(socketDribbling, buffer, BUFDIM);
 			printf("player %d thread: dribbling buffer = %s\n", id, buffer);
-			close(socketDribbling);
+			
 			/*
 				formato messaggio dribbling: "x%d"
 				(x = s = successo, x = f = fallimento, x = i = infortunio)
@@ -150,9 +158,11 @@ void* playerThread(void* arg) {
 
 			//inizializzo i dati dell'altro giocatore
 			altroPlayer = buffer[1] - '0';
-			if (altroPlayer > 9)
+			if (altroPlayer > 9 && altroPlayer < 0)
 			{
-				perror("wrong id");
+				perror("opponent: wrong id");
+				N = 0;
+				pthread_mutex_unlock(&pallone);
 				exit(EXIT_FAILURE);
 			}
 			altraSquadra = squadre[altroPlayer];
@@ -178,7 +188,7 @@ void* playerThread(void* arg) {
 				*/
 
 				i++;
-				while (buffer[i] != 'P') {
+				while (buffer[i] != 'P' && buffer[i] != '\0' && j<4) {
 					time[j] = buffer[i];
 					i++;
 					j++;
@@ -187,7 +197,7 @@ void* playerThread(void* arg) {
 				j = 0;
 				tempoInfortunio[id] = atoi(time);
 				i++;
-				while (buffer[i] != '\0') {
+				while (buffer[i] != '\0' && j<4) {
 					time[j] = buffer[i];
 					i++;
 					j++;
@@ -250,7 +260,6 @@ void* playerThread(void* arg) {
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
-						close(socketDribbling);
 					}
 				}
 				if (tempoFallo[k] > 0) tempoFallo[k]--;
@@ -262,7 +271,6 @@ void* playerThread(void* arg) {
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
-						close(socketDribbling);
 					}
 				}
 			}
@@ -271,15 +279,100 @@ void* playerThread(void* arg) {
 
 
 			printf("player %d thread: tempo rimanente %d\n", id, N);
+			sched_yield();
 		}
 
 		nDribbling = 0;
 		pthread_mutex_unlock(&pallone);
+		sched_yield();
 	}
 
 	//partita terminata
 
 }
+
+void* eventManager(void* arg) {
+	int* sockets;
+	sockets = (int*)arg;
+	int s_fd = sockets[0];
+	int serviceSocket = sockets[1];
+	char buf[BUFDIM];
+	int player,opponent;
+	char azione;
+
+
+	buf[0] = '\0';
+	read(serviceSocket, buf, BUFDIM);
+	printf("event manager: from service buffer = %s\n", buf);
+	/*
+		formato messaggio: x%d(%d)(r)\0
+		x = tipo di azione
+		%d = giocatore attivo
+		(%d) opzionale = giocatore in tackle/fallo
+		(r) opzionale = risultato tiro/dribbling (y = successo, f = fallimento)
+	*/
+	azione = buf[0];
+	player = buf[1] - '0';
+	if (player > 9 && player < 0)
+	{
+		printf("event manager: player wrong id");
+		exit(EXIT_FAILURE);
+	}
+	switch (azione) {
+	case TIRO:
+		if (buf[2] == 'y') {
+			snprintf(buf, BUFDIM, "il giocatore %d tira... ed e' GOAL!!!\0", player);
+		}
+		else {
+			snprintf(buf, BUFDIM, "il giocatore %d tira... e ha mancato la porta...\0", player);
+		}
+		write(s_fd, buf, BUFDIM);
+		printf("event manager: to client buffer = %s\n", buf);
+		azione = -1;
+		break;
+
+	case DRIBBLING:
+		opponent = buf[2] - '0';
+		if (opponent > 9 && opponent < 0)
+		{
+			perror("event manager: opponent wrong id");
+			exit(EXIT_FAILURE);
+		}
+		if (buf[3] == 'y') {
+			snprintf(buf, BUFDIM, "il giocatore %d scarta il giocatore %d\0", player, opponent);
+		}
+		else {
+			snprintf(buf, BUFDIM, "il giocatore %d prende la palla da %d\0", opponent, player);
+		}
+		write(s_fd, buf, BUFDIM);
+		printf("event manager: to client buffer = %s\n", buf);
+		azione = -1;
+		break;
+
+	case INFORTUNIO:
+		opponent = buf[2] - '0';
+		if (opponent > 9 && opponent < 0)
+		{
+			perror("event manager: opponent wrong id");
+			exit(EXIT_FAILURE);
+		}
+		snprintf(buf, BUFDIM, "il giocatore %d e' vittima di un infortunio da parte di %d\0", player, opponent);
+		write(s_fd, buf, BUFDIM);
+		printf("event manager: to client buffer = %s\n", buf);
+		azione = -1;
+		break;
+	case 'e':
+		snprintf(buf, BUFDIM, "partitaTerminata\0");
+		write(s_fd, buf, BUFDIM);
+		printf("event manager: to client buffer = %s\n", buf);
+		break;
+	default:
+		break;
+	}
+	printf("event manager: chiudo la socket dell'evento puntatore: %p\n", &serviceSocket);
+	close(serviceSocket);
+}
+
 
 /*
 	l'arbitro gestisce le comunicazioni con il thread arbitro lato client.
@@ -310,87 +403,21 @@ void* refereeThread(void* arg) {
 	len = sizeof(serviceAddr);
 
 	printf("referee thread: server inizializzato\n");
-
+	pthread_mutex_lock(&globalVar);
+	refServer = 0;
+	pthread_mutex_unlock(&globalVar);
 	while (activePlayer == -1);
 	strcpy(buf, "La partita e' cominciata!\n");
 	write(s_fd, buf, BUFDIM);
 
-	printf("referee thread: la partita � cominciata!\n");
+	printf("referee thread: la partita e' cominciata!\n");
+	pthread_t eventReq;
 
-	refServer = 0;
 	while (N > 0) {
 		printf("referee thread: waiting for event\n");
 		serviceSocket = accept(eventSocket, (struct sockaddr*)&serviceAddr, &len);
-		buf[0] = '\0';
-		read(serviceSocket, buf, BUFDIM);
-		printf("referee thread: from service buffer = %s\n",buf);
-		/*
-			formato messaggio: x%d(%d)(r)\0
-			x = tipo di azione
-			%d = giocatore attivo
-			(%d) opzionale = giocatore in tackle/fallo
-			(r) opzionale = risultato tiro/dribbling (y = successo, f = fallimento)
-		*/
-		azione = buf[0];
-		player = buf[1] - '0';
-		if (player > 9)
-		{
-			perror("wrong id");
-			exit(EXIT_FAILURE);
-		}
-		switch (azione) {
-			case TIRO:
-				if (buf[2] == 'y') {
-					snprintf(buf, BUFDIM, "il giocatore %d tira... ed e' GOAL!!!\0", player);
-				}
-				else {
-					snprintf(buf, BUFDIM, "il giocatore %d tira... e ha mancato la porta...\0", player);
-				}
-				write(s_fd, buf, BUFDIM);
-				printf("referee thread: to client buffer = %s\n", buf);
-				azione = -1;
-				break;
-
-			case DRIBBLING:
-				opponent = buf[2] - '0';
-				if (opponent > 9)
-				{
-					perror("wrong id");
-					exit(EXIT_FAILURE);
-				}
-				if (buf[3] == 'y') {
-					snprintf(buf, BUFDIM, "il giocatore %d scarta il giocatore %d\0", player, opponent);
-				}
-				else {
-					snprintf(buf, BUFDIM, "il giocatore %d prende la palla da %d\0", opponent, player);
-				}
-				write(s_fd, buf, BUFDIM);
-				printf("referee thread: to client buffer = %s\n", buf);
-				azione = -1;
-				break;
-
-			case INFORTUNIO:
-				opponent = buf[2] - '0';
-				if (opponent > 9)
-				{
-					perror("wrong id");
-					exit(EXIT_FAILURE);
-				}
-				snprintf(buf, BUFDIM, "il giocatore %d e' vittima di un infortunio da parte di %d\0", player, opponent);
-				write(s_fd, buf, BUFDIM);
-				printf("referee thread: to client buffer = %s\n", buf);
-				azione = -1;
-				break;
-			case 'e':
-				snprintf(buf, BUFDIM, "partitaTerminata\0");
-				write(s_fd, buf, BUFDIM);
-				printf("referee thread: to client buffer = %s\n", buf);
-				break;
-			default:
-				break;
-		}
-		printf("referee thread: chiudo la socket dell'evento puntatore: %p\n",&serviceSocket);
-		close(serviceSocket);
+		int sockets[2] = { s_fd, serviceSocket };
+		pthread_create(&eventReq, NULL, eventManager, (void*)sockets);
 	}
 
 
@@ -527,6 +554,7 @@ int main(int argc, char* argv[]) {
 
 
 	pthread_mutex_init(&pallone, NULL);
+	pthread_mutex_init(&globalVar, NULL);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 	//indici per inserire i giocatori nelle squadre
@@ -534,6 +562,8 @@ int main(int argc, char* argv[]) {
 	int j = 0;
 	short ref = 0;
 	//attesa di richieste per i giocatori
+
+	//POTREBBE ESSERCI SEGMENTATION FAULT
 	while (i < 5 || j < 5 || ref != 1) {
 
 		clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
@@ -592,9 +622,10 @@ int main(int argc, char* argv[]) {
 
 
 
-	activePlayer = rand() % 10;
+	
 	while (refServer != 0);
 	while (playerCount > 0);
+	activePlayer = rand() % 10;
 	pthread_mutex_unlock(&pallone);
 
 	printf("la partita e' cominciata!\n");
