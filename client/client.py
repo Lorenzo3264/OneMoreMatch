@@ -35,28 +35,6 @@ def refereeThread(conn):
     log = open("log.txt","w")
     stop = True
     while stop:
-        data = s.recv(1024)
-        msg = print(str(data, "utf-8"))
-        print(f"{msg}\n");
-        log.write(f"{msg}\n")
-        pattern = re.compile("GOAL")
-        match = re.search(pattern, msg)
-        if(match):
-            players = re.findall(r'\d+',msg)
-            playerstr = players[0]
-            player = int(playerstr)
-            if player < 5:
-                puntiA += 1
-            else:
-                puntiB += 1
-            log.write(f"punteggio attuale {puntiA}:{puntiB}\n")
-        if(msg == "partitaTerminata\0"):
-            print(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
-            sys.exit()
-
-    log = open("log.txt","w")
-    stop = True
-    while stop:
         try:
             # Riceve i dati dal server
             data = s.recv(1024)
