@@ -14,6 +14,7 @@
 #define PORT 8033
 #define BUFDIM 1024
 #define REFEREEPORT 8088
+#define QUEUE 90
 
 volatile char squadre[10];
 volatile char stato[10];
@@ -26,6 +27,35 @@ volatile short stop = -1;
 	inviare un messaggio quindi qui non ci preoccupiamo di capire chi e' il giocatore
 	attivo.
 */
+
+void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
+	struct addrinfo hints, * res;
+	int errcode;
+	void* ptr;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET; // For IPv4
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = 0;
+
+	errcode = getaddrinfo(hostname, NULL, &hints, &res);
+	if (errcode != 0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(errcode));
+		pthread_exit(NULL);
+	}
+
+	ptr = &((struct sockaddr_in*)res->ai_addr)->sin_addr;
+
+	if (inet_ntop(res->ai_family, ptr, ip, ip_len) == NULL) {
+		perror("inet_ntop");
+		freeaddrinfo(res);
+		pthread_exit(NULL);
+	}
+
+	freeaddrinfo(res);
+}
+
+
 void* service(void* arg) {
 	/*
 		in arg possiamo mettere il socket fd
@@ -35,13 +65,8 @@ void* service(void* arg) {
 	printf("service: starting...\n");
 
 	struct hostent* hent;
-	hent = gethostbyname("gateway");
-	if (hent == NULL) {
-		perror("gethostbyname");
-		pthread_exit(NULL); // Exit the thread if gethostbyname fails
-	}
 	char ip[40];
-	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	resolve_hostname("gateway", ip, sizeof(ip));
 
 	char buffer[BUFDIM];
 	int s_fd, player, opponent, chance, c_fd;
@@ -137,14 +162,8 @@ int main(int argc, char* argv[]) {
 
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
-	struct hostent* hent;
-	hent = gethostbyname(hostname);
-	if (hent == NULL) {
-		perror("gethostbyname");
-		exit(1); // Exit the thread if gethostbyname fails
-	}
 	char ip[40];
-	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	resolve_hostname(hostname, ip, sizeof(ip));
 
 	int serverSocket, client, len;
 	struct sockaddr_in serverAddr, clientAddr;
@@ -159,7 +178,7 @@ int main(int argc, char* argv[]) {
 	memset(&(serverAddr.sin_zero), '\0', 8);
 
 	bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
-	listen(serverSocket, 12);
+	listen(serverSocket, QUEUE);
 
 	char buf[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
@@ -194,8 +213,28 @@ int main(int argc, char* argv[]) {
 		printf("main: richiesta del player terminata\n");
 	}
 
+	
+	char refip[40];
+	resolve_hostname("gateway", refip, sizeof(refip));
+
+	struct sockaddr_in c_addr;
+
+	int c_fd;
+
+	c_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+	c_addr.sin_family = AF_INET;
+
+	c_addr.sin_port = htons(REFEREEPORT);
+
+	inet_aton(refip, &c_addr.sin_addr);
+
+	if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+		printf("connect() failed to %s:%d\n", refip, REFEREEPORT);
+	}
+
 	snprintf(buffer, BUFDIM, "e\0");
-	write(client, buffer, BUFDIM);
+	write(c_fd, buffer, BUFDIM);
 	printf("main: sent end match\n");
 
 	close(client);
