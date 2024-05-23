@@ -13,7 +13,7 @@
 #define PORT 8077
 #define BUFDIM 1024
 #define REFEREEPORT 8088
-#define QUEUE 90
+#define QUEUE 360
 
 volatile short stop = -1;
 
