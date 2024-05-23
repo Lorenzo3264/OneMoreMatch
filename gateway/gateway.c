@@ -37,7 +37,8 @@
 
 //risorsa pallone, solo un thread giocatore attivo
 pthread_mutex_t pallone;
-pthread_mutex_t globalVar;//trattare in maniera sicura variabili globali
+pthread_mutex_t globalVar; //trattare in maniera sicura variabili globali
+pthread_mutex_t eventMutex; //multipli thread event manager hanno accesso concorrente alla socket
 
 
 
@@ -58,7 +59,7 @@ volatile short refServer = -1;
 volatile short playerCount = 10;
 
 
-void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, int port);
+void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port);
 void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int port);
 void resolve_hostname(const char* hostname, char* ip, size_t ip_len);
 
@@ -139,10 +140,13 @@ void* playerThread(void* arg) {
 				perror("player error: snprintf fallito");
 			}
 
-			write(socketDribbling, buffer, BUFDIM);
+			result = write(socketDribbling, buffer, BUFDIM);
+			if (result == -1) perror("player thread error: write error");
 			printf("player %d thread: %s sent to dribbling\n",id,buffer);
-			read(socketDribbling, buffer, BUFDIM);
+			result = read(socketDribbling, buffer, BUFDIM);
+			if (result == -1) perror("player thread error: read error");
 			printf("player %d thread: dribbling buffer = %s\n", id, buffer);
+
 			
 			/*
 				formato messaggio dribbling: "x%d"
@@ -173,8 +177,10 @@ void* playerThread(void* arg) {
 				write(socketInfortunio, buffer, BUFDIM);
 				printf("player %d thread: 5.1 buffer = %s\n", id, buffer);
 				read(socketInfortunio, buffer, BUFDIM);
+
+
 				printf("player %d thread: 5.2 buffer = %s\n", id, buffer);
-				close(socketInfortunio);
+				if (socketInfortunio != -1) close(socketInfortunio);
 				/*
 					formato messaggio infortunio: IXXXPXXX\0
 					I precede il tempo di infortunio
@@ -226,7 +232,9 @@ void* playerThread(void* arg) {
 					serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 					snprintf(buffer, BUFDIM, "%d\0", id);
 					write(socketTiro, buffer, BUFDIM);
-					close(socketTiro);
+					if (socketTiro != -1) close(socketTiro);
+
+
 					printf("player %d thread: 5.3 buffer = %s\n", id, buffer);
 					while (squadre[activePlayer] == squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0) {
 						activePlayer = rand() % 10;
@@ -241,6 +249,13 @@ void* playerThread(void* arg) {
 			printf("player %d thread: 6\n",id);
 
 			//prima che perda il pallone o ricominci
+
+			/*
+				bisogna evitare il deadlock imposto dal fatto che troppi giocatori si infortunino o vadano in fallo
+				quando succede bisogna in qualche modo liberare la situazione in modo da avere giocatori in campo.
+				IDEA: evento di timeout, resetta lo stato e dunque il tempoInfortunio e tempoFallo di tutti i giocatori.
+			*/
+
 			sleep(WAIT);
 			N--;
 			for (int k = 0; k < 10; k++) {
@@ -251,7 +266,7 @@ void* playerThread(void* arg) {
 					if (tempoInfortunio[k] == 0) {
 						tempoInfortunio[k] = -1;
 						snprintf(buffer, BUFDIM, "a%d\0", k);
-						close(socketDribbling);
+						if (socketDribbling != -1) close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
@@ -262,7 +277,7 @@ void* playerThread(void* arg) {
 					if (tempoFallo[k] == 0) {
 						tempoFallo[k] = -1;
 						snprintf(buffer, BUFDIM, "a%d\0", k);
-						close(socketDribbling);
+						if (socketDribbling != -1) close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
@@ -287,6 +302,7 @@ void* playerThread(void* arg) {
 }
 
 void* eventManager(void* arg) {
+
 	int* sockets;
 	sockets = (int*)arg;
 	int s_fd = sockets[0];
@@ -295,12 +311,13 @@ void* eventManager(void* arg) {
 	int player,opponent;
 	char azione;
 
-
+	printf("event manager: current buffer = %s\n", buf);
 	buf[0] = '\0';
+	
 	read(serviceSocket, buf, BUFDIM);
 	printf("event manager: from service buffer = %s\n", buf);
 	if (buf[0] == '\0') {
-		close(serviceSocket);
+		if (serviceSocket != -1) close(serviceSocket);
 		printf("event manager: received nothing from buffer\n");
 		pthread_exit(NULL);
 	}
@@ -315,8 +332,10 @@ void* eventManager(void* arg) {
 	if (buf[0] == 'e') {
 		snprintf(buf, BUFDIM, "partitaTerminata\0");
 		printf("event manager: to client buffer = %s\n", buf);
+		pthread_mutex_lock(&eventMutex);
 		write(s_fd, buf, BUFDIM);
-		close(serviceSocket);
+		pthread_mutex_unlock(&eventMutex);
+		if (serviceSocket != -1) close(serviceSocket);
 		pthread_exit(NULL);
 	}
 	azione = buf[0];
@@ -335,7 +354,9 @@ void* eventManager(void* arg) {
 			snprintf(buf, BUFDIM, "il giocatore %d tira... e ha mancato la porta...\0", player);
 		}
 		printf("event manager: to client buffer = %s\n", buf);
+		pthread_mutex_lock(&eventMutex);
 		write(s_fd, buf, BUFDIM);
+		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
 		break;
@@ -354,7 +375,9 @@ void* eventManager(void* arg) {
 			snprintf(buf, BUFDIM, "il giocatore %d prende la palla da %d\0", opponent, player);
 		}
 		printf("event manager: to client buffer = %s\n", buf);
+		pthread_mutex_lock(&eventMutex);
 		write(s_fd, buf, BUFDIM);
+		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
 		break;
@@ -368,7 +391,9 @@ void* eventManager(void* arg) {
 		}
 		snprintf(buf, BUFDIM, "il giocatore %d e' vittima di un infortunio da parte di %d\0", player, opponent);
 		printf("event manager: to client buffer = %s\n", buf);
+		pthread_mutex_lock(&eventMutex);
 		write(s_fd, buf, BUFDIM);
+		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
 		break;
@@ -377,7 +402,7 @@ void* eventManager(void* arg) {
 		break;
 	}
 	printf("event manager: chiudo la socket dell'evento puntatore: %p\n", &serviceSocket);
-	close(serviceSocket);
+	if (serviceSocket != -1) close(serviceSocket);
 }
 
 
@@ -431,23 +456,43 @@ void* refereeThread(void* arg) {
 
 }
 
-void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, int port) {
+void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port) {
+	// Chiudi la socket precedente, se aperta
+	if (*serviceSocket != -1) {
+		close(*serviceSocket);
+	}
+
+	// Crea una nuova socket
 	*serviceSocket = socket(AF_INET, SOCK_STREAM, 0);
-
-	serviceAddr->sin_family = AF_INET;
-
-	serviceAddr->sin_port = htons(port);
-
-	inet_aton(ip, &serviceAddr->sin_addr);
-
-	char buf[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &serviceAddr->sin_addr, buf, sizeof(buf));
-
-	if (connect(*serviceSocket, (struct sockaddr*)serviceAddr, sizeof(*serviceAddr))) {
-		printf("connect() failed for %s:%d\n",ip,port);
+	if (*serviceSocket == -1) {
+		perror("socket() failed");
 		return;
 	}
 
+	// Configura l'indirizzo del servizio
+	memset(serviceAddr, 0, sizeof(*serviceAddr));
+	serviceAddr->sin_family = AF_INET;
+	serviceAddr->sin_port = htons(port);
+
+	if (inet_aton(ip, &serviceAddr->sin_addr) == 0) {
+		fprintf(stderr, "Invalid IP address: %s\n", ip);
+		close(*serviceSocket);
+		*serviceSocket = -1;
+		return;
+	}
+
+	// Connessione al server
+	if (connect(*serviceSocket, (struct sockaddr*)serviceAddr, sizeof(*serviceAddr)) == -1) {
+		perror("connect() failed");
+		close(*serviceSocket);
+		*serviceSocket = -1;
+		return;
+	}
+
+	// Debug: Stampa l'indirizzo IP e la porta
+	char buf[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &serviceAddr->sin_addr, buf, sizeof(buf));
+	printf("Connected to %s:%d\n", buf, port);
 }
 
 void serverInit(int* serverSocket, struct sockaddr_in* serverAddr,char* ip, int port) {
@@ -572,6 +617,7 @@ int main(int argc, char* argv[]) {
 
 	pthread_mutex_init(&pallone, NULL);
 	pthread_mutex_init(&globalVar, NULL);
+	pthread_mutex_init(&eventMutex, NULL);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 	//indici per inserire i giocatori nelle squadre
@@ -675,10 +721,10 @@ int main(int argc, char* argv[]) {
 
 
 
-	close(mySocket);
-	close(clientSocket);
-	close(socketTiro);
-	close(socketDribbling);
-	close(socketInfortunio);
+	if(mySocket != -1) close(mySocket);
+	if (clientSocket != -1) close(clientSocket);
+	if (socketTiro != -1) close(socketTiro);
+	if (socketDribbling != -1) close(socketDribbling);
+	if (socketInfortunio != -1) close(socketInfortunio);
 	return 0;
 }

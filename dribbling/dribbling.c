@@ -14,7 +14,7 @@
 #define PORT 8033
 #define BUFDIM 1024
 #define REFEREEPORT 8088
-#define QUEUE 90
+#define QUEUE 360
 
 volatile char squadre[10];
 volatile char stato[10];
@@ -62,6 +62,7 @@ void* service(void* arg) {
 		in attesa con read, quando riceve info esegue codice e risponde con write
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
+	int s_fd = *(int*)arg;
 	printf("service: starting...\n");
 
 	struct hostent* hent;
@@ -69,9 +70,9 @@ void* service(void* arg) {
 	resolve_hostname("gateway", ip, sizeof(ip));
 
 	char buffer[BUFDIM];
-	int s_fd, player, opponent, chance, c_fd;
+	int player, opponent, chance, c_fd;
 	struct sockaddr_in c_addr;
-	s_fd = *(int*)arg;
+	
 
 	c_fd = socket(AF_INET, SOCK_STREAM, 0);
 
