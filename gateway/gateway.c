@@ -11,6 +11,7 @@
 #include <time.h>
 #include <wchar.h>
 #include <netdb.h>
+#include <errno.h>
 
 #define PORT 8080
 #define REFEREEPORT 8088
@@ -19,7 +20,7 @@
 #define TIROPORT 8077
 #define BUFDIM 1024
 #define NPLAYERS 10
-#define WAIT 1
+#define WAIT 0
 
 //servono per identificare il tipo di evento per l'arbitro
 #define TIRO 't'
@@ -47,7 +48,7 @@ volatile int tempoFallo[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 volatile int tempoInfortunio[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
-volatile int N = 45;
+volatile int N = 360;
 
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
 volatile int activePlayer = -1;
@@ -130,9 +131,16 @@ void* playerThread(void* arg) {
 			//informo il servizio Dribbling dell'evento
 
 			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
-			snprintf(buffer, BUFDIM, "%d\0", id);
+			
+			//gestisco il possibile errore di questo snprintf
+			int result = snprintf(buffer, BUFDIM, "%d\0", id);
+
+			if (result < 0) {
+				perror("player error: snprintf fallito");
+			}
+
 			write(socketDribbling, buffer, BUFDIM);
-			printf("player %d thread: read dribbling\n",id);
+			printf("player %d thread: %s sent to dribbling\n",id,buffer);
 			read(socketDribbling, buffer, BUFDIM);
 			printf("player %d thread: dribbling buffer = %s\n", id, buffer);
 			
@@ -303,6 +311,14 @@ void* eventManager(void* arg) {
 		(%d) opzionale = giocatore in tackle/fallo
 		(r) opzionale = risultato tiro/dribbling (y = successo, f = fallimento)
 	*/
+
+	if (buf[0] == 'e') {
+		snprintf(buf, BUFDIM, "partitaTerminata\0");
+		printf("event manager: to client buffer = %s\n", buf);
+		write(s_fd, buf, BUFDIM);
+		close(serviceSocket);
+		pthread_exit(NULL);
+	}
 	azione = buf[0];
 	player = buf[1] - '0';
 	if (player > 9 || player < 0)
@@ -318,8 +334,9 @@ void* eventManager(void* arg) {
 		else {
 			snprintf(buf, BUFDIM, "il giocatore %d tira... e ha mancato la porta...\0", player);
 		}
-		write(s_fd, buf, BUFDIM);
 		printf("event manager: to client buffer = %s\n", buf);
+		write(s_fd, buf, BUFDIM);
+		
 		azione = -1;
 		break;
 
@@ -336,8 +353,9 @@ void* eventManager(void* arg) {
 		else {
 			snprintf(buf, BUFDIM, "il giocatore %d prende la palla da %d\0", opponent, player);
 		}
-		write(s_fd, buf, BUFDIM);
 		printf("event manager: to client buffer = %s\n", buf);
+		write(s_fd, buf, BUFDIM);
+		
 		azione = -1;
 		break;
 
@@ -349,14 +367,10 @@ void* eventManager(void* arg) {
 			exit(EXIT_FAILURE);
 		}
 		snprintf(buf, BUFDIM, "il giocatore %d e' vittima di un infortunio da parte di %d\0", player, opponent);
-		write(s_fd, buf, BUFDIM);
 		printf("event manager: to client buffer = %s\n", buf);
+		write(s_fd, buf, BUFDIM);
+		
 		azione = -1;
-		break;
-	case 'e':
-		snprintf(buf, BUFDIM, "partitaTerminata\0");
-		write(s_fd, buf, BUFDIM);
-		printf("event manager: to client buffer = %s\n", buf);
 		break;
 	default:
 		printf("event manager: caso non gestito\n");

@@ -9,6 +9,13 @@ import re
 # richiesta al gateway con un messaggio contenente informazioni delle squadre.
 # l'arbitro manterra' la connessione attiva fino al termine della partita.
 
+def lunghezza_stringa_con_terminatore(stringa):
+    lunghezza = 0
+    for carattere in stringa:
+        if carattere == '\0':
+            break
+        lunghezza += 1
+    return lunghezza
 
 def playerThread(idg, sq, conn):
     try:
@@ -42,12 +49,12 @@ def refereeThread(conn):
                 # Il server ha chiuso la connessione
                 print("Connessione chiusa dal server.")
                 break
-            print("Messaggio ricevuto:", data.decode())
         except Exception as e:
             print("Errore nella ricezione dei dati:", e)
             break
-        msg = str(data, "utf-8")
-        msg.strip('n')
+        msg_intero = str(data, "utf-8")
+        msg_size = lunghezza_stringa_con_terminatore(msg_intero)
+        msg = msg_intero[:msg_size]
         print(f"{msg}")
         log.write(f"{msg}\n")
         pattern = re.compile("GOAL")

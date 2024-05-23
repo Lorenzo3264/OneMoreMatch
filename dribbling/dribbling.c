@@ -101,7 +101,10 @@ void* service(void* arg) {
 
 		printf("service: player action\n");
 		player = buffer[0] - '0';
-
+		if (player > 10 || player < 0) {
+			printf("service: wrong player id\n");
+			pthread_exit(NULL);
+		}
 		/*
 			probabilita' fallimento = 35%
 			probabilita' successo = 60%
@@ -111,6 +114,10 @@ void* service(void* arg) {
 		do {
 			opponent = rand() % 10;
 		} while (squadre[opponent] == squadre[player] || stato[opponent] != 'a');
+		if (opponent < 0 || opponent > 10) {
+			printf("service: wrong opponent id\n");
+			pthread_exit(NULL);
+		}
 		printf("service: opponent = %c%d\n", squadre[opponent], opponent);
 		printf("service: player = %c%d\n", squadre[player], player);
 		chance = rand() % 100;
