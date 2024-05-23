@@ -38,9 +38,7 @@
 pthread_mutex_t pallone;
 pthread_mutex_t globalVar;//trattare in maniera sicura variabili globali
 
-//al loro interno ci sono gli id delle squadre
-pthread_t squadraA[5];
-pthread_t squadraB[5];
+
 
 
 
@@ -49,7 +47,7 @@ volatile int tempoFallo[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 volatile int tempoInfortunio[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
-volatile int N = 90;
+volatile int N = 45;
 
 //indica quale giocatore ha il possesso del pallone va da 0 a 9
 volatile int activePlayer = -1;
@@ -61,6 +59,7 @@ volatile short playerCount = 10;
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, char* ip, int port);
 void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int port);
+void resolve_hostname(const char* hostname, char* ip, size_t ip_len);
 
 void* playerThread(void* arg) {
 	
@@ -84,27 +83,11 @@ void* playerThread(void* arg) {
 
 
 	//codice thread giocatore
-	struct hostent* hentDribbling, *hentInfortunio, *hentTiro;
 	char ipTiro[40], ipDribbling[40], ipInfortunio[40];
 
-	hentDribbling = gethostbyname("dribbling");
-	if (hentDribbling == NULL) {
-		perror("gethostbyname");
-		pthread_exit(NULL); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hentDribbling->h_addr_list[0], ipDribbling, 15);
-	hentInfortunio = gethostbyname("infortunio");
-	if (hentInfortunio == NULL) {
-		perror("gethostbyname");
-		pthread_exit(NULL); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hentInfortunio->h_addr_list[0], ipInfortunio, 15);
-	hentTiro = gethostbyname("tiro");
-	if (hentTiro == NULL) {
-		perror("gethostbyname");
-		pthread_exit(NULL); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hentTiro->h_addr_list[0], ipTiro, 15);
+	resolve_hostname("dribbling", ipDribbling, sizeof(ipDribbling));
+	resolve_hostname("infortunio", ipInfortunio, sizeof(ipInfortunio));
+	resolve_hostname("tiro", ipTiro, sizeof(ipTiro));
 
 	printf("player %d thread: 2\n", id);
 
@@ -132,7 +115,6 @@ void* playerThread(void* arg) {
 
 	//modifichiamo informazioni globali
 	pthread_mutex_lock(&globalVar);
-	squadre[id] = squadra;
 	playerCount--;
 	pthread_mutex_unlock(&globalVar);
 
@@ -293,7 +275,7 @@ void* playerThread(void* arg) {
 	}
 
 	//partita terminata
-
+	printf("player %d thread: terminato\n", id);
 }
 
 void* eventManager(void* arg) {
@@ -377,6 +359,7 @@ void* eventManager(void* arg) {
 		printf("event manager: to client buffer = %s\n", buf);
 		break;
 	default:
+		printf("event manager: caso non gestito\n");
 		break;
 	}
 	printf("event manager: chiudo la socket dell'evento puntatore: %p\n", &serviceSocket);
@@ -430,7 +413,7 @@ void* refereeThread(void* arg) {
 		pthread_create(&eventReq, NULL, eventManager, (void*)sockets);
 	}
 
-
+	printf("referee thread: terminato\n");
 
 }
 
@@ -465,7 +448,38 @@ void serverInit(int* serverSocket, struct sockaddr_in* serverAddr,char* ip, int 
 	printf("server init: fine\n");
 }
 
+void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
+	struct addrinfo hints, * res;
+	int errcode;
+	void* ptr;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET; // For IPv4
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = 0;
+
+	errcode = getaddrinfo(hostname, NULL, &hints, &res);
+	if (errcode != 0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(errcode));
+		pthread_exit(NULL);
+	}
+
+	ptr = &((struct sockaddr_in*)res->ai_addr)->sin_addr;
+
+	if (inet_ntop(res->ai_family, ptr, ip, ip_len) == NULL) {
+		perror("inet_ntop");
+		freeaddrinfo(res);
+		pthread_exit(NULL);
+	}
+
+	freeaddrinfo(res);
+}
+
 int main(int argc, char* argv[]) {
+
+	//thread dei giocatori
+	pthread_t squadraA[5];
+	pthread_t squadraB[5];
 
 	//inizializzo il random number generator
 	time_t t;
@@ -474,32 +488,11 @@ int main(int argc, char* argv[]) {
 	/* Set IP address to localhost */
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
-	struct hostent* hent, *hentDribbling, *hentInfortunio, *hentTiro;
 	char ip[40], ipTiro[40], ipDribbling[40], ipInfortunio[40];
-	hent = gethostbyname(hostname);
-	if (hent == NULL) {
-		perror("gethostbyname");
-		exit(1); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
-	hentDribbling = gethostbyname("dribbling");
-	if (hentDribbling == NULL) {
-		perror("gethostbyname");
-		exit(1); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hentDribbling->h_addr_list[0], ipDribbling, 15);
-	hentInfortunio = gethostbyname("infortunio");
-	if (hentInfortunio == NULL) {
-		perror("gethostbyname");
-		exit(1); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hentInfortunio->h_addr_list[0], ipInfortunio, 15);
-	hentTiro = gethostbyname("tiro");
-	if (hentTiro == NULL) {
-		perror("gethostbyname");
-		exit(1); // Exit the thread if gethostbyname fails
-	}
-	inet_ntop(AF_INET, (void*)hentTiro->h_addr_list[0], ipTiro, 15);
+	resolve_hostname(hostname, ip, sizeof(ip));
+	resolve_hostname("dribbling", ipDribbling, sizeof(ipDribbling));
+	resolve_hostname("infortunio", ipInfortunio, sizeof(ipInfortunio));
+	resolve_hostname("tiro", ipTiro, sizeof(ipTiro));
 
 
 
@@ -653,7 +646,6 @@ int main(int argc, char* argv[]) {
 		pthread_join(squadraA[i],NULL);
 		pthread_join(squadraB[i],NULL);
 	}
-	pthread_join(arbitro, NULL);
 
 	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);

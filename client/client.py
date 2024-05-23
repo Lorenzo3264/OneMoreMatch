@@ -47,7 +47,8 @@ def refereeThread(conn):
             print("Errore nella ricezione dei dati:", e)
             break
         msg = str(data, "utf-8")
-        print(f"{msg}\n");
+        msg.strip('n')
+        print(f"{msg}")
         log.write(f"{msg}\n")
         pattern = re.compile("GOAL")
         match = re.search(pattern, msg)
