@@ -66,12 +66,16 @@ void* service(void* arg) {
 		in attesa con read, quando riceve info esegue codice e risponde con write
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
+	pthread_mutex_lock(&globalVar);
 	int s_fd = *(int*)arg;
+	pthread_mutex_unlock(&globalVar);
 	printf("service: starting...\n");
 
 	struct hostent* hent;
 	char ip[40];
+	pthread_mutex_lock(&globalVar);
 	resolve_hostname("gateway", ip, sizeof(ip));
+	pthread_mutex_unlock(&globalVar);
 
 	char buffer[BUFDIM];
 	int player, opponent, chance, c_fd;
@@ -90,7 +94,9 @@ void* service(void* arg) {
 
 	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
+	pthread_mutex_lock(&globalVar);
 	read(s_fd, buffer, BUFDIM);
+	pthread_mutex_unlock(&globalVar);
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
 		pthread_exit(NULL);
@@ -168,10 +174,12 @@ void* service(void* arg) {
 			stato[opponent] = 'f';
 			pthread_mutex_unlock(&globalVar);
 		}
+		pthread_mutex_lock(&globalVar);
 		write(s_fd, buffer, BUFDIM);
+		pthread_mutex_unlock(&globalVar);
 		struct sockaddr_in addr;
 		socklen_t addr_size = sizeof(struct sockaddr_in);
-		int res = getpeername(s_fd, (struct sockaddr*)&addr, &addr_size);
+		getpeername(s_fd, (struct sockaddr*)&addr, &addr_size);
 		char clientip[20];
 		inet_ntop(AF_INET, &(addr.sin_addr), clientip, INET_ADDRSTRLEN);
 		int port;
@@ -255,10 +263,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	while (stop == -1) {
+		pthread_mutex_lock(&globalVar);
 		printf("main: waiting for player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: connection accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
+		pthread_mutex_unlock(&globalVar);
 		printf("main: thread creato!\n");
 		pthread_join(player, NULL);
 		printf("main: richiesta del player terminata\n");

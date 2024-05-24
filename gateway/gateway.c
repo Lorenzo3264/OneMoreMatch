@@ -75,8 +75,17 @@ void* playerThread(void* arg) {
 		exit(EXIT_FAILURE);
 	}
 	pthread_mutex_lock(&globalVar);
+	printf("player: ha preso possesso del mutex globalVar\n");
 	char squadra = squadre[id];
+	//codice thread giocatore
+	char ipTiro[40], ipDribbling[40], ipInfortunio[40];
+
+	resolve_hostname("dribbling", ipDribbling, sizeof(ipDribbling));
+	resolve_hostname("infortunio", ipInfortunio, sizeof(ipInfortunio));
+	resolve_hostname("tiro", ipTiro, sizeof(ipTiro));
 	pthread_mutex_unlock(&globalVar);
+	printf("player: ha rilasciato il mutex globalVar\n");
+
 	
 
 	
@@ -85,12 +94,7 @@ void* playerThread(void* arg) {
 	//printf("giocatore %d, squadra %c\n", id, squadra);
 
 
-	//codice thread giocatore
-	char ipTiro[40], ipDribbling[40], ipInfortunio[40];
-
-	resolve_hostname("dribbling", ipDribbling, sizeof(ipDribbling));
-	resolve_hostname("infortunio", ipInfortunio, sizeof(ipInfortunio));
-	resolve_hostname("tiro", ipTiro, sizeof(ipTiro));
+	
 
 	printf("player %d thread: 2\n", id);
 
@@ -118,8 +122,10 @@ void* playerThread(void* arg) {
 
 	//modifichiamo informazioni globali
 	pthread_mutex_lock(&globalVar);
+	printf("player: ha preso possesso del mutex globalVar\n");
 	playerCount--;
 	pthread_mutex_unlock(&globalVar);
+	printf("player: ha rilasciato il mutex globalVar\n");
 
 	while (N > 0) { //fino a quando non finisce la partita
 
@@ -183,7 +189,6 @@ void* playerThread(void* arg) {
 
 
 				printf("player %d thread: 5.2 buffer = %s\n", id, buffer);
-				if (socketInfortunio != -1) close(socketInfortunio);
 				/*
 					formato messaggio infortunio: IXXXPXXX\0
 					I precede il tempo di infortunio
@@ -263,7 +268,8 @@ void* playerThread(void* arg) {
 
 			sleep(WAIT);
 			N--;
-			pthread_mutex_lock(&globalVar);
+			pthread_mutex_lock(&globalVar); 
+			printf("player: ha preso possesso del mutex globalVar\n");
 			for (int k = 0; k < 10; k++) {
 				printf("%c%d=%d:%d, ", squadre[k], k, tempoInfortunio[k],tempoFallo[k]);
 
@@ -273,7 +279,6 @@ void* playerThread(void* arg) {
 					if (tempoInfortunio[k] == 0) {
 						tempoInfortunio[k] = -1;
 						snprintf(buffer, BUFDIM, "a%d\0", k);
-						if (socketDribbling != -1) close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 						close(socketDribbling);
@@ -285,7 +290,6 @@ void* playerThread(void* arg) {
 					if (tempoFallo[k] == 0) {
 						tempoFallo[k] = -1;
 						snprintf(buffer, BUFDIM, "a%d\0", k);
-						if (socketDribbling != -1) close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
 						close(socketDribbling);
@@ -294,6 +298,7 @@ void* playerThread(void* arg) {
 				}
 			}
 			pthread_mutex_unlock(&globalVar);
+			printf("player: ha rilasciato il mutex globalVar\n");
 
 
 
@@ -321,13 +326,13 @@ void* eventManager(void* arg) {
 	int player,opponent;
 	char azione;
 
-	printf("event manager: current buffer = %s\n", buf);
+	
 	buf[0] = '\0';
 	
 	read(serviceSocket, buf, BUFDIM);
 	printf("event manager: from service buffer = %s\n", buf);
 	if (buf[0] == '\0') {
-		if (serviceSocket != -1) close(serviceSocket);
+		close(serviceSocket);
 		printf("event manager: received nothing from buffer\n");
 		pthread_exit(NULL);
 	}
@@ -345,7 +350,7 @@ void* eventManager(void* arg) {
 		pthread_mutex_lock(&eventMutex);
 		write(s_fd, buf, BUFDIM);
 		pthread_mutex_unlock(&eventMutex);
-		if (serviceSocket != -1) close(serviceSocket);
+		close(serviceSocket);
 		pthread_exit(NULL);
 	}
 	azione = buf[0];
@@ -424,8 +429,8 @@ void* eventManager(void* arg) {
 		printf("event manager: caso non gestito\n");
 		break;
 	}
-	printf("event manager: chiudo la socket dell'evento puntatore: %p\n", &serviceSocket);
-	if (serviceSocket != -1) close(serviceSocket);
+	printf("event manager: chiudo la socket dell'evento puntatore\n");
+	close(serviceSocket);
 }
 
 
@@ -441,8 +446,9 @@ void* refereeThread(void* arg) {
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
 	char ip[40];
+	pthread_mutex_lock(&globalVar);
 	resolve_hostname(hostname, ip, sizeof(ip));
-
+	pthread_mutex_unlock(&globalVar);
 
 	char azione;
 	char buf[BUFDIM];
@@ -472,7 +478,7 @@ void* refereeThread(void* arg) {
 		int sockets[2] = { s_fd, serviceSocket };
 		pthread_create(&eventReq, NULL, eventManager, (void*)sockets);
 	}
-
+	close(s_fd);
 	printf("referee thread: terminato\n");
 
 }
@@ -713,11 +719,12 @@ int main(int argc, char* argv[]) {
 				if (close(socketInfortunio) < 0) perror("errore nella chiusura");
 			}
 			else {
-
-				//creato il thread dell'arbitro, gestisce la comunicazione col client.
-				pthread_create(&arbitro, NULL, refereeThread, (void*)&clientSocket);
-				ref = 1;
-				printf("main: referee started\n");
+				if (buffer[0] == 's') {
+					//creato il thread dell'arbitro, gestisce la comunicazione col client.
+					pthread_create(&arbitro, NULL, refereeThread, (void*)&clientSocket);
+					ref = 1;
+					printf("main: referee started\n");
+				}
 			}
 		}
 	}
@@ -756,8 +763,5 @@ int main(int argc, char* argv[]) {
 
 	if(mySocket != -1) close(mySocket);
 	if (clientSocket != -1) close(clientSocket);
-	if (socketTiro != -1) close(socketTiro);
-	if (socketDribbling != -1) close(socketDribbling);
-	if (socketInfortunio != -1) close(socketInfortunio);
 	return 0;
 }
