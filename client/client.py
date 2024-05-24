@@ -52,7 +52,7 @@ def refereeThread(conn):
         except Exception as e:
             print("Errore nella ricezione dei dati:", e)
             break
-        msg_intero = str(data, "utf-8")
+        msg_intero = str(data, "ISO-8859-1")
         msg_size = lunghezza_stringa_con_terminatore(msg_intero)
         msg = msg_intero[:msg_size]
         print(f"{msg}")
