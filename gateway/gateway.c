@@ -26,6 +26,7 @@
 #define TIRO 't'
 #define INFORTUNIO 'i'
 #define DRIBBLING 'd'
+#define TIMEOUT 'h'
 
 
 /*
@@ -146,6 +147,7 @@ void* playerThread(void* arg) {
 			result = read(socketDribbling, buffer, BUFDIM);
 			if (result == -1) perror("player thread error: read error");
 			printf("player %d thread: dribbling buffer = %s\n", id, buffer);
+			close(socketDribbling);
 
 			
 			/*
@@ -177,6 +179,7 @@ void* playerThread(void* arg) {
 				write(socketInfortunio, buffer, BUFDIM);
 				printf("player %d thread: 5.1 buffer = %s\n", id, buffer);
 				read(socketInfortunio, buffer, BUFDIM);
+				close(socketInfortunio);
 
 
 				printf("player %d thread: 5.2 buffer = %s\n", id, buffer);
@@ -232,7 +235,7 @@ void* playerThread(void* arg) {
 					serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 					snprintf(buffer, BUFDIM, "%d\0", id);
 					write(socketTiro, buffer, BUFDIM);
-					if (socketTiro != -1) close(socketTiro);
+					close(socketTiro);
 
 
 					printf("player %d thread: 5.3 buffer = %s\n", id, buffer);
@@ -256,11 +259,15 @@ void* playerThread(void* arg) {
 				IDEA: evento di timeout, resetta lo stato e dunque il tempoInfortunio e tempoFallo di tutti i giocatori.
 			*/
 
+
+
 			sleep(WAIT);
 			N--;
+			pthread_mutex_lock(&globalVar);
 			for (int k = 0; k < 10; k++) {
 				printf("%c%d=%d:%d, ", squadre[k], k, tempoInfortunio[k],tempoFallo[k]);
 
+				
 				if (tempoInfortunio[k] > 0) tempoInfortunio[k]--;
 				else {
 					if (tempoInfortunio[k] == 0) {
@@ -269,6 +276,7 @@ void* playerThread(void* arg) {
 						if (socketDribbling != -1) close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
+						close(socketDribbling);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
 					}
 				}
@@ -280,10 +288,12 @@ void* playerThread(void* arg) {
 						if (socketDribbling != -1) close(socketDribbling);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						write(socketDribbling, buffer, BUFDIM);
+						close(socketDribbling);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
 					}
 				}
 			}
+			pthread_mutex_unlock(&globalVar);
 
 
 
@@ -397,6 +407,19 @@ void* eventManager(void* arg) {
 		
 		azione = -1;
 		break;
+	case TIMEOUT:
+		snprintf(buf, BUFDIM, "Si e' deciso di tenere un timeout, i giocatori rientreranno in campo a breve...\0", player, opponent);
+		printf("event manager: to client buffer = %s\n", buf);
+		pthread_mutex_lock(&eventMutex);
+		write(s_fd, buf, BUFDIM);
+		pthread_mutex_unlock(&eventMutex);
+		pthread_mutex_lock(&globalVar);
+		for (int i = 0; i < 10; i++) {
+			tempoInfortunio[i] = -1;
+			tempoFallo[i] = -1;
+		}
+		pthread_mutex_unlock(&globalVar);
+		break;
 	default:
 		printf("event manager: caso non gestito\n");
 		break;
@@ -417,10 +440,8 @@ void* refereeThread(void* arg) {
 	//codice thread arbitro
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
-	struct hostent* hent;
-	hent = gethostbyname(hostname);
 	char ip[40];
-	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	resolve_hostname(hostname, ip, sizeof(ip));
 
 
 	char azione;
@@ -455,6 +476,8 @@ void* refereeThread(void* arg) {
 	printf("referee thread: terminato\n");
 
 }
+
+
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port) {
 	// Chiudi la socket precedente, se aperta
@@ -656,9 +679,14 @@ int main(int argc, char* argv[]) {
 			serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
 			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 
-			write(socketTiro, buffer, BUFDIM);
-			write(socketInfortunio, buffer, BUFDIM);
-			write(socketDribbling, buffer, BUFDIM);
+			if (write(socketDribbling, buffer, BUFDIM) < 0) perror("errore nella scrittura");
+			if (write(socketTiro, buffer, BUFDIM) < 0) perror("errore nella scrittura");
+			if (write(socketInfortunio, buffer, BUFDIM) < 0) perror("errore nella scrittura");
+
+			if (close(socketDribbling) < 0) perror("errore nella chiusura");
+			if (close(socketTiro) < 0) perror("errore nella chiusura");
+			if (close(socketInfortunio) < 0) perror("errore nella chiusura");
+			
 
 		}
 		else{
@@ -676,10 +704,13 @@ int main(int argc, char* argv[]) {
 				serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
 				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 
-				write(socketTiro, buffer, BUFDIM);
-				write(socketInfortunio, buffer, BUFDIM);
-				write(socketDribbling, buffer, BUFDIM);
+				if (write(socketDribbling, buffer, BUFDIM) < 0) perror("errore nella scrittura");
+				if (write(socketTiro, buffer, BUFDIM) < 0) perror("errore nella scrittura");
+				if (write(socketInfortunio, buffer, BUFDIM) < 0) perror("errore nella scrittura");
 
+				if (close(socketDribbling) < 0) perror("errore nella chiusura");
+				if (close(socketTiro) < 0) perror("errore nella chiusura");
+				if (close(socketInfortunio) < 0) perror("errore nella chiusura");
 			}
 			else {
 
@@ -719,7 +750,9 @@ int main(int argc, char* argv[]) {
 
 	pthread_join(arbitro, NULL);
 
-
+	close(socketTiro);
+	close(socketInfortunio);
+	close(socketDribbling);
 
 	if(mySocket != -1) close(mySocket);
 	if (clientSocket != -1) close(clientSocket);

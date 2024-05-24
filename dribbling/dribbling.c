@@ -17,6 +17,8 @@
 #define QUEUE 360
 
 volatile char squadre[10];
+
+pthread_mutex_t globalVar;
 volatile char stato[10];
 
 volatile short stop = -1;
@@ -27,6 +29,8 @@ volatile short stop = -1;
 	inviare un messaggio quindi qui non ci preoccupiamo di capire chi e' il giocatore
 	attivo.
 */
+
+int timeout();
 
 void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 	struct addrinfo hints, * res;
@@ -103,7 +107,7 @@ void* service(void* arg) {
 		printf("service: player action\n");
 		player = buffer[0] - '0';
 		if (player > 10 || player < 0) {
-			printf("service: wrong player id\n");
+			printf("service: wrong player id %d\n",player);
 			pthread_exit(NULL);
 		}
 		/*
@@ -111,10 +115,23 @@ void* service(void* arg) {
 			probabilita' successo = 60%
 			probabilita' infortunio = 5%
 		*/
-
+		int t = timeout();
+		if (t == 1) {
+			for (int i = 0; i < 10; i++) {
+				stato[i] = 'a';
+			}
+			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
+			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+				printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
+			}
+			snprintf(buffer, BUFDIM, "h\n");
+			write(c_fd, buffer, BUFDIM);
+		}
 		do {
 			opponent = rand() % 10;
 		} while (squadre[opponent] == squadre[player] || stato[opponent] != 'a');
+
+
 		if (opponent < 0 || opponent > 10) {
 			printf("service: wrong opponent id\n");
 			pthread_exit(NULL);
@@ -146,27 +163,53 @@ void* service(void* arg) {
 		}
 		if (chance >= 95 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
+			pthread_mutex_lock(&globalVar);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
+			pthread_mutex_unlock(&globalVar);
 		}
 		write(s_fd, buffer, BUFDIM);
-		printf("service: sent message to player: %s\n", buffer);
+		struct sockaddr_in addr;
+		socklen_t addr_size = sizeof(struct sockaddr_in);
+		int res = getpeername(s_fd, (struct sockaddr*)&addr, &addr_size);
+		char clientip[20];
+		inet_ntop(AF_INET, &(addr.sin_addr), clientip, INET_ADDRSTRLEN);
+		int port;
+		port = ntohs(addr.sin_port);
+		printf("service: sent message %s to %s:%d\n", buffer,clientip,port);
 	}
 	else {
 		printf("service: player status update\n");
 		player = buffer[1] - '0';
+		pthread_mutex_lock(&globalVar);
 		stato[player] = 'a';
+		pthread_mutex_unlock(&globalVar);
 	}
 	close(c_fd);
 
 }
 
-
+int timeout() { //ritorna 1 se si deve fare il timeout 
+	int squadraA[5], squadraB[5];
+	int a = 0, b = 0;
+	for (int i = 0; i < 10; i++) {
+		if (squadre[i] == 'A') squadraA[a++] = i;
+		else squadraB[b++] = i;
+	}
+	int timeoutA = 0, timeoutB = 0; //se uguale a -1 significa che c'e' almeno un giocatore disponibile
+	for (int i = 0; i < 5; i++) {
+		if (stato[squadraA[i]] == 'a') timeoutA = -1;
+		if (stato[squadraB[i]] == 'a') timeoutB = -1;
+	}
+	return ((timeoutA + timeoutB) > -2) ? 1 : 0;
+}
 
 int main(int argc, char* argv[]) {
 
 	time_t t;
 	srand((unsigned)time(&t));
+
+	pthread_mutex_init(&globalVar, NULL);
 
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
