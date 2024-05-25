@@ -128,10 +128,11 @@ void* service(void* arg) {
 			}
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-				printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
+				perror("connect failed to referee\n");
 			}
 			snprintf(buffer, BUFDIM, "h\n");
 			write(c_fd, buffer, BUFDIM);
+			close(c_fd);
 		}
 		do {
 			opponent = rand() % 10;
@@ -146,45 +147,47 @@ void* service(void* arg) {
 		printf("service: player = %c%d\n", squadre[player], player);
 		chance = rand() % 100;
 		if (chance >= 0 && chance < 35) {
+			snprintf(buffer, BUFDIM, "f%d\0", opponent);
+			pthread_mutex_lock(&globalVar);
+			write(s_fd, buffer, BUFDIM);
+			close(s_fd);
+			pthread_mutex_unlock(&globalVar);
+
+			snprintf(buffer, BUFDIM, "d%d%df\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-				printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
+				perror("connect failed to referee\n");
 			}
-			snprintf(buffer, BUFDIM, "d%d%df\0", player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
-			snprintf(buffer, BUFDIM, "f%d\0", opponent);
-
+			close(c_fd);
 		}
 		if (chance >= 35 && chance < 95) {
+			snprintf(buffer, BUFDIM, "s%d\0", opponent);
+			pthread_mutex_lock(&globalVar);
+			write(s_fd, buffer, BUFDIM);
+			close(s_fd);
+			pthread_mutex_unlock(&globalVar);
+
+			snprintf(buffer, BUFDIM, "d%d%dy\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-				printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
+				perror("connect failed to referee\n");
 			}
-			snprintf(buffer, BUFDIM, "d%d%dy\0",player,opponent);
 			write(c_fd, buffer, BUFDIM);
 			printf("service: sent message to referee: %s\n", buffer);
-			snprintf(buffer, BUFDIM, "s%d\0", opponent);
-
+			close(c_fd);
 		}
 		if (chance >= 95 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
 			pthread_mutex_lock(&globalVar);
+			write(s_fd, buffer, BUFDIM);
+			close(s_fd);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
 			pthread_mutex_unlock(&globalVar);
 		}
-		pthread_mutex_lock(&globalVar);
-		write(s_fd, buffer, BUFDIM);
-		pthread_mutex_unlock(&globalVar);
-		struct sockaddr_in addr;
-		socklen_t addr_size = sizeof(struct sockaddr_in);
-		getpeername(s_fd, (struct sockaddr*)&addr, &addr_size);
-		char clientip[20];
-		inet_ntop(AF_INET, &(addr.sin_addr), clientip, INET_ADDRSTRLEN);
-		int port;
-		port = ntohs(addr.sin_port);
-		printf("service: sent message %s to %s:%d\n", buffer,clientip,port);
+		
 	}
 	else {
 		printf("service: player status update\n");
@@ -193,7 +196,6 @@ void* service(void* arg) {
 		stato[player] = 'a';
 		pthread_mutex_unlock(&globalVar);
 	}
-	close(c_fd);
 
 }
 
@@ -263,15 +265,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	while (stop == -1) {
-		pthread_mutex_lock(&globalVar);
 		printf("main: waiting for player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: connection accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
-		pthread_mutex_unlock(&globalVar);
 		printf("main: thread creato!\n");
-		pthread_join(player, NULL);
-		printf("main: richiesta del player terminata\n");
 	}
 
 	
