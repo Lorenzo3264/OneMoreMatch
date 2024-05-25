@@ -139,8 +139,6 @@ int main(int argc, char* argv[]) {
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: player accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
-		printf("main: player stopped\n");
-        pthread_join(player, NULL);
 	}
 
 	return 0;

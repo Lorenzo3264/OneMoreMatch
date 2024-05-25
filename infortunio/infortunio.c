@@ -142,7 +142,6 @@ int main(int argc, char* argv[]) {
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: player found!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
-        pthread_join(player, NULL);
 	}
 
 	close(client);
