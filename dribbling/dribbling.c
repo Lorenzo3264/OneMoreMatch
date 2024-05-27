@@ -66,39 +66,35 @@ void* service(void* arg) {
 		in attesa con read, quando riceve info esegue codice e risponde con write
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
-	pthread_mutex_lock(&globalVar);
+	
 	int s_fd = *(int*)arg;
-	pthread_mutex_unlock(&globalVar);
+	pthread_mutex_lock(&globalVar);
 	printf("service: starting...\n");
 
 	struct hostent* hent;
 	char ip[40];
-	pthread_mutex_lock(&globalVar);
 	resolve_hostname("gateway", ip, sizeof(ip));
-	pthread_mutex_unlock(&globalVar);
 
 	char buffer[BUFDIM];
 	int player, opponent, chance, c_fd;
 	struct sockaddr_in c_addr;
-	
-
-	c_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-	c_addr.sin_family = AF_INET;
-
-	c_addr.sin_port = htons(REFEREEPORT);
-
-	inet_aton(ip, &c_addr.sin_addr);
-
-	
 
 	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
-	pthread_mutex_lock(&globalVar);
-	read(s_fd, buffer, BUFDIM);
-	pthread_mutex_unlock(&globalVar);
+	recv(s_fd, buffer, BUFDIM, 0);
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
+		pthread_exit(NULL);
+	}
+	int con = buffer[0] - '0';
+	char buf[BUFDIM];
+	if ((con < 0 || con > 9) && buffer[0] != 'a') {
+		printf("service: wrong buffer %s\n", buffer);
+		
+		snprintf(buf, BUFDIM, "err\0");
+		send(s_fd, buf, BUFDIM, 0);
+		sleep(1);
+		close(s_fd);
 		pthread_exit(NULL);
 	}
 
@@ -112,10 +108,7 @@ void* service(void* arg) {
 
 		printf("service: player action\n");
 		player = buffer[0] - '0';
-		if (player > 10 || player < 0) {
-			printf("service: wrong player id %d\n",player);
-			pthread_exit(NULL);
-		}
+		
 		/*
 			probabilita' fallimento = 35%
 			probabilita' successo = 60%
@@ -127,11 +120,17 @@ void* service(void* arg) {
 				stato[i] = 'a';
 			}
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
+
+			c_fd = socket(AF_INET, SOCK_STREAM, 0);
+			c_addr.sin_family = AF_INET;
+			c_addr.sin_port = htons(REFEREEPORT);
+			inet_aton(ip, &c_addr.sin_addr);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 				perror("connect failed to referee\n");
 			}
 			snprintf(buffer, BUFDIM, "h\n");
-			write(c_fd, buffer, BUFDIM);
+			if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
+			printf("service: send message to referee = %s\n",buffer);
 			close(c_fd);
 		}
 		do {
@@ -148,55 +147,61 @@ void* service(void* arg) {
 		chance = rand() % 100;
 		if (chance >= 0 && chance < 35) {
 			snprintf(buffer, BUFDIM, "f%d\0", opponent);
-			pthread_mutex_lock(&globalVar);
-			write(s_fd, buffer, BUFDIM);
+			if(send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
 			close(s_fd);
-			pthread_mutex_unlock(&globalVar);
 
 			snprintf(buffer, BUFDIM, "d%d%df\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
+
+			c_fd = socket(AF_INET, SOCK_STREAM, 0);
+			c_addr.sin_family = AF_INET;
+			c_addr.sin_port = htons(REFEREEPORT);
+			inet_aton(ip, &c_addr.sin_addr);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 				perror("connect failed to referee\n");
 			}
-			write(c_fd, buffer, BUFDIM);
+			if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
 			printf("service: sent message to referee: %s\n", buffer);
 			close(c_fd);
 		}
 		if (chance >= 35 && chance < 95) {
 			snprintf(buffer, BUFDIM, "s%d\0", opponent);
-			pthread_mutex_lock(&globalVar);
-			write(s_fd, buffer, BUFDIM);
+			send(s_fd, buffer, BUFDIM, 0);
 			close(s_fd);
-			pthread_mutex_unlock(&globalVar);
 
 			snprintf(buffer, BUFDIM, "d%d%dy\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
+
+			c_fd = socket(AF_INET, SOCK_STREAM, 0);
+			c_addr.sin_family = AF_INET;
+			c_addr.sin_port = htons(REFEREEPORT);
+			inet_aton(ip, &c_addr.sin_addr);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 				perror("connect failed to referee\n");
 			}
-			write(c_fd, buffer, BUFDIM);
+			if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
 			printf("service: sent message to referee: %s\n", buffer);
 			close(c_fd);
 		}
 		if (chance >= 95 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
-			pthread_mutex_lock(&globalVar);
-			write(s_fd, buffer, BUFDIM);
+			if (send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
 			close(s_fd);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
-			pthread_mutex_unlock(&globalVar);
 		}
 		
 	}
 	else {
 		printf("service: player status update\n");
 		player = buffer[1] - '0';
-		pthread_mutex_lock(&globalVar);
 		stato[player] = 'a';
-		pthread_mutex_unlock(&globalVar);
+		snprintf(buf, BUFDIM, "ack\0");
+		send(s_fd, buf, BUFDIM, 0);
+		close(s_fd);
 	}
 
+	pthread_mutex_unlock(&globalVar);
 }
 
 int timeout() { //ritorna 1 se si deve fare il timeout 
@@ -232,7 +237,15 @@ int main(int argc, char* argv[]) {
 	len = sizeof(client);
 	pthread_t player;
 
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	int opt = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+	{
+		perror("Errore nel settaggio delle opzioni del socket");
+		exit(EXIT_FAILURE);
+	}
+
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
 	inet_aton(ip, &(serverAddr.sin_addr));
@@ -241,7 +254,7 @@ int main(int argc, char* argv[]) {
 	bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, QUEUE);
 
-	char buf[INET_ADDRSTRLEN];
+	char buf[BUFDIM];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 	printf("main: Accepting as %s:%d...\n",buf,PORT);
 
@@ -250,7 +263,10 @@ int main(int argc, char* argv[]) {
 	int id;
 	while (i < 5 || j < 5) {
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
-		read(client, buffer, BUFDIM);
+		if(recv(client, buffer, BUFDIM, 0) < 0) perror("main: si è verificato un errore al recv\n");
+		snprintf(buf, BUFDIM, "ack\0");
+		if (send(client, buf, BUFDIM, 0) < 0) perror("main: send ack fallito\n");
+		printf("main: buffer ricevuto = %s, ", buffer);
 		printf("main: creazione squadre: %c%c\n", buffer[0],buffer[1]);
 		id = buffer[1] - '0';
 		if (buffer[0] == 'A') {
@@ -293,9 +309,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	snprintf(buffer, BUFDIM, "e\0");
-	write(c_fd, buffer, BUFDIM);
-	printf("main: sent end match\n");
-
+	if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
+	printf("main: closing...\n");
+	sleep(1);
+	close(c_fd);
 	close(client);
 
 	return 0;

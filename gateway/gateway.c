@@ -76,23 +76,23 @@ void* playerThread(void* arg) {
 		exit(EXIT_FAILURE);
 	}
 	pthread_mutex_lock(&globalVar);
-	printf("player: ha preso possesso del mutex globalVar\n");
+	printf("player %d: ha preso possesso del mutex globalVar\n",id);
 	char squadra = squadre[id];
 	//codice thread giocatore
 	char ipTiro[40], ipDribbling[40], ipInfortunio[40];
 
 	while (resolve_hostname("dribbling", ipDribbling, sizeof(ipDribbling)) != 0) {
-		printf("main: retrying resolve hostname");
+		printf("player %d: retrying resolve hostname\n",id);
 	}
 	while (resolve_hostname("infortunio", ipInfortunio, sizeof(ipInfortunio)) != 0) {
-		printf("main: retrying resolve hostname");
+		printf("player %d: retrying resolve hostname\n", id);
 	}
 	while (resolve_hostname("tiro", ipTiro, sizeof(ipTiro)) != 0) {
-		printf("main: retrying resolve hostname");
+		printf("player %d: retrying resolve hostname\n", id);
 	}
 
 	pthread_mutex_unlock(&globalVar);
-	printf("player: ha rilasciato il mutex globalVar\n");
+	printf("player %d: ha rilasciato il mutex globalVar\n",id);
 
 	
 
@@ -149,16 +149,12 @@ void* playerThread(void* arg) {
 			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 			
 			//gestisco il possibile errore di questo snprintf
-			int result = snprintf(buffer, BUFDIM, "%d\0", id);
-
-			if (result < 0) {
-				perror("player error: snprintf fallito");
-			}
+			snprintf(buffer, BUFDIM, "%d\0", id);
 
 			writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
 			
 			printf("player %d thread: %s sent to dribbling\n",id,buffer);
-			read(socketDribbling, buffer, BUFDIM);
+			recv(socketDribbling, buffer, BUFDIM, 0);
 			printf("player %d thread: dribbling buffer = %s\n", id, buffer);
 			close(socketDribbling);
 
@@ -171,12 +167,18 @@ void* playerThread(void* arg) {
 
 			//inizializzo i dati dell'altro giocatore
 			altroPlayer = buffer[1] - '0';
-			if (altroPlayer > 9 || altroPlayer < 0)
+			while (altroPlayer > 9 || altroPlayer < 0)
 			{
-				perror("opponent: wrong id");
-				N = 0;
-				pthread_mutex_unlock(&pallone);
-				exit(EXIT_FAILURE);
+				printf("opponent: wrong id, retrying...\n");
+				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+
+				//gestisco il possibile errore di questo snprintf
+				snprintf(buffer, BUFDIM, "%d\0", id);
+				writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+				printf("player %d thread: retrying dribbling buffer send = %s\n",id,buffer);
+				recv(socketDribbling, buffer, BUFDIM, 0);
+				printf("player %d thread: retrying dribbling buffer recv = %s\n", id, buffer);
+				altroPlayer = buffer[1] - '0';
 			}
 			altraSquadra = squadre[altroPlayer];
 
@@ -191,7 +193,7 @@ void* playerThread(void* arg) {
 				snprintf(buffer, BUFDIM, "%d%d\0", id, altroPlayer);
 				writeRetry(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT, buffer);
 				printf("player %d thread: 5.1 buffer = %s\n", id, buffer);
-				read(socketInfortunio, buffer, BUFDIM);
+				recv(socketInfortunio, buffer, BUFDIM, 0);
 				close(socketInfortunio);
 
 
@@ -247,6 +249,7 @@ void* playerThread(void* arg) {
 					serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 					snprintf(buffer, BUFDIM, "%d\0", id);
 					writeRetry(&socketTiro, &addrTiro, ipTiro, TIROPORT, buffer);
+					recv(socketTiro, NULL, 0, 0);
 					close(socketTiro);
 
 
@@ -287,6 +290,12 @@ void* playerThread(void* arg) {
 						snprintf(buffer, BUFDIM, "a%d\0", k);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+						recv(socketDribbling, buffer, BUFDIM, 0);
+						while (buffer[0] != 'a') {
+							serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+							writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+							recv(socketDribbling, buffer, BUFDIM, 0);
+						}
 						close(socketDribbling);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
 					}
@@ -298,6 +307,12 @@ void* playerThread(void* arg) {
 						snprintf(buffer, BUFDIM, "a%d\0", k);
 						serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 						writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+						recv(socketDribbling, buffer, BUFDIM, 0);
+						while (buffer[0] != 'a') {
+							serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+							writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+							recv(socketDribbling, buffer, BUFDIM, 0);
+						}
 						close(socketDribbling);
 						printf("player %d thread: 6.1 buffer = %s\n", id, buffer);
 					}
@@ -327,6 +342,7 @@ void* eventManager(void* arg) {
 	sockets = (int*)arg;
 	int s_fd = sockets[0];
 	int serviceSocket = sockets[1];
+	free(sockets);
 	char buf[BUFDIM];
 	int player,opponent;
 	char azione;
@@ -334,7 +350,7 @@ void* eventManager(void* arg) {
 	
 	buf[0] = '\0';
 	
-	read(serviceSocket, buf, BUFDIM);
+	recv(serviceSocket, buf, BUFDIM, 0);
 	printf("event manager: from service buffer = %s\n", buf);
 	if (buf[0] == '\0') {
 		close(serviceSocket);
@@ -353,7 +369,7 @@ void* eventManager(void* arg) {
 		snprintf(buf, BUFDIM, "partitaTerminata\0");
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
-		write(s_fd, buf, strlen(buf) + 1);
+		send(s_fd, buf, strlen(buf) + 1, 0);
 		pthread_mutex_unlock(&eventMutex);
 		close(serviceSocket);
 		pthread_exit(NULL);
@@ -375,7 +391,7 @@ void* eventManager(void* arg) {
 		}
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
-		write(s_fd, buf, strlen(buf) + 1);
+		send(s_fd, buf, strlen(buf) + 1, 0);
 		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
@@ -396,7 +412,7 @@ void* eventManager(void* arg) {
 		}
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
-		write(s_fd, buf, strlen(buf) + 1);
+		send(s_fd, buf, strlen(buf) + 1, 0);
 		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
@@ -412,7 +428,7 @@ void* eventManager(void* arg) {
 		snprintf(buf, BUFDIM, "il giocatore %d e' vittima di un infortunio da parte di %d\0", player, opponent);
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
-		write(s_fd, buf, strlen(buf) + 1);
+		send(s_fd, buf, strlen(buf) + 1, 0);
 		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
@@ -421,7 +437,7 @@ void* eventManager(void* arg) {
 		snprintf(buf, BUFDIM, "Si e' deciso di tenere un timeout, i giocatori rientreranno in campo a breve...\0", player, opponent);
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
-		write(s_fd, buf, strlen(buf) + 1);
+		send(s_fd, buf, strlen(buf) + 1, 0);
 		pthread_mutex_unlock(&eventMutex);
 		pthread_mutex_lock(&globalVar);
 		for (int i = 0; i < 10; i++) {
@@ -432,6 +448,8 @@ void* eventManager(void* arg) {
 		break;
 	default:
 		printf("event manager: caso non gestito\n");
+		recv(serviceSocket, buf, BUFDIM, 0);
+		printf("event manager: evento scartato = %s\n",buf);
 		break;
 	}
 	printf("event manager: chiudo la socket del servizio\n");
@@ -472,11 +490,12 @@ void* refereeThread(void* arg) {
 	pthread_mutex_unlock(&globalVar);
 	while (activePlayer == -1);
 	strcpy(buf, "La partita e' cominciata!\n");
-	write(s_fd, buf, strlen(buf) + 1);
+	send(s_fd, buf, strlen(buf) + 1, 0);
 
 	printf("referee thread: la partita e' cominciata!\n");
 	pthread_t eventReq;
 
+	int* sockets;
 	while (1) {
 		printf("referee thread: waiting for event\n");
 		if (N < 1) {
@@ -484,9 +503,12 @@ void* refereeThread(void* arg) {
 			close(eventSocket);
 			pthread_exit(NULL);
 		}
+		
 		serviceSocket = accept(eventSocket, (struct sockaddr*)&serviceAddr, &len);
 		printf("referee thread: event received\n");
-		int sockets[2] = { s_fd, serviceSocket };
+		sockets = (int*)malloc(2 * sizeof(int));
+		sockets[0] = s_fd;
+		sockets[1] = serviceSocket;
 		pthread_create(&eventReq, NULL, eventManager, (void*)sockets);
 	}
 	
@@ -503,7 +525,7 @@ void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char
 	}
 
 	// Crea una nuova socket
-	*serviceSocket = socket(AF_INET, SOCK_STREAM, 0);
+	*serviceSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (*serviceSocket == -1) {
 		perror("socket() failed");
 		return;
@@ -537,8 +559,13 @@ void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char
 
 void serverInit(int* serverSocket, struct sockaddr_in* serverAddr,char* ip, int port) {
 	printf("server init: inizio\n");
-
-	*serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	int opt = 1;
+	*serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (setsockopt(*serverSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+	{
+		perror("Errore nel settaggio delle opzioni del socket");
+		exit(EXIT_FAILURE);
+	}
 	serverAddr->sin_family = AF_INET;
 	serverAddr->sin_port = htons(port);
 	inet_aton(ip, &(serverAddr->sin_addr));
@@ -560,7 +587,7 @@ int resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 	errcode = getaddrinfo(hostname, NULL, &hints, &res);
 	if (errcode != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(errcode));
-		pthread_exit(NULL);
+		return errcode;
 	}
 
 	ptr = &((struct sockaddr_in*)res->ai_addr)->sin_addr;
@@ -576,13 +603,13 @@ int resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 }
 
 void writeRetry(int *socket, struct sockaddr_in *addr, const char* ip, int port, char* buffer) {
-	int result = write(*socket, buffer, strlen(buffer) + 1);
+	int result = send(*socket, buffer, strlen(buffer) + 1, 0);
 	for (int i = 0; i < 5; i++) {
 		if (result == -1) {
 			perror("thread error: write error, retrying");
 			close(*socket);
 			serviceInit(socket, addr, ip, port);
-			write(*socket, buffer, strlen(buffer) + 1);
+			send(*socket, buffer, strlen(buffer) + 1, 0);
 		}
 		else {
 			i = 5;
@@ -610,16 +637,16 @@ int main(int argc, char* argv[]) {
 	gethostname(hostname, 1023);
 	char ip[40], ipTiro[40], ipDribbling[40], ipInfortunio[40];
 	while (resolve_hostname(hostname, ip, sizeof(ip))!=0) {
-		printf("main: retrying resolve hostname");
+		printf("main: retrying resolve hostname\n");
 	}
 	while (resolve_hostname("dribbling", ipDribbling, sizeof(ipDribbling)) != 0) {
-		printf("main: retrying resolve hostname");
+		printf("main: retrying resolve hostname\n");
 	}
 	while (resolve_hostname("infortunio", ipInfortunio, sizeof(ipInfortunio)) != 0) {
-		printf("main: retrying resolve hostname");
+		printf("main: retrying resolve hostname\n");
 	}
 	while (resolve_hostname("tiro", ipTiro, sizeof(ipTiro)) != 0) {
-		printf("main: retrying resolve hostname");
+		printf("main: retrying resolve hostname\n");
 	}
 
 
@@ -695,19 +722,17 @@ int main(int argc, char* argv[]) {
 	short ref = 0;
 	//attesa di richieste per i giocatori
 	int players[10];
-	//POTREBBE ESSERCI SEGMENTATION FAULT
 	
 	
 	while (i < 5 || j < 5 || ref != 1) {
 
 		printf("main: index i=%d j=%d ref=%d\n", i, j, ref);
 		clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
-		printf("main: after malloc\n");
-		read(clientSocket, buffer, BUFDIM);
+		recv(clientSocket, buffer, BUFDIM, 0);
 		char bufferTiro[3];
 		char bufferDribbling[3];
 		char bufferInfortunio[3];
-
+		printf("main: client buffer = %s\n", buffer);
 		snprintf(bufferTiro, sizeof(bufferTiro), "%c%c\0", buffer[0], buffer[1]);
 		snprintf(bufferDribbling, sizeof(bufferDribbling), "%c%c\0", buffer[0], buffer[1]);
 		snprintf(bufferInfortunio, sizeof(bufferInfortunio), "%c%c\0", buffer[0], buffer[1]);
@@ -716,28 +741,30 @@ int main(int argc, char* argv[]) {
 			interpretarlo. esempio messaggio A3 indicano la squadra (A, B)
 			e id giocatore (0..9)
 		*/
-		printf("main: from client buffer %s\n",buffer);
 
 		if (buffer[0] == 'A' && i<5) {
 			close(clientSocket);
 			players[i + j] = buffer[1] - '0';
 			pthread_mutex_lock(&globalVar);
 			squadre[players[i + j]] = 'A';
-			printf("main: giocatore %d impostato a squadra %c\n", players[i + j], squadre[players[i + j]]);
 			pthread_mutex_unlock(&globalVar);
 			
 			pthread_create(&squadraA[i], NULL, playerThread, (void*)&players[i+j]);
-			printf("main: player %c%d started\n", buffer[0], buffer[1] - '0');
 			i++;
 
 			serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 			serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
 
-			if (write(socketTiro, bufferTiro, strlen(bufferTiro)+1) < 0) perror("errore nella scrittura");
-			if (write(socketDribbling, bufferDribbling, strlen(bufferDribbling)+1) < 0) perror("errore nella scrittura");
-			if (write(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio)+1) < 0) perror("errore nella scrittura");
-			
+			if (send(socketTiro, bufferTiro, strlen(bufferTiro) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+			if (send(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+			if (send(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+
+			printf("main: waiting for ack\n");
+			recv(socketTiro, buffer, BUFDIM, 0);
+			recv(socketDribbling, buffer, BUFDIM, 0);
+			recv(socketInfortunio, buffer, BUFDIM, 0);
+			printf("main: %s received\n",buffer);
 
 		}
 		else{
@@ -746,19 +773,21 @@ int main(int argc, char* argv[]) {
 				players[i + j] = buffer[1] - '0';
 				pthread_mutex_lock(&globalVar);
 				squadre[players[i + j]] = 'B';
-				printf("main: giocatore %d impostato a squadra %c\n", players[i + j], squadre[players[i + j]]);
 				pthread_mutex_unlock(&globalVar);
 				pthread_create(&squadraB[j], NULL, playerThread, (void*)&players[i+j]);
-				printf("main: player %c%d started\n", buffer[0], buffer[1] - '0');
 				j++;
 
 				serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 				serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
 
-				if (write(socketTiro, bufferTiro, strlen(bufferTiro) + 1) < 0) perror("errore nella scrittura");
-				if (write(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1) < 0) perror("errore nella scrittura");
-				if (write(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1) < 0) perror("errore nella scrittura");
+				if (send(socketTiro, bufferTiro, strlen(bufferTiro) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+				if (send(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+				if (send(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+
+				recv(socketTiro, buffer, BUFDIM, 0);
+				recv(socketDribbling, buffer, BUFDIM, 0);
+				recv(socketInfortunio, buffer, BUFDIM, 0);
 			}
 			else {
 				if (buffer[0] == 's') {
@@ -795,9 +824,9 @@ int main(int argc, char* argv[]) {
 
 	snprintf(buffer, BUFDIM, "partita terminata\0");
 
-	write(socketTiro, buffer, strlen(buffer)+1);
-	write(socketInfortunio, buffer, strlen(buffer) + 1);
-	write(socketDribbling, buffer, strlen(buffer) + 1);
+	send(socketTiro, buffer, strlen(buffer)+1, 0);
+	send(socketInfortunio, buffer, strlen(buffer) + 1, 0);
+	send(socketDribbling, buffer, strlen(buffer) + 1, 0);
 
 	pthread_join(arbitro, NULL);
 
