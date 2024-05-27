@@ -16,6 +16,7 @@
 #define QUEUE 360
 
 volatile char stop = -1;
+pthread_mutex_t synchro;
 
 void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 	struct addrinfo hints, * res;
@@ -45,15 +46,17 @@ void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 }
 
 void* service(void *arg){
+	int s_fd = *(int*)arg;
+	pthread_mutex_lock(&synchro);
 	char buffer[BUFDIM];
-    int s_fd, player, opponent, tempoI, tempoP, client_fd, id;
+    int player, opponent, tempoI, tempoP, client_fd, id;
 	struct sockaddr_in client_addr;
 	s_fd = *(int*)arg;
 
 	char ip[40];
 	resolve_hostname("gateway", ip, sizeof(ip));
 
-	read(s_fd, buffer, BUFDIM);
+	recv(s_fd, buffer, BUFDIM, 0);
 	if (strcmp(buffer, "partita terminata\0") == 0) {
 		stop = 0;
 		pthread_exit(NULL);
@@ -72,7 +75,7 @@ void* service(void *arg){
 
 	//formato messaggio infortunio: IXXXPXXX\0
 	snprintf(buffer, BUFDIM, "I%dP%d\0", tempoI, tempoP);
-	write(s_fd, buffer, BUFDIM);
+	send(s_fd, buffer, BUFDIM, 0);
 	printf("service: to player buffer = %s\n", buffer);
 
 	client_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -84,15 +87,18 @@ void* service(void *arg){
 	}
 
 	snprintf(buffer, BUFDIM, "i%d%d\0", player, opponent);
-	write(client_fd, buffer, BUFDIM);
+	send(client_fd, buffer, BUFDIM, 0);
 	printf("service: to referee buffer = %s\n");
 
 	close(client_fd);
+	pthread_mutex_unlock(&synchro);
 }
 
 int main(int argc, char* argv[]) {
 	time_t t;
 	srand((unsigned)time(&t));
+
+	pthread_mutex_init(&synchro, NULL);
 
 	int serverSocket, client, len, id;
 	struct sockaddr_in serverAddr, clientAddr;
@@ -106,7 +112,15 @@ int main(int argc, char* argv[]) {
 	char ip[40];
 	resolve_hostname(hostname, ip, sizeof(ip));
 
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	int opt = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+	{
+		perror("Errore nel settaggio delle opzioni del socket");
+		exit(EXIT_FAILURE);
+	}
+
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
 	inet_aton(ip, &(serverAddr.sin_addr));
@@ -115,7 +129,7 @@ int main(int argc, char* argv[]) {
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, QUEUE);
 
-	char buf[INET_ADDRSTRLEN];
+	char buf[BUFDIM];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
@@ -124,7 +138,9 @@ int main(int argc, char* argv[]) {
 
 	while (i < 5 || j < 5){
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
-		read(client, buffer, BUFDIM);
+		recv(client, buffer, BUFDIM, 0);
+		snprintf(buf, BUFDIM, "ack\0");
+		send(client, buf, BUFDIM, 0);
 		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
 		id = buffer[0] - '0';
 		if(buffer[0] == 'A'){
@@ -143,7 +159,8 @@ int main(int argc, char* argv[]) {
 		printf("main: player found!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
 	}
-
+	printf("main: closing...\n");
+	sleep(1);
 	close(client);
 
 	return 0;
