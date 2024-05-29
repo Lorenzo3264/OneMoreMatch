@@ -9,7 +9,8 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <netdb.h>
-
+#include <signal.h>
+#include <errno.h>
 
 #define PORT 8033
 #define BUFDIM 1024
@@ -66,6 +67,11 @@ void* service(void* arg) {
 		in attesa con read, quando riceve info esegue codice e risponde con write
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
+
+	sigset_t set;
+	sigemptyset(&set);
+	sigaddset(&set, SIGPIPE);
+	pthread_sigmask(SIG_BLOCK, &set, NULL);
 	
 	int s_fd = *(int*)arg;
 	pthread_mutex_lock(&globalVar);
@@ -82,9 +88,19 @@ void* service(void* arg) {
 	printf("service: waiting for player\n");
 	//bisogna capire se avviene un dribbling o un giocatore diventa attivo
 	recv(s_fd, buffer, BUFDIM, 0);
-	if (strcmp(buffer, "partita terminata\0") == 0) {
+	if (buffer[0] == 't') {
 		stop = 0;
-		pthread_exit(NULL);
+
+		c_fd = socket(AF_INET, SOCK_STREAM, 0);
+		c_addr.sin_family = AF_INET;
+		c_addr.sin_port = htons(REFEREEPORT);
+		inet_aton(ip, &c_addr.sin_addr);
+		if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+			perror("connection to referee failed, retrying...");
+		}
+		snprintf(buffer, BUFDIM, "end\0");
+
+		exit(1);
 	}
 	int con = buffer[0] - '0';
 	char buf[BUFDIM];
@@ -92,9 +108,10 @@ void* service(void* arg) {
 		printf("service: wrong buffer %s\n", buffer);
 		
 		snprintf(buf, BUFDIM, "err\0");
-		send(s_fd, buf, BUFDIM, 0);
-		sleep(1);
-		close(s_fd);
+		if (send(s_fd, buf, BUFDIM, 0) < 0) perror("service: send error\n");
+		pthread_mutex_unlock(&globalVar);
+		//close(s_fd);
+		
 		pthread_exit(NULL);
 	}
 
@@ -126,12 +143,28 @@ void* service(void* arg) {
 			c_addr.sin_port = htons(REFEREEPORT);
 			inet_aton(ip, &c_addr.sin_addr);
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-				perror("connect failed to referee\n");
+				perror("connection to referee failed, retrying...");
 			}
-			snprintf(buffer, BUFDIM, "h\n");
-			if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
+			snprintf(buffer, BUFDIM, "h\0");
+			if (send(c_fd, buffer, BUFDIM, 0) < 0) {
+				switch (errno) {
+				case EPIPE:
+					int result = -1;
+					for (int i = 0; i < 5; i++) {
+						if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+							perror("connection to referee failed, retrying...");
+						}
+						else {
+							result = send(c_fd, buffer, BUFDIM, 0);
+						}
+						if (result != -1) i = 5;
+					}
+					if (result == -1) perror("too many retries");
+					break;
+				}
+			}
 			printf("service: send message to referee = %s\n",buffer);
-			close(c_fd);
+			//close(c_fd);
 		}
 		do {
 			opponent = rand() % 10;
@@ -148,7 +181,7 @@ void* service(void* arg) {
 		if (chance >= 0 && chance < 35) {
 			snprintf(buffer, BUFDIM, "f%d\0", opponent);
 			if(send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
-			close(s_fd);
+			//close(s_fd);
 
 			snprintf(buffer, BUFDIM, "d%d%df\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
@@ -160,14 +193,30 @@ void* service(void* arg) {
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 				perror("connect failed to referee\n");
 			}
-			if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
+			if (send(c_fd, buffer, BUFDIM, 0) < 0) {
+				switch (errno) {
+				case EPIPE:
+					int result = -1;
+					for (int i = 0; i < 5; i++) {
+						if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+							perror("connection to referee failed, retrying...");
+						}
+						else {
+							result = send(c_fd, buffer, BUFDIM, 0);
+						}
+						if (result != -1) i = 5;
+					}
+					if (result == -1) perror("too many retries");
+					break;
+				}
+			}
 			printf("service: sent message to referee: %s\n", buffer);
-			close(c_fd);
+			//close(c_fd);
 		}
 		if (chance >= 35 && chance < 95) {
 			snprintf(buffer, BUFDIM, "s%d\0", opponent);
 			send(s_fd, buffer, BUFDIM, 0);
-			close(s_fd);
+			//close(s_fd);
 
 			snprintf(buffer, BUFDIM, "d%d%dy\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
@@ -179,14 +228,30 @@ void* service(void* arg) {
 			if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
 				perror("connect failed to referee\n");
 			}
-			if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
+			if (send(c_fd, buffer, BUFDIM, 0) < 0) {
+				switch (errno) {
+				case EPIPE:
+					int result = -1;
+					for (int i = 0; i < 5; i++) {
+						if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+							perror("connection to referee failed, retrying...");
+						}
+						else {
+							result = send(c_fd, buffer, BUFDIM, 0);
+						}
+						if (result != -1) i = 5;
+					}
+					if (result == -1) perror("too many retries");
+					break;
+				}
+			}
 			printf("service: sent message to referee: %s\n", buffer);
-			close(c_fd);
+			//close(c_fd);
 		}
 		if (chance >= 95 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
 			if (send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
-			close(s_fd);
+			//close(s_fd);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
 		}
@@ -198,7 +263,7 @@ void* service(void* arg) {
 		stato[player] = 'a';
 		snprintf(buf, BUFDIM, "ack\0");
 		send(s_fd, buf, BUFDIM, 0);
-		close(s_fd);
+		//close(s_fd);
 	}
 
 	pthread_mutex_unlock(&globalVar);
@@ -309,7 +374,23 @@ int main(int argc, char* argv[]) {
 	}
 
 	snprintf(buffer, BUFDIM, "e\0");
-	if (send(c_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
+	if (send(c_fd, buffer, BUFDIM, 0) < 0) {
+		switch (errno) {
+				case EPIPE:
+					int result = -1;
+					for (int i = 0; i < 5; i++) {
+						if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
+							perror("connection to referee failed, retrying...");
+						}
+						else {
+							result = send(c_fd, buffer, BUFDIM, 0);
+						}
+						if (result != -1) i = 5;
+					}
+					if (result == -1) perror("too many retries");
+					break;
+				}
+	}
 	printf("main: closing...\n");
 	sleep(1);
 	close(c_fd);

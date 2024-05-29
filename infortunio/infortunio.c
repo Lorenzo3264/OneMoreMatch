@@ -57,9 +57,9 @@ void* service(void *arg){
 	resolve_hostname("gateway", ip, sizeof(ip));
 
 	recv(s_fd, buffer, BUFDIM, 0);
-	if (strcmp(buffer, "partita terminata\0") == 0) {
+	if (buffer[0] == 't') {
 		stop = 0;
-		pthread_exit(NULL);
+		exit(1);
 	}
 	printf("service: from player buffer = %s\n", buffer);
 	player = buffer[0] - '0';
@@ -90,7 +90,7 @@ void* service(void *arg){
 	send(client_fd, buffer, BUFDIM, 0);
 	printf("service: to referee buffer = %s\n");
 
-	close(client_fd);
+	//close(client_fd);
 	pthread_mutex_unlock(&synchro);
 }
 
