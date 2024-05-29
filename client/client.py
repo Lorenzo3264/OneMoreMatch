@@ -56,7 +56,7 @@ def refereeThread(conn):
         msg_size = lunghezza_stringa_con_terminatore(msg_intero)
         msg = msg_intero[:msg_size]
         print(f"{msg}")
-        log.write(f"{msg}\n")
+        
         pattern = re.compile("GOAL")
         match = re.search(pattern, msg)
         if(match):
@@ -70,7 +70,10 @@ def refereeThread(conn):
             log.write(f"punteggio attuale {puntiA}:{puntiB}\n")
         if(msg == "partitaTerminata"):
             print(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
+            log.write(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
             stop = False
+        else:
+            log.write(f"{msg}\n")
 
 def invia_giocatore(s,idg,sq):
     comando = f"{sq}{idg}"

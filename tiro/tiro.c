@@ -58,16 +58,27 @@ void* service(void *arg){
 	resolve_hostname("gateway", ip, sizeof(ip));
 
 	recv(s_fd, buffer, BUFDIM, 0);
-	if (strcmp(buffer, "partita terminata\0") == 0) {
+	if (buffer[0] == 't') {
 		stop = 0;
-		pthread_exit(NULL);
+		exit(1);
 	}
-	send(s_fd, NULL, 0, 0);
-	close(s_fd);
+	char buf[BUFDIM];
+	
 
 	printf("service: from player buffer = %s\n",buffer);
 	player = buffer[0] - '0';
 
+	if (player < 0 || player > 9) {
+		printf("service: wrong buffer %s\n", buffer);
+
+		snprintf(buf, BUFDIM, "err\0");
+		send(s_fd, buf, BUFDIM, 0);
+		//close(s_fd);
+		pthread_mutex_unlock(&synchro);
+		pthread_exit(NULL);
+	}
+	snprintf(buf, BUFDIM, "ack\0");
+	send(s_fd, buf, BUFDIM, 0);
 
 	chance = rand() % 100;
 	if(chance < 50){
@@ -91,7 +102,7 @@ void* service(void *arg){
 	send(client_fd, buffer, BUFDIM, 0);
 	printf("service: to referee buffer = %s\n", buffer);
 	
-	close(client_fd);
+	//close(client_fd);
 	pthread_mutex_unlock(&synchro);
 }
 
