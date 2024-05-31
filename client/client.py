@@ -67,10 +67,10 @@ def refereeThread(conn):
                 puntiA += 1
             else:
                 puntiB += 1
-            log.write(f"punteggio attuale {puntiA}:{puntiB}\n")
+            #log.write(f"punteggio attuale {puntiA}:{puntiB}\n")
         if(msg == "partitaTerminata"):
             print(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
-            log.write(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
+            #log.write(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
             stop = False
         else:
             log.write(f"{msg}\n")
