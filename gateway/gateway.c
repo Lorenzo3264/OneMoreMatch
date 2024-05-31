@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <semaphore.h>
 #include <sys/mman.h>
+#include <fcntl.h> 
 
 #define PORT 8080
 #define REFEREEPORT 8088
@@ -59,7 +60,7 @@ volatile int activePlayer = -1;
 sem_t refServer;
 volatile short playerCount = 10;
 sem_t playerSemaphore;
-sem_t eventSemaphore;
+sem_t *eventSemaphore;
 
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port);
@@ -132,11 +133,14 @@ void* playerThread(void* arg) {
 
 	//modifichiamo informazioni globali
 	pthread_mutex_lock(&globalVar);
-	printf("player: ha preso possesso del mutex globalVar\n");
+	printf("player %d: ha preso possesso del mutex globalVar\n", id);
 	playerCount--;
-	if (playerCount <= 0) sem_post(&playerSemaphore);
+	if (playerCount <= 0) {
+		sem_post(&playerSemaphore);
+		printf("giocatori tutti pronti");
+	}
 	pthread_mutex_unlock(&globalVar);
-	printf("player: ha rilasciato il mutex globalVar\n");
+	printf("player %d: ha rilasciato il mutex globalVar\n", id);
 
 	while (*N > 0) { //fino a quando non finisce la partita
 
@@ -199,7 +203,7 @@ void* playerThread(void* arg) {
 				writeRetry(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT, buffer);
 				printf("player %d thread: 5.1 buffer = %s\n", id, buffer);
 				recv(socketInfortunio, buffer, BUFDIM, 0);
-				sem_wait(&eventSemaphore);
+				sem_wait(eventSemaphore);
 				//close(socketInfortunio);
 
 
@@ -245,12 +249,12 @@ void* playerThread(void* arg) {
 				break;
 			case 'f':
 				activePlayer = altroPlayer;
-				sem_wait(&eventSemaphore);
+				sem_wait(eventSemaphore);
 				//il giocatore a perso la palla a un giocatore avversario
 				break;
 			case 's':
 				//non perde la palla (tenta un tiro?)
-				sem_wait(&eventSemaphore);
+				sem_wait(eventSemaphore);
 
 				chance = rand() % 100;
 				chance = chance + (nDribbling * 30);
@@ -269,7 +273,7 @@ void* playerThread(void* arg) {
 						recv(socketTiro, buffer, BUFDIM, 0);
 						//close(socketTiro);
 					}
-					sem_wait(&eventSemaphore);
+					sem_wait(eventSemaphore);
 
 					printf("player %d thread: 5.3 buffer = %s\n", id, buffer);
 					while (squadre[activePlayer] == squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0) {
@@ -471,7 +475,7 @@ void* eventManager(void* arg) {
 		break;
 	}
 	printf("event manager: chiudo la socket del servizio\n");
-	sem_post(&eventSemaphore);
+	sem_post(eventSemaphore);
 	//close(serviceSocket);
 }
 
@@ -489,7 +493,7 @@ void refereeProcess(int* arg) {
 	gethostname(hostname, 1023);
 	char ip[40];
 	resolve_hostname(hostname, ip, sizeof(ip));
-	printf("referee process: ip impostato: %s", ip);
+	printf("referee process: ip impostato: %s\n", ip);
 
 	char azione;
 	char buf[BUFDIM];
@@ -513,25 +517,24 @@ void refereeProcess(int* arg) {
 
 	int* sockets;
 	while (1) {
-		printf("referee process: waiting for event\n");
+		printf("referee process: N condiviso = %d\n", *N);
 		if (*N < 1) {
+			printf("referee process: partita terminata...\n");
 			snprintf(buf, BUFDIM, "partitaTerminata\0");
 			send(s_fd, buf, strlen(buf) + 1, 0);
 			//close(s_fd);
 			//close(eventSocket);
 			exit(1);
 		}
-		
+		printf("referee process: waiting for event\n");
 		serviceSocket = accept(eventSocket, (struct sockaddr*)&serviceAddr, &len);
-		printf("referee thread: event received\n");
+		printf("referee process: event received\n");
 		sockets = (int*)malloc(2 * sizeof(int));
 		sockets[0] = s_fd;
 		sockets[1] = serviceSocket;
 		pthread_create(&eventReq, NULL, eventManager, (void*)sockets);
-		*N--;
+		*N = *N - 1;
 	}
-	
-	printf("referee process: terminato N = %d\n",*N);
 
 }
 
@@ -733,7 +736,7 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_init(&eventMutex, NULL);
 	sem_init(&playerSemaphore, 0, 1);
 	sem_init(&refServer, 1, 1);
-	sem_init(&eventSemaphore, 1, 1);
+	eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 1);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 	//indici per inserire i giocatori nelle squadre
@@ -812,10 +815,16 @@ int main(int argc, char* argv[]) {
 			else {
 				if (buffer[0] == 's') {
 					//creato il thread dell'arbitro, gestisce la comunicazione col client.
+					printf("main: processo singolo pid = %d\n", getpid());
 					if (fork() == 0) {
+						printf("main: processo figlio pid = %d\n", getpid());
+						printf("main: processo figlio padre = %d\n", getppid());
 						refereeProcess(&clientSocket);
+						sem_unlink("eSem");
+						sem_close(eventSemaphore);
 						exit(1);
 					}
+					printf("main: processo singolo di nuovo pid = %d\n", getpid());
 					//pthread_create(&arbitro, NULL, refereeThread, (void*)&clientSocket);
 					ref = 1;
 					printf("main: referee started\n");
@@ -856,9 +865,10 @@ int main(int argc, char* argv[]) {
 	pthread_join(arbitro, NULL);
 
 	sem_destroy(&refServer);
-	sem_destroy(&eventSemaphore);
 	sem_destroy(&playerSemaphore);
 
+	sem_unlink("eSem");
+	sem_close(eventSemaphore);
 	//if (clientSocket != -1) close(clientSocket);
 	return 0;
 }
