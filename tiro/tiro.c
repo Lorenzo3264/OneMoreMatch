@@ -12,39 +12,85 @@
 
 #define PORT 8077
 #define BUFDIM 1024
-#define REFEREEPORT 8088 
+#define REFEREEPORT 8088
+#define QUEUE 2048
 
 volatile short stop = -1;
 
+pthread_mutex_t synchro;
+
+void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
+	struct addrinfo hints, * res;
+	int errcode;
+	void* ptr;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET; // For IPv4
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = 0;
+
+	errcode = getaddrinfo(hostname, NULL, &hints, &res);
+	if (errcode != 0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(errcode));
+		pthread_exit(NULL);
+	}
+
+	ptr = &((struct sockaddr_in*)res->ai_addr)->sin_addr;
+
+	if (inet_ntop(res->ai_family, ptr, ip, ip_len) == NULL) {
+		perror("inet_ntop");
+		freeaddrinfo(res);
+		pthread_exit(NULL);
+	}
+
+	freeaddrinfo(res);
+}
+
 void* service(void *arg){
+	int s_fd = *(int*)arg;
+	pthread_mutex_lock(&synchro);
 	char buffer[BUFDIM];
-    int s_fd, player, chance, client_fd;
+    int player, chance, client_fd;
 	struct sockaddr_in client_addr;
-	s_fd = *(int*)arg;
-
-	struct hostent* hent;
-	hent = gethostbyname("gateway");
+	
+	
 	char ip[40];
-	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	resolve_hostname("gateway", ip, sizeof(ip));
+	char buf[BUFDIM];
 
-	read(s_fd, buffer, BUFDIM);
-	if (strcmp(buffer, "partita terminata\0") == 0) {
+	recv(s_fd, buffer, BUFDIM, 0);
+	if (buffer[0] == 't') {
 		stop = 0;
+		snprintf(buf, BUFDIM, "ack\0");
+		send(s_fd, buf, BUFDIM, 0);
 		exit(1);
 	}
+	
+	
+
 	printf("service: from player buffer = %s\n",buffer);
 	player = buffer[0] - '0';
 
-	
+	if (player < 0 || player > 9) {
+		printf("service: wrong buffer %s\n", buffer);
+
+		snprintf(buf, BUFDIM, "err\0");
+		send(s_fd, buf, BUFDIM, 0);
+		pthread_mutex_unlock(&synchro);
+		pthread_exit(NULL);
+	}
+	snprintf(buf, BUFDIM, "ack\0");
+	send(s_fd, buf, BUFDIM, 0);
+
 	chance = rand() % 100;
 	if(chance < 50){
 		//fallito
 		//  t%d(r)\0
-        sprintf(buffer, "t%df\0", player);
+        snprintf(buffer, BUFDIM, "t%df\0", player);
 	}else{
 		//goal
 		//  t%d(r)\0
-        sprintf(buffer, "t%dy\0", player);
+        snprintf(buffer, BUFDIM, "t%dy\0", player);
 	}
 
     client_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -54,17 +100,19 @@ void* service(void *arg){
     if (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))) {
 		printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
 	}
-    
-	write(client_fd, buffer, BUFDIM);
-	printf("service: to referee buffer = %s\n", buffer);
 
-	close(client_fd);
+	send(client_fd, buffer, BUFDIM, 0);
+	printf("service: to referee buffer = %s\n", buffer);
 	
+	//close(client_fd);
+	pthread_mutex_unlock(&synchro);
 }
 
 int main(int argc, char* argv[]) {
 	time_t t;
 	srand((unsigned)time(&t));
+
+	pthread_mutex_init(&synchro,NULL);
 
     int serverSocket, client, len, id;
 	struct sockaddr_in serverAddr, clientAddr;
@@ -75,30 +123,48 @@ int main(int argc, char* argv[]) {
 
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
-	struct hostent* hent;
-	hent = gethostbyname(hostname);
 	char ip[40];
-	inet_ntop(AF_INET, (void*)hent->h_addr_list[0], ip, 15);
+	resolve_hostname(hostname, ip, sizeof(ip));
 
-    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	int opt = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+	{
+		perror("Errore nel settaggio delle opzioni del socket");
+		exit(EXIT_FAILURE);
+	}
+
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
 	inet_aton(ip, &(serverAddr.sin_addr));
 	memset(&(serverAddr.sin_zero), '\0', 8);
 
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
-	listen(serverSocket, 12);
+	listen(serverSocket, QUEUE);
 
-	char buf[INET_ADDRSTRLEN];
+	char buf[BUFDIM];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
-	
+
 	int i = 0, j = 0;
-	
+
 	while (i < 5 || j < 5){
-		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
-		read(client, buffer, BUFDIM);
+		do {
+			client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+			recv(client, buffer, BUFDIM, 0);
+			if (buffer[0] != 'A' && buffer[0] != 'B') {
+				snprintf(buf, BUFDIM, "err\0");
+				send(client, buf, BUFDIM, 0);
+				printf("err sent");
+			}
+			else {
+				snprintf(buf, BUFDIM, "ack\0");
+				send(client, buf, BUFDIM, 0);
+				printf("ack sent");
+			}
+		} while (buffer[0] != 'A' && buffer[0] != 'B');
 		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
 		id = buffer[1] - '0';
 		if(buffer[0] == 'A'){
@@ -110,15 +176,15 @@ int main(int argc, char* argv[]) {
 			j++;
 		}
 	}
-    
+
 	while(stop == -1){
 		printf("main: accepting player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: player accepted!\n");
 		pthread_create(&player, NULL, service, (void*)&client);
-		printf("main: player stopped\n");
-        pthread_join(player, NULL);
 	}
+	printf("main: closing...\n");
+	sleep(1);
 
 	return 0;
 }

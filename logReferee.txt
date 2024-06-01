@@ -1,0 +1,2050 @@
+La partita e' cominciata!
+
+il giocatore 2 scarta il giocatore 6
+il giocatore 5 prende la palla da 2
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 e' vittima di un infortunio da parte di 8
+il giocatore 1 e' vittima di un infortunio da parte di 7
+il giocatore 9 prende la palla da 2
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 7
+il giocatore 3 e' vittima di un infortunio da parte di 8
+il giocatore 2 scarta il giocatore 7
+il giocatore 6 prende la palla da 2
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 0
+il giocatore 1 prende la palla da 5
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 7
+il giocatore 4 scarta il giocatore 9
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 8
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 5 prende la palla da 2
+il giocatore 3 prende la palla da 5
+il giocatore 8 prende la palla da 3
+il giocatore 4 prende la palla da 8
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 e' vittima di un infortunio da parte di 8
+il giocatore 2 e' vittima di un infortunio da parte di 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 1
+il giocatore 3 prende la palla da 9
+il giocatore 5 prende la palla da 3
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 0 prende la palla da 9
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 7
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 8
+il giocatore 7 prende la palla da 4
+il giocatore 3 prende la palla da 7
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 4
+il giocatore 1 prende la palla da 6
+il giocatore 6 prende la palla da 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 8
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 e' vittima di un infortunio da parte di 3
+il giocatore 9 scarta il giocatore 1
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 e' vittima di un infortunio da parte di 4
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 e' vittima di un infortunio da parte di 3
+il giocatore 0 prende la palla da 8
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 4
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 8
+il giocatore 8 prende la palla da 1
+il giocatore 2 prende la palla da 8
+il giocatore 8 prende la palla da 2
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 4
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 1
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 5
+il giocatore 8 prende la palla da 1
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 8
+il giocatore 8 prende la palla da 1
+il giocatore 4 prende la palla da 8
+il giocatore 7 prende la palla da 4
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 2
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 7
+il giocatore 8 prende la palla da 1
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 9 prende la palla da 0
+il giocatore 9 e' vittima di un infortunio da parte di 2
+il giocatore 8 scarta il giocatore 4
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 8
+il giocatore 5 prende la palla da 3
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 8 e' vittima di un infortunio da parte di 0
+il giocatore 4 prende la palla da 6
+il giocatore 5 prende la palla da 4
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 4
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 1
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 e' vittima di un infortunio da parte di 8
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 3
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 9
+il giocatore 6 prende la palla da 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 3
+il giocatore 0 prende la palla da 9
+il giocatore 0 scarta il giocatore 6
+il giocatore 7 prende la palla da 0
+il giocatore 7 e' vittima di un infortunio da parte di 1
+il giocatore 3 prende la palla da 9
+il giocatore 3 e' vittima di un infortunio da parte di 6
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 8
+il giocatore 8 prende la palla da 0
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 e' vittima di un infortunio da parte di 1
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 2
+il giocatore 3 prende la palla da 6
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 7
+il giocatore 7 prende la palla da 0
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 3
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 1
+il giocatore 0 prende la palla da 9
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 9
+il giocatore 6 prende la palla da 1
+il giocatore 0 prende la palla da 6
+il giocatore 0 e' vittima di un infortunio da parte di 5
+il giocatore 4 scarta il giocatore 7
+il giocatore 9 prende la palla da 4
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 4
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 9
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 e' vittima di un infortunio da parte di 5
+il giocatore 8 prende la palla da 4
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 4
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 1
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 4 e' vittima di un infortunio da parte di 8
+il giocatore 0 scarta il giocatore 7
+il giocatore 7 prende la palla da 0
+il giocatore 3 prende la palla da 7
+il giocatore 9 prende la palla da 3
+il giocatore 2 prende la palla da 9
+il giocatore 5 prende la palla da 2
+il giocatore 1 prende la palla da 5
+il giocatore 8 prende la palla da 1
+il giocatore 8 scarta il giocatore 0
+il giocatore 1 prende la palla da 8
+il giocatore 5 prende la palla da 1
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 7
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 7 prende la palla da 1
+il giocatore 7 scarta il giocatore 2
+il giocatore 2 prende la palla da 7
+il giocatore 2 scarta il giocatore 9
+il giocatore 7 prende la palla da 2
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 2
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 e' vittima di un infortunio da parte di 2
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 3
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 5 prende la palla da 0
+il giocatore 5 e' vittima di un infortunio da parte di 0
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 scarta il giocatore 4
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 e' vittima di un infortunio da parte di 9
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 2
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 2
+il giocatore 2 prende la palla da 8
+il giocatore 6 prende la palla da 2
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 e' vittima di un infortunio da parte di 4
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 8
+il giocatore 9 prende la palla da 3
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 0
+il giocatore 4 prende la palla da 7
+il giocatore 9 prende la palla da 4
+il giocatore 4 prende la palla da 9
+il giocatore 5 prende la palla da 4
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 scarta il giocatore 7
+il giocatore 7 prende la palla da 2
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 8
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 8
+il giocatore 6 prende la palla da 4
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 9
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 2
+il giocatore 4 prende la palla da 9
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 4
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 e' vittima di un infortunio da parte di 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 5
+il giocatore 9 prende la palla da 3
+il giocatore 0 prende la palla da 9
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 9
+il giocatore 8 prende la palla da 4
+il giocatore 8 scarta il giocatore 2
+il giocatore 4 prende la palla da 8
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 8
+il giocatore 6 prende la palla da 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 9
+il giocatore 5 prende la palla da 3
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 3
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 1
+il giocatore 3 prende la palla da 8
+il giocatore 9 prende la palla da 3
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 3
+il giocatore 2 prende la palla da 6
+il giocatore 2 e' vittima di un infortunio da parte di 9
+il giocatore 3 scarta il giocatore 5
+il giocatore 6 prende la palla da 3
+il giocatore 6 e' vittima di un infortunio da parte di 4
+il giocatore 3 prende la palla da 7
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 7
+il giocatore 3 scarta il giocatore 8
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 7 prende la palla da 1
+il giocatore 2 prende la palla da 7
+il giocatore 2 e' vittima di un infortunio da parte di 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 0
+il giocatore 0 prende la palla da 9
+il giocatore 8 prende la palla da 0
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 4
+il giocatore 0 prende la palla da 9
+il giocatore 0 e' vittima di un infortunio da parte di 9
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 7
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 scarta il giocatore 4
+il giocatore 2 prende la palla da 5
+il giocatore 7 prende la palla da 2
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 7
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 1
+il giocatore 0 prende la palla da 8
+il giocatore 6 prende la palla da 0
+il giocatore 3 prende la palla da 6
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 7
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 2
+il giocatore 3 prende la palla da 6
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 7
+il giocatore 5 prende la palla da 4
+il giocatore 2 prende la palla da 5
+il giocatore 8 prende la palla da 2
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 2
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 4
+il giocatore 0 prende la palla da 5
+il giocatore 7 prende la palla da 0
+il giocatore 0 prende la palla da 7
+il giocatore 0 e' vittima di un infortunio da parte di 6
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 7 prende la palla da 2
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 1
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 3
+il giocatore 4 prende la palla da 6
+il giocatore 5 prende la palla da 4
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 0 prende la palla da 7
+il giocatore 7 prende la palla da 0
+il giocatore 7 scarta il giocatore 2
+il giocatore 2 prende la palla da 7
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 9
+il giocatore 4 e' vittima di un infortunio da parte di 9
+il giocatore 7 prende la palla da 2
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 3
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 e' vittima di un infortunio da parte di 1
+il giocatore 4 prende la palla da 7
+il giocatore 7 prende la palla da 4
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 e' vittima di un infortunio da parte di 2
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 5
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 4 e' vittima di un infortunio da parte di 6
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 7
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 9
+il giocatore 3 scarta il giocatore 6
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 e' vittima di un infortunio da parte di 1
+il giocatore 5 e' vittima di un infortunio da parte di 2
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 3
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 8 e' vittima di un infortunio da parte di 4
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 1
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 7
+il giocatore 6 prende la palla da 0
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 3
+il giocatore 0 prende la palla da 5
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 5
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 6
+il giocatore 7 prende la palla da 1
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 2
+il giocatore 1 prende la palla da 9
+il giocatore 5 prende la palla da 1
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 e' vittima di un infortunio da parte di 7
+il giocatore 1 e' vittima di un infortunio da parte di 8
+il giocatore 9 prende la palla da 0
+il giocatore 3 prende la palla da 9
+il giocatore 3 scarta il giocatore 5
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 0
+il giocatore 9 e' vittima di un infortunio da parte di 3
+il giocatore 6 scarta il giocatore 0
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 6
+il giocatore 3 e' vittima di un infortunio da parte di 6
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 5
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 6
+il giocatore 9 prende la palla da 1
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 5
+il giocatore 7 prende la palla da 3
+il giocatore 7 e' vittima di un infortunio da parte di 4
+il giocatore 5 e' vittima di un infortunio da parte di 2
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 1
+il giocatore 0 prende la palla da 9
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 7
+il giocatore 7 prende la palla da 3
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 3
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 scarta il giocatore 3
+il giocatore 0 prende la palla da 8
+il giocatore 8 prende la palla da 0
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 2
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 4
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 1
+il giocatore 2 prende la palla da 6
+il giocatore 2 scarta il giocatore 8
+il giocatore 5 prende la palla da 2
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 e' vittima di un infortunio da parte di 5
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 2
+il giocatore 7 e' vittima di un infortunio da parte di 4
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 e' vittima di un infortunio da parte di 9
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 scarta il giocatore 3
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 2 prende la palla da 7
+il giocatore 2 scarta il giocatore 6
+il giocatore 5 prende la palla da 2
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 scarta il giocatore 1
+il giocatore 1 prende la palla da 6
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 0
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 7
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 7 prende la palla da 1
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 2
+il giocatore 2 prende la palla da 9
+il giocatore 5 prende la palla da 2
+il giocatore 4 prende la palla da 5
+il giocatore 4 e' vittima di un infortunio da parte di 5
+il giocatore 8 prende la palla da 2
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 2 prende la palla da 6
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 7
+il giocatore 5 prende la palla da 2
+il giocatore 5 scarta il giocatore 0
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 2
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 6
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 e' vittima di un infortunio da parte di 3
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 1 e' vittima di un infortunio da parte di 6
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 2
+il giocatore 0 prende la palla da 9
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 e' vittima di un infortunio da parte di 9
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 6
+il giocatore 4 e' vittima di un infortunio da parte di 5
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 6
+il giocatore 6 prende la palla da 3
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 1
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 4
+il giocatore 0 prende la palla da 9
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 3
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 0 e' vittima di un infortunio da parte di 6
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 e' vittima di un infortunio da parte di 4
+il giocatore 3 prende la palla da 8
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 7 prende la palla da 3
+il giocatore 2 prende la palla da 7
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 4
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 4
+il giocatore 1 prende la palla da 5
+il giocatore 7 prende la palla da 1
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 e' vittima di un infortunio da parte di 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 5 prende la palla da 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 e' vittima di un infortunio da parte di 3
+il giocatore 0 prende la palla da 6
+il giocatore 6 prende la palla da 0
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 5
+il giocatore 6 prende la palla da 2
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 8
+il giocatore 8 prende la palla da 3
+il giocatore 2 prende la palla da 8
+il giocatore 2 scarta il giocatore 6
+il giocatore 5 prende la palla da 2
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 e' vittima di un infortunio da parte di 2
+il giocatore 9 scarta il giocatore 0
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 7
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 9 prende la palla da 3
+il giocatore 9 scarta il giocatore 4
+il giocatore 3 prende la palla da 9
+il giocatore 3 e' vittima di un infortunio da parte di 5
+il giocatore 4 scarta il giocatore 7
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 7
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 0
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 6
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 7 e' vittima di un infortunio da parte di 2
+il giocatore 4 prende la palla da 8
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 0
+il giocatore 1 prende la palla da 9
+il giocatore 1 e' vittima di un infortunio da parte di 9
+il giocatore 8 prende la palla da 4
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 e' vittima di un infortunio da parte di 4
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 e' vittima di un infortunio da parte di 3
+il giocatore 0 prende la palla da 9
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 2
+il giocatore 2 prende la palla da 6
+il giocatore 6 prende la palla da 2
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 e' vittima di un infortunio da parte di 2
+il giocatore 3 prende la palla da 7
+il giocatore 3 scarta il giocatore 9
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 8
+il giocatore 1 e' vittima di un infortunio da parte di 9
+il giocatore 5 prende la palla da 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 8
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 5
+il giocatore 2 e' vittima di un infortunio da parte di 8
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 9
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 0
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 8
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 3
+il giocatore 3 prende la palla da 9
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 7
+il giocatore 6 prende la palla da 2
+il giocatore 0 prende la palla da 6
+il giocatore 9 prende la palla da 0
+il giocatore 9 e' vittima di un infortunio da parte di 4
+il giocatore 6 e' vittima di un infortunio da parte di 3
+il giocatore 7 scarta il giocatore 2
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 2 prende la palla da 7
+il giocatore 2 scarta il giocatore 5
+il giocatore 8 prende la palla da 2
+il giocatore 8 e' vittima di un infortunio da parte di 0
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 e' vittima di un infortunio da parte di 3
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 5 prende la palla da 1
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 2
+il giocatore 1 prende la palla da 5
+il giocatore 1 scarta il giocatore 5
+il giocatore 7 prende la palla da 1
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 8
+il giocatore 8 prende la palla da 0
+il giocatore 8 scarta il giocatore 1
+il giocatore 1 prende la palla da 8
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 8
+il giocatore 4 scarta il giocatore 8
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 e' vittima di un infortunio da parte di 2
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 0
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 5
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 6
+il giocatore 5 prende la palla da 3
+il giocatore 2 prende la palla da 5
+il giocatore 7 prende la palla da 2
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 0
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 2
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 scarta il giocatore 3
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 2
+il giocatore 4 prende la palla da 5
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 0
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 scarta il giocatore 5
+il giocatore 7 prende la palla da 0
+il giocatore 7 scarta il giocatore 2
+il giocatore 3 prende la palla da 7
+il giocatore 3 scarta il giocatore 7
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 1 e' vittima di un infortunio da parte di 8
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 3
+il giocatore 2 prende la palla da 6
+il giocatore 2 scarta il giocatore 7
+il giocatore 5 prende la palla da 2
+il giocatore 5 e' vittima di un infortunio da parte di 0
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 3
+il giocatore 3 prende la palla da 7
+il giocatore 6 prende la palla da 3
+il giocatore 0 prende la palla da 6
+il giocatore 8 prende la palla da 0
+il giocatore 4 prende la palla da 8
+il giocatore 8 prende la palla da 4
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 4
+il giocatore 0 prende la palla da 8
+il giocatore 0 e' vittima di un infortunio da parte di 9
+il giocatore 5 prende la palla da 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 8
+il giocatore 8 prende la palla da 2
+il giocatore 3 prende la palla da 8
+il giocatore 5 prende la palla da 3
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 6
+il giocatore 8 prende la palla da 2
+il giocatore 2 prende la palla da 8
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 6
+il giocatore 5 prende la palla da 3
+il giocatore 5 scarta il giocatore 2
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 e' vittima di un infortunio da parte di 2
+il giocatore 8 scarta il giocatore 0
+il giocatore 0 prende la palla da 8
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 e' vittima di un infortunio da parte di 2
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 5
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 2
+il giocatore 2 prende la palla da 6
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 5
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 9
+il giocatore 8 prende la palla da 4
+il giocatore 0 prende la palla da 8
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 4
+il giocatore 1 prende la palla da 9
+il giocatore 5 prende la palla da 1
+il giocatore 1 prende la palla da 5
+il giocatore 1 scarta il giocatore 7
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 5
+il giocatore 7 prende la palla da 1
+il giocatore 7 scarta il giocatore 4
+il giocatore 0 prende la palla da 7
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 6
+il giocatore 5 prende la palla da 3
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 5 prende la palla da 1
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 0
+il giocatore 8 scarta il giocatore 2
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 5
+il giocatore 7 prende la palla da 3
+il giocatore 1 prende la palla da 7
+il giocatore 6 prende la palla da 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 1
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 4
+il giocatore 1 prende la palla da 9
+il giocatore 6 prende la palla da 1
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 7 prende la palla da 3
+il giocatore 3 prende la palla da 7
+il giocatore 3 e' vittima di un infortunio da parte di 5
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 scarta il giocatore 8
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 e' vittima di un infortunio da parte di 8
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 e' vittima di un infortunio da parte di 0
+il giocatore 2 prende la palla da 6
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 4
+il giocatore 1 prende la palla da 7
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 8 e' vittima di un infortunio da parte di 3
+il giocatore 1 prende la palla da 7
+il giocatore 1 scarta il giocatore 6
+il giocatore 9 prende la palla da 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 0
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 scarta il giocatore 0
+il giocatore 1 prende la palla da 7
+il giocatore 9 prende la palla da 1
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 9
+il giocatore 7 prende la palla da 4
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 7
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 2
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 2 prende la palla da 6
+il giocatore 6 prende la palla da 2
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 4
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 4 e' vittima di un infortunio da parte di 8
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 scarta il giocatore 9
+il giocatore 7 prende la palla da 2
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 e' vittima di un infortunio da parte di 3
+il giocatore 8 scarta il giocatore 2
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 4
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 6
+il giocatore 8 prende la palla da 2
+il giocatore 1 prende la palla da 8
+il giocatore 6 prende la palla da 1
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 2
+il giocatore 4 prende la palla da 6
+il giocatore 8 prende la palla da 4
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 5
+il giocatore 8 prende la palla da 4
+il giocatore 4 prende la palla da 8
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 e' vittima di un infortunio da parte di 5
+il giocatore 8 prende la palla da 3
+il giocatore 4 prende la palla da 8
+il giocatore 6 prende la palla da 4
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 7 prende la palla da 2
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 6 prende la palla da 2
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 5
+il giocatore 7 prende la palla da 4
+il giocatore 4 prende la palla da 7
+il giocatore 9 prende la palla da 4
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 4 prende la palla da 5
+il giocatore 4 scarta il giocatore 5
+il giocatore 8 prende la palla da 4
+il giocatore 8 e' vittima di un infortunio da parte di 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 4
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 6
+il giocatore 3 e' vittima di un infortunio da parte di 9
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 scarta il giocatore 4
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 4 prende la palla da 5
+il giocatore 4 scarta il giocatore 7
+il giocatore 7 prende la palla da 4
+il giocatore 7 scarta il giocatore 1
+il giocatore 0 prende la palla da 7
+il giocatore 7 prende la palla da 0
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 9 prende la palla da 4
+il giocatore 0 prende la palla da 9
+il giocatore 9 prende la palla da 0
+il giocatore 2 prende la palla da 9
+il giocatore 9 prende la palla da 2
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 scarta il giocatore 4
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 1 e' vittima di un infortunio da parte di 8
+il giocatore 7 prende la palla da 3
+il giocatore 4 prende la palla da 7
+il giocatore 4 scarta il giocatore 9
+il giocatore 7 prende la palla da 4
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 2
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 9
+il giocatore 2 e' vittima di un infortunio da parte di 8
+il giocatore 6 prende la palla da 0
+il giocatore 6 scarta il giocatore 0
+il giocatore 6 scarta il giocatore 1
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 1
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 3
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 2
+il giocatore 4 prende la palla da 5
+il giocatore 4 scarta il giocatore 8
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 7
+il giocatore 7 prende la palla da 3
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 0
+il giocatore 7 scarta il giocatore 3
+il giocatore 7 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 7
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 5
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 7
+il giocatore 5 prende la palla da 0
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 8 prende la palla da 4
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 scarta il giocatore 7
+il giocatore 3 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 5
+il giocatore 5 prende la palla da 0
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 7
+il giocatore 7 prende la palla da 3
+il giocatore 2 prende la palla da 7
+il giocatore 6 prende la palla da 2
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 2
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 5 prende la palla da 4
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 4
+il giocatore 4 prende la palla da 8
+il giocatore 9 prende la palla da 4
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 1 prende la palla da 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 7
+il giocatore 8 prende la palla da 1
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 4
+il giocatore 5 scarta il giocatore 3
+il giocatore 5 scarta il giocatore 2
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 e' vittima di un infortunio da parte di 9
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 scarta il giocatore 5
+il giocatore 6 prende la palla da 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 8 scarta il giocatore 1
+il giocatore 0 prende la palla da 8
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 scarta il giocatore 2
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 8
+il giocatore 6 prende la palla da 4
+il giocatore 0 prende la palla da 6
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 1 prende la palla da 9
+il giocatore 1 e' vittima di un infortunio da parte di 7
+il giocatore 8 prende la palla da 0
+il giocatore 3 prende la palla da 8
+il giocatore 8 prende la palla da 3
+il giocatore 2 prende la palla da 8
+il giocatore 5 prende la palla da 2
+il giocatore 3 prende la palla da 5
+il giocatore 3 scarta il giocatore 6
+il giocatore 3 e' vittima di un infortunio da parte di 6
+il giocatore 4 scarta il giocatore 9
+il giocatore 5 prende la palla da 4
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 scarta il giocatore 9
+il giocatore 8 prende la palla da 2
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 7 prende la palla da 2
+il giocatore 1 prende la palla da 7
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 8
+il giocatore 5 prende la palla da 1
+il giocatore 1 prende la palla da 5
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 e' vittima di un infortunio da parte di 8
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 2 prende la palla da 9
+il giocatore 6 prende la palla da 2
+il giocatore 6 scarta il giocatore 4
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 8
+il giocatore 5 prende la palla da 4
+il giocatore 5 scarta il giocatore 4
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 scarta il giocatore 6
+il giocatore 2 tira... ed e' GOAL!!!
+il giocatore 9 e' vittima di un infortunio da parte di 1
+il giocatore 3 prende la palla da 6
+il giocatore 3 scarta il giocatore 6
+il giocatore 5 prende la palla da 3
+il giocatore 5 scarta il giocatore 3
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 5
+il giocatore 5 prende la palla da 2
+il giocatore 3 prende la palla da 5
+il giocatore 5 prende la palla da 3
+il giocatore 1 prende la palla da 5
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 tira... ed e' GOAL!!!
+il giocatore 5 scarta il giocatore 2
+il giocatore 0 prende la palla da 5
+il giocatore 8 prende la palla da 0
+il giocatore 0 prende la palla da 8
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 3
+il giocatore 2 prende la palla da 9
+il giocatore 2 scarta il giocatore 5
+il giocatore 2 e' vittima di un infortunio da parte di 9
+il giocatore 3 scarta il giocatore 6
+il giocatore 5 prende la palla da 3
+il giocatore 5 scarta il giocatore 1
+il giocatore 5 scarta il giocatore 0
+il giocatore 5 tira... e ha mancato la porta...
+il giocatore 3 scarta il giocatore 5
+il giocatore 3 scarta il giocatore 8
+il giocatore 3 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 9
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 3
+il giocatore 6 scarta il giocatore 2
+il giocatore 4 prende la palla da 6
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 scarta il giocatore 7
+il giocatore 4 scarta il giocatore 9
+il giocatore 4 tira... e ha mancato la porta...
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... e ha mancato la porta...
+il giocatore 1 scarta il giocatore 9
+il giocatore 1 scarta il giocatore 5
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 9
+il giocatore 0 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 3
+il giocatore 4 prende la palla da 9
+il giocatore 4 scarta il giocatore 6
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 7
+il giocatore 0 scarta il giocatore 5
+il giocatore 0 tira... ed e' GOAL!!!
+il giocatore 3 prende la palla da 6
+il giocatore 6 prende la palla da 3
+il giocatore 6 scarta il giocatore 2
+il giocatore 6 tira... e ha mancato la porta...
+il giocatore 2 scarta il giocatore 7
+il giocatore 2 scarta il giocatore 6
+il giocatore 8 prende la palla da 2
+il giocatore 8 scarta il giocatore 1
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 scarta il giocatore 4
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 0
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 3 scarta il giocatore 8
+il giocatore 8 prende la palla da 3
+il giocatore 8 scarta il giocatore 3
+il giocatore 8 tira... ed e' GOAL!!!
+il giocatore 1 scarta il giocatore 7
+il giocatore 1 scarta il giocatore 6
+il giocatore 1 tira... e ha mancato la porta...
+il giocatore 5 scarta il giocatore 4
+il giocatore 0 prende la palla da 5
+il giocatore 0 scarta il giocatore 6
+il giocatore 0 scarta il giocatore 9
+il giocatore 9 prende la palla da 0
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... e ha mancato la porta...
+il giocatore 0 scarta il giocatore 5
+il giocatore 5 prende la palla da 0
+il giocatore 5 scarta il giocatore 4
+il giocatore 2 prende la palla da 5
+il giocatore 2 scarta il giocatore 8
+il giocatore 2 tira... e ha mancato la porta...
+il giocatore 9 scarta il giocatore 0
+il giocatore 9 scarta il giocatore 3
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 4 scarta il giocatore 5
+il giocatore 4 tira... ed e' GOAL!!!
+il giocatore 7 scarta il giocatore 1
+il giocatore 7 tira... e ha mancato la porta...
+il giocatore 9 prende la palla da 2
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 scarta il giocatore 1
+il giocatore 9 tira... ed e' GOAL!!!
+il giocatore 0 scarta il giocatore 8
+il giocatore 8 prende la palla da 0
+il giocatore 1 prende la palla da 8
+il giocatore 6 prende la palla da 1
+il giocatore 0 prende la palla da 6
+il giocatore 7 prende la palla da 0
