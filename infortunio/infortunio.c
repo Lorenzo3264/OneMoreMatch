@@ -13,7 +13,7 @@
 #define PORT 8041
 #define BUFDIM 1024
 #define REFEREEPORT 8088
-#define QUEUE 360
+#define QUEUE 2048
 
 volatile char stop = -1;
 pthread_mutex_t synchro;
@@ -48,7 +48,7 @@ void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 void* service(void *arg){
 	int s_fd = *(int*)arg;
 	pthread_mutex_lock(&synchro);
-	char buffer[BUFDIM];
+	char buffer[BUFDIM], buf[BUFDIM];
     int player, opponent, tempoI, tempoP, client_fd, id;
 	struct sockaddr_in client_addr;
 	s_fd = *(int*)arg;
@@ -59,10 +59,23 @@ void* service(void *arg){
 	recv(s_fd, buffer, BUFDIM, 0);
 	if (buffer[0] == 't') {
 		stop = 0;
+		snprintf(buf, BUFDIM, "ack\0");
+		send(s_fd, buf, BUFDIM, 0);
 		exit(1);
 	}
+
+
 	printf("service: from player buffer = %s\n", buffer);
 	player = buffer[0] - '0';
+	if (player < 0 || player > 9) {
+		printf("service: wrong buffer %s\n", buffer);
+
+		snprintf(buf, BUFDIM, "err\0");
+		send(s_fd, buf, BUFDIM, 0);
+		pthread_mutex_unlock(&synchro);
+		pthread_exit(NULL);
+	}
+
 	opponent = buffer[1] - '0';
 
 
@@ -137,12 +150,24 @@ int main(int argc, char* argv[]) {
 	int i = 0, j = 0;
 
 	while (i < 5 || j < 5){
-		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
-		recv(client, buffer, BUFDIM, 0);
-		snprintf(buf, BUFDIM, "ack\0");
-		send(client, buf, BUFDIM, 0);
+		
+		do {
+			client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
+			recv(client, buffer, BUFDIM, 0);
+			if (buffer[0] != 'A' && buffer[0] != 'B') {
+				snprintf(buf, BUFDIM, "err\0");
+				send(client, buf, BUFDIM, 0);
+			}
+			else {
+				snprintf(buf, BUFDIM, "ack\0");
+				send(client, buf, BUFDIM, 0);
+			}
+		} while (buffer[0] != 'A' && buffer[0] != 'B');
+
+		
+		
 		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
-		id = buffer[0] - '0';
+		id = buffer[1] - '0';
 		if(buffer[0] == 'A'){
 			squadre[id] = 'A';
 			i++;

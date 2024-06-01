@@ -61,6 +61,7 @@ sem_t refServer;
 volatile short playerCount = 10;
 sem_t playerSemaphore;
 sem_t *eventSemaphore;
+sem_t *processSemaphore;
 
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port);
@@ -358,6 +359,7 @@ void* playerThread(void* arg) {
 	printf("player %d thread: terminato\n", id);
 }
 
+
 void* eventManager(void* arg) {
 
 	int* sockets;
@@ -392,6 +394,8 @@ void* eventManager(void* arg) {
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
 		send(s_fd, buf, strlen(buf) + 1, 0);
+		recv(s_fd, buf, strlen(buf) + 1, 0);
+		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
 		//close(serviceSocket);
 		pthread_exit(NULL);
@@ -414,6 +418,8 @@ void* eventManager(void* arg) {
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
 		send(s_fd, buf, strlen(buf) + 1, 0);
+		recv(s_fd, buf, strlen(buf) + 1, 0);
+		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
@@ -435,6 +441,8 @@ void* eventManager(void* arg) {
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
 		send(s_fd, buf, strlen(buf) + 1, 0);
+		recv(s_fd, buf, strlen(buf) + 1, 0);
+		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
@@ -451,6 +459,8 @@ void* eventManager(void* arg) {
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
 		send(s_fd, buf, strlen(buf) + 1, 0);
+		recv(s_fd, buf, strlen(buf) + 1, 0);
+		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
 		
 		azione = -1;
@@ -460,6 +470,8 @@ void* eventManager(void* arg) {
 		printf("event manager: to client buffer = %s\n", buf);
 		pthread_mutex_lock(&eventMutex);
 		send(s_fd, buf, strlen(buf) + 1, 0);
+		recv(s_fd, buf, strlen(buf) + 1, 0);
+		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
 		pthread_mutex_lock(&globalVar);
 		for (int i = 0; i < 10; i++) {
@@ -519,9 +531,15 @@ void refereeProcess(int* arg) {
 	while (1) {
 		printf("referee process: N condiviso = %d\n", *N);
 		if (*N < 1) {
+			pthread_join(eventReq, NULL);
 			printf("referee process: partita terminata...\n");
 			snprintf(buf, BUFDIM, "partitaTerminata\0");
 			send(s_fd, buf, strlen(buf) + 1, 0);
+			sem_post(processSemaphore);
+			sem_unlink("eSem");
+			sem_close(eventSemaphore);
+			sem_unlink("pSem");
+			sem_close(processSemaphore);
 			//close(s_fd);
 			//close(eventSocket);
 			exit(1);
@@ -654,7 +672,7 @@ int main(int argc, char* argv[]) {
 		NULL, sizeof(int), PROT_READ | PROT_WRITE,
 		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-	*N = 360;
+	*N = 2048;
 
 	//inizializzo il random number generator
 	time_t t;
@@ -686,7 +704,6 @@ int main(int argc, char* argv[]) {
 	int puntiA = 0;
 	int puntiB = 0;
 
-	pthread_t arbitro;
 
 	//definizione dati e procedura per le socket
 	struct sockaddr_in myaddr, client;
@@ -736,7 +753,8 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_init(&eventMutex, NULL);
 	sem_init(&playerSemaphore, 0, 1);
 	sem_init(&refServer, 1, 1);
-	eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 1);
+	eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 0);
+	processSemaphore = sem_open("pSem", O_CREAT | O_EXCL, 0644, 0);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 	//indici per inserire i giocatori nelle squadre
@@ -745,7 +763,6 @@ int main(int argc, char* argv[]) {
 	short ref = 0;
 	//attesa di richieste per i giocatori
 	int players[10];
-	
 	
 	while (i < 5 || j < 5 || ref != 1) {
 
@@ -775,19 +792,24 @@ int main(int argc, char* argv[]) {
 			pthread_create(&squadraA[i], NULL, playerThread, (void*)&players[i+j]);
 			i++;
 
-			serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
-			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
-			serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+			do {
+				serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
+				if (send(socketTiro, bufferTiro, strlen(bufferTiro) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+				recv(socketTiro, buffer, BUFDIM, 0);
+			} while (!strncmp(buffer, "err", 3));
 
-			if (send(socketTiro, bufferTiro, strlen(bufferTiro) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
-			if (send(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
-			if (send(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+			do {
+				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+				if (send(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+				recv(socketDribbling, buffer, BUFDIM, 0);
+			} while (!strncmp(buffer, "err", 3));
 
-			printf("main: waiting for ack\n");
-			recv(socketTiro, buffer, BUFDIM, 0);
-			recv(socketDribbling, buffer, BUFDIM, 0);
-			recv(socketInfortunio, buffer, BUFDIM, 0);
-			printf("main: %s received\n",buffer);
+
+			do {
+				serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+				if (send(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+				recv(socketInfortunio, buffer, BUFDIM, 0);
+			} while (!strncmp(buffer, "err", 3));
 
 		}
 		else{
@@ -800,17 +822,29 @@ int main(int argc, char* argv[]) {
 				pthread_create(&squadraB[j], NULL, playerThread, (void*)&players[i+j]);
 				j++;
 
-				serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
-				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
-				serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
 
-				if (send(socketTiro, bufferTiro, strlen(bufferTiro) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
-				if (send(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
-				if (send(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+					
+				do {
+					serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
+					if (send(socketTiro, bufferTiro, strlen(bufferTiro) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+					recv(socketTiro, buffer, BUFDIM, 0);
+					printf("buffer = %s\n", buffer);
+				} while (!strncmp(buffer, "err", 3));
 
-				recv(socketTiro, buffer, BUFDIM, 0);
-				recv(socketDribbling, buffer, BUFDIM, 0);
-				recv(socketInfortunio, buffer, BUFDIM, 0);
+				do {
+					serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+					if (send(socketDribbling, bufferDribbling, strlen(bufferDribbling) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+					recv(socketDribbling, buffer, BUFDIM, 0);
+				} while (!strncmp(buffer, "err", 3));
+
+
+				do {
+					serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+					if (send(socketInfortunio, bufferInfortunio, strlen(bufferInfortunio) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+					recv(socketInfortunio, buffer, BUFDIM, 0);
+				} while (!strncmp(buffer, "err", 3));
+
+				
 			}
 			else {
 				if (buffer[0] == 's') {
@@ -819,6 +853,8 @@ int main(int argc, char* argv[]) {
 					if (fork() == 0) {
 						printf("main: processo figlio pid = %d\n", getpid());
 						printf("main: processo figlio padre = %d\n", getppid());
+						eventSemaphore = sem_open("eSem", 0);
+						processSemaphore = sem_open("pSem", 0);
 						refereeProcess(&clientSocket);
 						sem_unlink("eSem");
 						sem_close(eventSemaphore);
@@ -846,29 +882,45 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_unlock(&pallone);
 
 	printf("la partita e' cominciata!\n");
-	for (int i = 0; i < 5; i++) {
-		pthread_join(squadraA[i],NULL);
-		pthread_join(squadraB[i],NULL);
-	}
+	
+	while (sem_wait(processSemaphore) != 0);
 
-	serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
-	serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
-	serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 
-	snprintf(buffer, BUFDIM, "t\0");
+	
 
-	send(socketTiro, buffer, strlen(buffer)+1, 0);
-	send(socketInfortunio, buffer, strlen(buffer) + 1, 0);
-	send(socketDribbling, buffer, strlen(buffer) + 1, 0);
+	do {
+		serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
+		snprintf(buffer, BUFDIM, "t\0");
+		if (send(socketTiro, buffer, strlen(buffer) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+		recv(socketTiro, buffer, BUFDIM, 0);
+		printf("buffer = %s\n", buffer);
+	} while (strncmp(buffer, "ack", 3));
+
+	do {
+		serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+		snprintf(buffer, BUFDIM, "t\0");
+		if (send(socketDribbling, buffer, strlen(buffer) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+		recv(socketDribbling, buffer, BUFDIM, 0);
+	} while (strncmp(buffer, "ack", 3));
+
+
+	do {
+		serviceInit(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT);
+		snprintf(buffer, BUFDIM, "t\0");
+		if (send(socketInfortunio, buffer, strlen(buffer) + 1, MSG_CONFIRM) < 0) perror("errore nella scrittura");
+		recv(socketInfortunio, buffer, BUFDIM, 0);
+	} while (strncmp(buffer, "ack", 3));
 	printf("main: messaggio di terminazione inviato ai servizi\n");
 
-	pthread_join(arbitro, NULL);
+	
 
 	sem_destroy(&refServer);
 	sem_destroy(&playerSemaphore);
 
 	sem_unlink("eSem");
 	sem_close(eventSemaphore);
+	sem_unlink("pSem");
+	sem_close(processSemaphore);
 	//if (clientSocket != -1) close(clientSocket);
 	return 0;
 }
