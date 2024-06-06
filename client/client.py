@@ -3,7 +3,7 @@ import sys
 from threading import Thread
 import re
 from queue import Queue
-from tkinter import font
+from tkinter import font, messagebox
 from tkinter import *
 from PIL import Image, ImageTk
 
@@ -316,7 +316,7 @@ altezza_schermo = window.winfo_screenheight()
 
 # Imposta la dimensione della finestra
 larghezza_finestra = 600
-altezza_finestra = 600
+altezza_finestra = 650
 
 # Calcola le coordinate per posizionare la finestra al centro dello schermo
 posizionex = larghezza_schermo // 2 - larghezza_finestra // 2
@@ -353,8 +353,10 @@ labelListB.place(x=230,y=10)
 
 def btn_inserisci_player(player, btn, index):
     win = btn.getRoot()
-    buttons_winA[index].set_state(DISABLED)
-    buttons_winB[index].set_state(DISABLED)
+    if winA.winfo_exists():
+        buttons_winA[index].set_state(DISABLED)
+    if winB.winfo_exists():
+        buttons_winB[index].set_state(DISABLED)
     if win is winA:
         if len(teamA) < 5:
             print(f"{giocatori.get(player)} inserito in TeamA")
@@ -434,8 +436,24 @@ def btn_inizia_partita(testo,btn,index):
     match_start(("127.0.0.1", 8080))
     btn.set_state(NORMAL)
 
+def on_closing(win):
+    if win is winA:
+        if len(teamA) < 5:
+            messagebox.showinfo("Informazione", "Non hai inserito il team")
+        else:
+            win.destroy()
+    elif win is winB:
+        if len(teamB) < 5:
+            messagebox.showinfo("Informazione", "Non hai inserito il team")
+        else:
+            win.destroy()
+    else:
+        if messagebox.askokcancel("Chiusura", "Chiudere il programma ferma ogni processo, terminando la partita. Procedere?"):
+            win.destroy()
+            exit(1)
+
 def playerSelector(win):
-    
+    win.protocol('WM_DELETE_WINDOW', lambda: on_closing(win))
     canvas = Canvas(win, bg='#282828', height = 290, width = 400,bd=0, highlightthickness=0, relief='ridge')
     canvas.place(x=10,y=30)
     label = Label(master=win,text='seleziona 4 giocatori', bg='#282828', fg='white')
@@ -463,17 +481,16 @@ def playerSelector(win):
             
 def mainWindow(win):
     global btn_play
-    
+    win.protocol('WM_DELETE_WINDOW', lambda: on_closing(win))
     img = PhotoImage(master=win, file=r'logo_piccolo.png')
     panel = Label(master=win, image=img, bg='#282828', anchor='center')
-    
     width = img.width()
-    panel.place(x=(larghezza_finestra//2)-(width//2),y=60)
+    panel.place(x=(larghezza_finestra//2)-(width//2),y=40)
     def_font=font.Font(family='Rockwell Extra Bold', size='30')
     label = Label(master=win, text='OneMoreMatch!', bg='#282828', font=def_font, fg='white')
-    label.place(relx=0.5,rely=0.46,anchor='center')
-    canvas = Canvas(win, bg='#282828',height=200,width=600,bd=0,highlightthickness=0,relief='ridge')
-    canvas.place(x=0,y=300)
+    label.place(relx=0.5,y=275,anchor='center')
+    canvas = Canvas(win, bg='#282828',height=100,width=600,bd=0,highlightthickness=0,relief='ridge')
+    canvas.place(x=0,y=550)
     btn_play = CanvasButton(canvas,(larghezza_finestra//2)-50,0,btn_inizia_partita,testo='Start!')
     btn_play.set_state(DISABLED)
     win.mainloop()
