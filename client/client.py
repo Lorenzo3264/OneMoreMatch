@@ -1,6 +1,6 @@
 import socket
 import sys
-from threading import Thread
+from threading import Thread, Lock
 import re
 from queue import Queue
 from tkinter import font, messagebox
@@ -36,6 +36,9 @@ captainA = '0'
 captainB = '1'
 
 squadre = ['n','n','n','n','n','n','n','n','n','n']
+
+errore = False
+mutex = Lock()
 
 def associa_squadra(num, squadra):
     if num < 0 or num > 9:
@@ -75,25 +78,36 @@ def lunghezza_stringa_con_terminatore(stringa):
     return lunghezza
 
 def playerThread(idg, sq, conn):
+    global errore
     try:
         s = socket.socket()
         s.connect(conn)
-    except socket.error as errore:
-        print(f"qualcosa e' andato storto err: {errore}, sto uscendo... \n")
-        sys.exit()
-    invia_giocatore(s,idg,sq)
+        invia_giocatore(s,idg,sq)
+    except socket.error as err:
+        print(f"qualcosa e' andato storto err: {err}, sto uscendo... \n")
+        with mutex:
+            if not errore:
+                errore = True
+                print("dovrebbe aprirsi una finestra")
+                window.event_generate('<<error_event>>')
+        
+    
 
 def refereeThread(conn, msgQueue):
-    
+    global errore
     try:
         s = socket.socket()
         s.connect(conn)
-    except socket.error as errore:
-        print(f"qualcosa e' andato storto err: {errore}, sto uscendo... \n")
-        sys.exit()
-    comando = "sono l'arbitro"
-    comando += "\0"
-    s.send(comando.encode())
+        comando = "sono l'arbitro"
+        comando += "\0"
+        s.send(comando.encode())
+    except socket.error as err:
+        print(f"qualcosa e' andato storto err: {err}, sto uscendo... \n")
+        with mutex:
+            if not errore:
+                errore = True
+                window.event_generate('<<error_event>>')
+        
 
     
     stop = True
@@ -194,7 +208,7 @@ def playerinit(num,sq,conn):
     associa_squadra(num, sq)
     th = Thread(target=playerThread, args=(num,sq,conn,))
     th.start()
-    th.join()
+    #th.join()
 
 def match_start(conn):
     msgQueue = Queue()
@@ -304,9 +318,14 @@ class CanvasButton():
         if state is NORMAL:
             self.canvas.itemconfigure(self.canvas_btn_img_obj, image=self.btn_image, state=state)
             self.canvas.itemconfigure(self.label,fill="white", state=state)
+        if state is HIDDEN:
+            self.canvas.itemconfigure(self.canvas_btn_img_obj, state = state)
+            self.canvas.itemconfigure(self.label,state = state)
+    
 
     def get_text(self):
         return self.testo
+
 
 window = Tk()
 
@@ -326,6 +345,7 @@ window.geometry(f"{larghezza_finestra}x{altezza_finestra}+{posizionex}+{posizion
 window.title("OneMoreMatch!")
 window.resizable(False, False)
 window.configure(background='#282828')
+window.bind('<<error_event>>', lambda e: error_screen())
 btn_play = None
 team_inserted = 0
 
@@ -334,12 +354,18 @@ winA.geometry(f"400x360+{posizionex - 410}+{posizioney}")
 winA.resizable(False, False)
 winA.configure(background='#282828')
 teamA = []
+sentA = False
+btn_confirmA = None
+btn_resetA = None
 
 winB = Toplevel(window)
 winB.geometry(f"400x360+{posizionex + larghezza_finestra  + 10}+{posizioney}")
 winB.resizable(False, False)
 winB.configure(background='#282828')
 teamB = []
+sentB = False
+btn_confirmB = None
+btn_resetB = None
 
 buttons_winA = [None]*8
 buttons_winB = [None]*8
@@ -371,17 +397,19 @@ def btn_inserisci_player(player, btn, index):
             s = listB.get()
             s += f"\n{giocatori.get(player)}"
             listB.set(s)
-    if len(teamA) == 5:
+    if len(teamA) == 5 and not sentA:
+        btn_confirmA.set_state(NORMAL)
         for btn in buttons_winA:
             btn.set_state(DISABLED)
-    elif len(teamB) == 5:
+    if len(teamB) == 5 and not sentB:
+        btn_confirmB.set_state(NORMAL)
         for btn in buttons_winB:
             btn.set_state(DISABLED)
 
 def btn_conferma(testo,btn,index):
     win = btn.getRoot()
     conn = ("127.0.0.1", 8080)
-    global team_inserted
+    global sentA, sentB
     if win is winA:
         for player in teamA:
             print(f"giocatore A: {giocatori.get(player)}\n")
@@ -389,9 +417,10 @@ def btn_conferma(testo,btn,index):
             print(f"team pieno")
             cap = Thread(target=captainThread, args=(teamA,conn))
             cap.start()
-            cap.join()
-            team_inserted += 1
+            sentA = True
             btn.set_state(DISABLED)
+            btn_resetA.set_state(DISABLED)
+            cap.join()
     else:
         for player in teamB:
             print(f"giocatore B: {giocatori.get(player)}\n")
@@ -399,17 +428,19 @@ def btn_conferma(testo,btn,index):
             print(f"team pieno")
             cap = Thread(target=captainThread, args=(teamB,conn))
             cap.start()
-            cap.join()
-            team_inserted += 1
+            sentB = True
             btn.set_state(DISABLED)
-    if team_inserted >= 2:
+            btn_resetB.set_state(DISABLED)
+            cap.join()
+    if sentA and sentB:
         btn_play.set_state(NORMAL)
 
 def btn_reset_team(testo,btn,index):
     win = btn.getRoot()
     global teamA
     global teamB
-    if win is winA:
+    if win is winA and not sentA:
+        btn_confirmA.set_state(DISABLED)
         listA.set('')
         teamA = []
         teamA.append(captainA)
@@ -421,7 +452,9 @@ def btn_reset_team(testo,btn,index):
                 buttons_winA[i].set_state(NORMAL)
                 if len(teamB) < 5:
                     buttons_winB[i].set_state(NORMAL)
-    if win is winB:
+        btn.set_state(NORMAL)
+    if win is winB and not sentB:
+        btn_confirmB.set_state(DISABLED)
         listB.set('')
         teamB = []
         teamB.append(captainB)
@@ -430,7 +463,8 @@ def btn_reset_team(testo,btn,index):
                 buttons_winB[i].set_state(NORMAL)
                 if len(teamA) < 5:
                     buttons_winA[i].set_state(NORMAL)
-    btn.set_state(NORMAL)
+        btn.set_state(NORMAL)
+    
 
 def btn_inizia_partita(testo,btn,index):
     match_start(("127.0.0.1", 8080))
@@ -452,7 +486,13 @@ def on_closing(win):
             win.destroy()
             exit(1)
 
+def error_screen():
+    messagebox.showwarning("attenzione","Connessione col server fallita, riavviare il programma e riprovare")
+    exit(1)
+
 def playerSelector(win):
+    global btn_confirmB, btn_resetB
+    global btn_confirmA, btn_resetA
     win.protocol('WM_DELETE_WINDOW', lambda: on_closing(win))
     canvas = Canvas(win, bg='#282828', height = 290, width = 400,bd=0, highlightthickness=0, relief='ridge')
     canvas.place(x=10,y=30)
@@ -471,13 +511,19 @@ def playerSelector(win):
                 i = 0
             if win is winA:                
                 buttons_winA[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
+                btn_confirmA = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
+                btn_confirmA.set_state(DISABLED)
+                btn_resetA = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
             else:                
                 buttons_winB[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
+                btn_confirmB = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
+                btn_confirmB.set_state(DISABLED)
+                btn_resetB = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
             i += 1
             k += 1
             rely = (i*50)+(10*i)
-    btn_confirm = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
-    btn_reset = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
+    
+    
             
 def mainWindow(win):
     global btn_play
