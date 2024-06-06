@@ -184,7 +184,7 @@ void* service(void* arg) {
 			printf("service: sent message to referee: %s\n", buffer);
 			//close(c_fd);
 		}
-		if (chance >= 35 && chance < 95) {
+		if (chance >= 35 && chance < 85) {
 			snprintf(buffer, BUFDIM, "s%d\0", opponent);
 			send(s_fd, buffer, BUFDIM, 0);
 			//close(s_fd);
@@ -219,7 +219,7 @@ void* service(void* arg) {
 			printf("service: sent message to referee: %s\n", buffer);
 			//close(c_fd);
 		}
-		if (chance >= 95 && chance < 100) {
+		if (chance >= 85 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
 			if (send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
 			//close(s_fd);

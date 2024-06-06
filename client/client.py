@@ -3,6 +3,9 @@ import sys
 from threading import Thread
 import re
 from queue import Queue
+from tkinter import font
+from tkinter import *
+from PIL import Image, ImageTk
 
 # dobbiamo fare in modo che ci siano 11 thread/processi 10 per i giocatori e 1 per l'arbitro
 # tra i thred giocatori due sono i capitani e scelgono (casualmente o meno) i giocatori delle
@@ -10,10 +13,12 @@ from queue import Queue
 # richiesta al gateway con un messaggio contenente informazioni delle squadre.
 # l'arbitro manterra' la connessione attiva fino al termine della partita.
 
+#ONEMOREMATCH
+
 giocatori = {
     '0':"Unidraulico",
     '1':"Duein",
-    '2':"Tressette",
+    '2':"Trevor",
     '3':"Quasimodo",
     '4':"Cinzio",
     '5':"Seimone",
@@ -21,12 +26,16 @@ giocatori = {
     '7':"Otto",
     '8':"Novembro",
     '9':"Diego",
-    'B':"Napoli",
-    'C':"Juventus"
 }
 
+squadraA = "Napoli"
+squadraB = "Juventus"
 
-squadre = ['n'] * 10
+#valori iniziali dei capitani
+captainA = '0' 
+captainB = '1'
+
+squadre = ['n','n','n','n','n','n','n','n','n','n']
 
 def associa_squadra(num, squadra):
     if num < 0 or num > 9:
@@ -45,7 +54,12 @@ def id_to_player(stringaIn):
     for char in stringaIn:
         # Sostituisci il carattere se e' un numero
         if char in giocatori:
+            num = int(char)
             risultato.append(giocatori[char])
+            if(squadre[num] == 'A'):
+                risultato.append(f" della squadra {squadraA}")
+            else:
+                risultato.append(f" della squadra {squadraB}")
         else:
             risultato.append(char)
     
@@ -108,6 +122,7 @@ def msgQueueThread(msgQueue):
     infortuni = 0
     dribblingSuc = 0
     dribblingFal = 0
+    timeouts = 0
     stop = True
     events = open("events.txt","w")
     log = open("log.txt","w")
@@ -146,10 +161,14 @@ def msgQueueThread(msgQueue):
         match_dribblingFal = re.search(pattern_dribblingFal,msg)
         if(match_dribblingFal):
             dribblingFal += 1
+        pattern_timeouts = re.compile("timeout")
+        match_timeouts = re.search(pattern_timeouts,msg)
+        if(match_timeouts):
+            timeouts += 1
 
         if(msg == "partitaTerminata"):
             print(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
-            #events.write(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
+            events.write(f"partita terminata! punteggio finale {puntiA}:{puntiB}\n")
             stop = False
         else:
             events.write(f"{msg_non_num}\n")
@@ -158,7 +177,8 @@ def msgQueueThread(msgQueue):
         f"Numero tiri = {goal+miss}\n"
         f"\tdi cui effettuati con successo = {goal}\n"
         f"\tdi cui falliti = {miss}\n"
-        f"Numero infortuni = {infortuni}")
+        f"Numero infortuni = {infortuni}\n"
+        f"Timout tenuti = {timeouts}")
 
 
 def invia_giocatore(s,idg,sq):
@@ -171,21 +191,12 @@ def invia_comandi(s, comando):
     s.send(comando.encode())
 
 def playerinit(num,sq,conn):
+    associa_squadra(num, sq)
     th = Thread(target=playerThread, args=(num,sq,conn,))
     th.start()
     th.join()
 
-def playergen(conn):
-    playerinit(1,'B',conn)
-    playerinit(2,'A',conn)
-    playerinit(3,'B',conn)
-    playerinit(4,'A',conn)
-    playerinit(5,'B',conn)
-    playerinit(6,'A',conn)
-    playerinit(7,'B',conn)
-    playerinit(8,'A',conn)
-    playerinit(9,'B',conn)
-    playerinit(0,'A',conn)
+def match_start(conn):
     msgQueue = Queue()
     ref = Thread(target=refereeThread, args=(conn, msgQueue,))
     msgQueueTh = Thread(target=msgQueueThread, args=(msgQueue,))
@@ -194,6 +205,289 @@ def playergen(conn):
     msgQueueTh.join()
     ref.join()
 
+def captainThread(team,conn):
+    for player in team:
+        if team == teamA:
+            playerinit(int(player),'A',conn)
+            #print(f"playerinit, player = {player}, team = 'A'\n")
+        else:
+            playerinit(int(player),'B',conn)
+            #print(f"playerinit, player = {player}, team = 'B'\n")
+
+
+# TKINTER
+class OMMButton(Button):
+
+    def __init__(self, root, imghover, imgactive, *args, **kwargs):       
+        super().__init__(root, *args, **kwargs)
+
+        self.imghover = ImageTk.PhotoImage(Image.open(imghover))
+        self.imgactive = ImageTk.PhotoImage(Image.open(imgactive))
+
+        self['image'] = self.imgactive
+        
+        self.bind('<Enter>', self.enter)
+        self.bind('<Leave>', self.leave)
+        
+    def enter(self, event):
+        self.config(image=self.imghover)
+
+    def leave(self, event):
+        self.config(image=self.imgactive)
+
+
+class CanvasButton():
+    """ Create leftmost mouse button clickable canvas image object.
+
+    The x, y coordinates are relative to the top-left corner of the canvas.
+    """
+
+
+    def __init__(self, canvas, x, y,command, state=NORMAL, testo='',index=0):
+        self.canvas = canvas
+        self.root = self.canvas.winfo_toplevel()
+        self.btn_image = PhotoImage(file=r"buttonPlayerActive.png", master=self.root)
+        self.btn_hover = PhotoImage(file=r'buttonPlayerHover.png', master=self.root)
+        self.btn_pressed = PhotoImage(file=r'buttonPlayerPressed.png', master=self.root)
+        self.btn_disabled = PhotoImage(file=r'buttonPlayerDisabled.png', master=self.root)
+        img_width = self.btn_image.width()
+        img_height = self.btn_image.height()
+        pos_x = x+(img_width/2)
+        pos_y = y+(img_height/2)
+        self.canvas_btn_img_obj = canvas.create_image(pos_x, pos_y, anchor='center', state=state,
+                                                      image=self.btn_image)
+        self.testo = testo
+        new_testo = testo
+        if testo in giocatori:
+            new_testo = giocatori.get(testo)
+        self.label = self.canvas.create_text((pos_x,pos_y), text=new_testo, font="MSGothic", fill="white")
+        
+
+        canvas.tag_bind([self.canvas_btn_img_obj], "<ButtonRelease-1>",
+                        lambda event: (command(testo,self,index)))
+        canvas.tag_bind(self.canvas_btn_img_obj, "<Button-1>", self.press)
+        canvas.tag_bind(self.canvas_btn_img_obj, '<Enter>', self.enter)
+        canvas.tag_bind(self.canvas_btn_img_obj, '<Leave>', self.leave)
+        canvas.tag_bind([self.label], "<ButtonRelease-1>",
+                        lambda event: (command(testo,self,index)))
+        canvas.tag_bind(self.label, "<Button-1>", self.press)
+        canvas.tag_bind(self.label, '<Enter>', self.enter)
+        canvas.tag_bind(self.label, '<Leave>', self.leave)
+        
+    def getRoot(self):
+        return self.root
+
+    def press(self, event):
+        self.canvas.itemconfigure(self.canvas_btn_img_obj, image=self.btn_pressed)
+        self.canvas.itemconfigure(self.label,fill="black")
+
+    def enter(self, event):
+        state = self.canvas.itemcget(self.canvas_btn_img_obj,'state')
+        if state == NORMAL:
+            self.canvas.itemconfigure(self.canvas_btn_img_obj, image=self.btn_hover)
+
+    def leave(self, event):
+        state = self.canvas.itemcget(self.canvas_btn_img_obj,'state')
+        if state == NORMAL:
+            self.canvas.itemconfigure(self.canvas_btn_img_obj, image=self.btn_image)
+
+    def set_state(self, state):
+        """ Change canvas button image's state.
+
+        Normally, image objects are created in state tk.NORMAL. Use value
+        tk.DISABLED to make it unresponsive to the mouse, or use tk.HIDDEN to
+        make it invisible.
+        """
+        if state is DISABLED:
+            self.canvas.itemconfigure(self.canvas_btn_img_obj, image=self.btn_disabled, state=state)
+            self.canvas.itemconfigure(self.label,fill="black", state=state)
+        if state is NORMAL:
+            self.canvas.itemconfigure(self.canvas_btn_img_obj, image=self.btn_image, state=state)
+            self.canvas.itemconfigure(self.label,fill="white", state=state)
+
+    def get_text(self):
+        return self.testo
+
+window = Tk()
+
+# Ottieni le dimensioni dello schermo
+larghezza_schermo = window.winfo_screenwidth()
+altezza_schermo = window.winfo_screenheight()
+
+# Imposta la dimensione della finestra
+larghezza_finestra = 600
+altezza_finestra = 600
+
+# Calcola le coordinate per posizionare la finestra al centro dello schermo
+posizionex = larghezza_schermo // 2 - larghezza_finestra // 2
+posizioney = altezza_schermo // 2 - altezza_finestra // 2
+
+window.geometry(f"{larghezza_finestra}x{altezza_finestra}+{posizionex}+{posizioney}")
+window.title("OneMoreMatch!")
+window.resizable(False, False)
+window.configure(background='#282828')
+btn_play = None
+team_inserted = 0
+
+winA = Toplevel(window)
+winA.geometry(f"400x360+{posizionex - 410}+{posizioney}")
+winA.resizable(False, False)
+winA.configure(background='#282828')
+teamA = []
+
+winB = Toplevel(window)
+winB.geometry(f"400x360+{posizionex + larghezza_finestra  + 10}+{posizioney}")
+winB.resizable(False, False)
+winB.configure(background='#282828')
+teamB = []
+
+buttons_winA = [None]*8
+buttons_winB = [None]*8
+
+listA = StringVar()
+listB = StringVar()
+labelListA = Label(master=winA, textvariable=listA, bg='#282828', fg='white', anchor='w', justify=LEFT)
+labelListA.place(x=230,y=10)
+labelListB = Label(master=winB, textvariable=listB, bg='#282828', fg='white', anchor='w', justify=LEFT)
+labelListB.place(x=230,y=10)
+
+def btn_inserisci_player(player, btn, index):
+    win = btn.getRoot()
+    buttons_winA[index].set_state(DISABLED)
+    buttons_winB[index].set_state(DISABLED)
+    if win is winA:
+        if len(teamA) < 5:
+            print(f"{giocatori.get(player)} inserito in TeamA")
+            teamA.append(player)
+            s = listA.get()
+            s += f"\n{giocatori.get(player)}"
+            listA.set(s)
+    else:
+        if len(teamB) < 5:
+            print(f"{giocatori.get(player)} inserito in TeamB")
+            teamB.append(player)
+            s = listB.get()
+            s += f"\n{giocatori.get(player)}"
+            listB.set(s)
+    if len(teamA) == 5:
+        for btn in buttons_winA:
+            btn.set_state(DISABLED)
+    elif len(teamB) == 5:
+        for btn in buttons_winB:
+            btn.set_state(DISABLED)
+
+def btn_conferma(testo,btn,index):
+    win = btn.getRoot()
+    conn = ("127.0.0.1", 8080)
+    global team_inserted
+    if win is winA:
+        for player in teamA:
+            print(f"giocatore A: {giocatori.get(player)}\n")
+        if len(teamA) == 5:
+            print(f"team pieno")
+            cap = Thread(target=captainThread, args=(teamA,conn))
+            cap.start()
+            cap.join()
+            team_inserted += 1
+            btn.set_state(DISABLED)
+    else:
+        for player in teamB:
+            print(f"giocatore B: {giocatori.get(player)}\n")
+        if len(teamB) == 5:
+            print(f"team pieno")
+            cap = Thread(target=captainThread, args=(teamB,conn))
+            cap.start()
+            cap.join()
+            team_inserted += 1
+            btn.set_state(DISABLED)
+    if team_inserted >= 2:
+        btn_play.set_state(NORMAL)
+
+def btn_reset_team(testo,btn,index):
+    win = btn.getRoot()
+    global teamA
+    global teamB
+    if win is winA:
+        listA.set('')
+        teamA = []
+        teamA.append(captainA)
+        for temp in teamA:
+            print(f"team a: {giocatori.get(temp)}")
+        for i in range(8):
+            print(f"index = {i}")
+            if buttons_winA[i].get_text() not in teamB:
+                buttons_winA[i].set_state(NORMAL)
+                if len(teamB) < 5:
+                    buttons_winB[i].set_state(NORMAL)
+    if win is winB:
+        listB.set('')
+        teamB = []
+        teamB.append(captainB)
+        for i in range(8):
+            if buttons_winB[i].get_text() not in teamA:
+                buttons_winB[i].set_state(NORMAL)
+                if len(teamA) < 5:
+                    buttons_winA[i].set_state(NORMAL)
+    btn.set_state(NORMAL)
+
+def btn_inizia_partita(testo,btn,index):
+    match_start(("127.0.0.1", 8080))
+    btn.set_state(NORMAL)
+
+def playerSelector(win):
+    
+    canvas = Canvas(win, bg='#282828', height = 290, width = 400,bd=0, highlightthickness=0, relief='ridge')
+    canvas.place(x=10,y=30)
+    label = Label(master=win,text='seleziona 4 giocatori', bg='#282828', fg='white')
+    label.place(x=10,y=10)
+    i=0
+    k=0
+    relx=0
+    rely=0
+    
+    for idPlayer in giocatori.keys():
+        if idPlayer != captainA and idPlayer != captainB:
+            if i > 3:
+                relx = 110
+                rely = 0
+                i = 0
+            if win is winA:                
+                buttons_winA[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
+            else:                
+                buttons_winB[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
+            i += 1
+            k += 1
+            rely = (i*50)+(10*i)
+    btn_confirm = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
+    btn_reset = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
+            
+def mainWindow(win):
+    global btn_play
+    
+    img = PhotoImage(master=win, file=r'logo_piccolo.png')
+    panel = Label(master=win, image=img, bg='#282828', anchor='center')
+    
+    width = img.width()
+    panel.place(x=(larghezza_finestra//2)-(width//2),y=60)
+    def_font=font.Font(family='Rockwell Extra Bold', size='30')
+    label = Label(master=win, text='OneMoreMatch!', bg='#282828', font=def_font, fg='white')
+    label.place(relx=0.5,rely=0.46,anchor='center')
+    canvas = Canvas(win, bg='#282828',height=200,width=600,bd=0,highlightthickness=0,relief='ridge')
+    canvas.place(x=0,y=300)
+    btn_play = CanvasButton(canvas,(larghezza_finestra//2)-50,0,btn_inizia_partita,testo='Start!')
+    btn_play.set_state(DISABLED)
+    win.mainloop()
+
+# MAIN
 
 if __name__ == '__main__':
-    playergen(("127.0.0.1", 8080))
+    teamA.append('0')
+    teamB.append('1')
+    winA.title(f"capitano {giocatori.get(teamA[0])} prepara il team")
+    winB.title(f"capitano {giocatori.get(teamB[0])} prepara il team")
+    playerSelector(winA)
+    playerSelector(winB)
+    labelListA.lift()
+    labelListB.lift()
+    mainWindow(window)
+    

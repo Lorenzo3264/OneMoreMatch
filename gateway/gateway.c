@@ -22,7 +22,7 @@
 #define INFORTUNIOPORT 8041
 #define TIROPORT 8077
 #define BUFDIM 1024
-#define NPLAYERS 10
+#define TEAMSIZE 10
 #define WAIT 0
 
 //servono per identificare il tipo di evento per l'arbitro
@@ -43,12 +43,14 @@
 
 //risorsa pallone, solo un thread giocatore attivo
 pthread_mutex_t pallone;
-pthread_mutex_t globalVar; //trattare in maniera sicura variabili globali
+pthread_mutex_t* globalVar; //trattare in maniera sicura variabili globali
 pthread_mutex_t eventMutex; //multipli thread event manager hanno accesso concorrente alla socket
 
-volatile char squadre[10] = { 0 };
-volatile int tempoFallo[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-volatile int tempoInfortunio[10] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+volatile char squadre[TEAMSIZE] = { 0 };
+
+
+volatile int* tempoFallo;
+volatile int* tempoInfortunio;
 
 //tempo della partita inteso come numero di eventi, a 0 la partita termina.
 int* N; //inizializzato nel main
@@ -58,7 +60,7 @@ volatile int activePlayer = -1;
 
 //la partita non comincia se il server non e' pronto
 sem_t refServer;
-volatile short playerCount = 10;
+volatile short playerCount = TEAMSIZE;
 sem_t playerSemaphore;
 sem_t *eventSemaphore;
 sem_t *processSemaphore;
@@ -79,7 +81,7 @@ void* playerThread(void* arg) {
 		perror("player: wrong id");
 		exit(EXIT_FAILURE);
 	}
-	pthread_mutex_lock(&globalVar);
+	pthread_mutex_lock(globalVar);
 	printf("player %d: ha preso possesso del mutex globalVar\n",id);
 	char squadra = squadre[id];
 	//codice thread giocatore
@@ -95,7 +97,7 @@ void* playerThread(void* arg) {
 		printf("player %d: retrying resolve hostname\n", id);
 	}
 
-	pthread_mutex_unlock(&globalVar);
+	pthread_mutex_unlock(globalVar);
 	printf("player %d: ha rilasciato il mutex globalVar\n",id);
 
 	
@@ -133,14 +135,14 @@ void* playerThread(void* arg) {
 	printf("player %d thread: 3\n",id);
 
 	//modifichiamo informazioni globali
-	pthread_mutex_lock(&globalVar);
+	pthread_mutex_lock(globalVar);
 	printf("player %d: ha preso possesso del mutex globalVar\n", id);
 	playerCount--;
 	if (playerCount <= 0) {
 		sem_post(&playerSemaphore);
 		printf("giocatori tutti pronti");
 	}
-	pthread_mutex_unlock(&globalVar);
+	pthread_mutex_unlock(globalVar);
 	printf("player %d: ha rilasciato il mutex globalVar\n", id);
 
 	while (*N > 0) { //fino a quando non finisce la partita
@@ -239,9 +241,12 @@ void* playerThread(void* arg) {
 					Non e' necessario inviare a dribbling la notifica dell'infortunio o fallo
 					perche' dribbling ha generato l'evento e gia' lo sa
 				*/
-
+				for (int i = 0; i < TEAMSIZE; i++) {
+					printf("%c%d=%d:%d, ", squadre[i], i, tempoInfortunio[i], tempoFallo[i]);
+				}
+				printf("\n");
 				while (squadre[activePlayer] != squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0){
-					activePlayer = rand() % 10;
+					activePlayer = rand() % TEAMSIZE;
 				}
 				printf("player %d thread: la palla viene passata a %d per infortunio\n", id, activePlayer);
 				
@@ -278,7 +283,7 @@ void* playerThread(void* arg) {
 
 					printf("player %d thread: 5.3 buffer = %s\n", id, buffer);
 					while (squadre[activePlayer] == squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0) {
-						activePlayer = rand() % 10;
+						activePlayer = rand() % TEAMSIZE;
 					}
 
 					
@@ -293,16 +298,12 @@ void* playerThread(void* arg) {
 
 			//prima che perda il pallone o ricominci
 
-			/*
-				bisogna evitare il deadlock imposto dal fatto che troppi giocatori si infortunino o vadano in fallo
-				quando succede bisogna in qualche modo liberare la situazione in modo da avere giocatori in campo.
-				IDEA: evento di timeout, resetta lo stato e dunque il tempoInfortunio e tempoFallo di tutti i giocatori.
-			*/
+			
 
 
 			//N--;
-			pthread_mutex_lock(&globalVar); 
-			for (int k = 0; k < 10; k++) {
+			pthread_mutex_lock(globalVar); 
+			for (int k = 0; k < TEAMSIZE; k++) {
 				printf("%c%d=%d:%d, ", squadre[k], k, tempoInfortunio[k],tempoFallo[k]);
 
 				
@@ -341,7 +342,7 @@ void* playerThread(void* arg) {
 					}
 				}
 			}
-			pthread_mutex_unlock(&globalVar);
+			pthread_mutex_unlock(globalVar);
 
 
 
@@ -402,9 +403,10 @@ void* eventManager(void* arg) {
 	}
 	azione = buf[0];
 	player = buf[1] - '0';
-	if (player > 9 || player < 0)
+	if (azione != TIRO && azione != INFORTUNIO &&
+		azione != DRIBBLING && azione != TIMEOUT)
 	{
-		printf("event manager: player wrong id");
+		printf("event manager: wrong event");
 		azione = 'k';
 	}
 	switch (azione) {
@@ -473,17 +475,20 @@ void* eventManager(void* arg) {
 		recv(s_fd, buf, strlen(buf) + 1, 0);
 		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
-		pthread_mutex_lock(&globalVar);
-		for (int i = 0; i < 10; i++) {
+		pthread_mutex_lock(globalVar);
+
+		for (int i = 0; i < TEAMSIZE; i++) {
+			printf("%c%d=%d:%d, ", squadre[i], i, tempoInfortunio[i], tempoFallo[i]);
+		}
+		printf("\n");
+		for (int i = 0; i < TEAMSIZE; i++) {
 			tempoInfortunio[i] = -1;
 			tempoFallo[i] = -1;
 		}
-		pthread_mutex_unlock(&globalVar);
+		pthread_mutex_unlock(globalVar);
 		break;
 	default:
 		printf("event manager: caso non gestito\n");
-		recv(serviceSocket, buf, BUFDIM, 0);
-		printf("event manager: evento scartato = %s\n",buf);
 		break;
 	}
 	printf("event manager: chiudo la socket del servizio\n");
@@ -672,6 +677,18 @@ int main(int argc, char* argv[]) {
 		NULL, sizeof(int), PROT_READ | PROT_WRITE,
 		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
+	tempoFallo = (int*)mmap(
+		NULL, TEAMSIZE*sizeof(int), PROT_READ | PROT_WRITE,
+		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+	tempoInfortunio = (int*)mmap(
+		NULL, TEAMSIZE*sizeof(int), PROT_READ | PROT_WRITE,
+		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+	globalVar = (pthread_mutex_t*)mmap(
+		NULL, sizeof(pthread_mutex_t), PROT_READ | PROT_WRITE,
+		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
 	*N = 2048;
 
 	//inizializzo il random number generator
@@ -749,7 +766,7 @@ int main(int argc, char* argv[]) {
 
 
 	pthread_mutex_init(&pallone, NULL);
-	pthread_mutex_init(&globalVar, NULL);
+	pthread_mutex_init(globalVar, NULL);
 	pthread_mutex_init(&eventMutex, NULL);
 	sem_init(&playerSemaphore, 0, 1);
 	sem_init(&refServer, 1, 1);
@@ -762,7 +779,7 @@ int main(int argc, char* argv[]) {
 	int j = 0;
 	short ref = 0;
 	//attesa di richieste per i giocatori
-	int players[10];
+	int players[TEAMSIZE];
 	
 	while (i < 5 || j < 5 || ref != 1) {
 
@@ -785,9 +802,9 @@ int main(int argc, char* argv[]) {
 		if (buffer[0] == 'A' && i<5) {
 			//close(clientSocket);
 			players[i + j] = buffer[1] - '0';
-			pthread_mutex_lock(&globalVar);
+			pthread_mutex_lock(globalVar);
 			squadre[players[i + j]] = 'A';
-			pthread_mutex_unlock(&globalVar);
+			pthread_mutex_unlock(globalVar);
 			
 			pthread_create(&squadraA[i], NULL, playerThread, (void*)&players[i+j]);
 			i++;
@@ -816,9 +833,9 @@ int main(int argc, char* argv[]) {
 			if (buffer[0] == 'B' && j < 5) {
 				//close(clientSocket);
 				players[i + j] = buffer[1] - '0';
-				pthread_mutex_lock(&globalVar);
+				pthread_mutex_lock(globalVar);
 				squadre[players[i + j]] = 'B';
-				pthread_mutex_unlock(&globalVar);
+				pthread_mutex_unlock(globalVar);
 				pthread_create(&squadraB[j], NULL, playerThread, (void*)&players[i+j]);
 				j++;
 
@@ -878,7 +895,7 @@ int main(int argc, char* argv[]) {
 	
 	sem_wait(&refServer);
 	sem_wait(&playerSemaphore);
-	activePlayer = rand() % 10;
+	activePlayer = rand() % TEAMSIZE;
 	pthread_mutex_unlock(&pallone);
 
 	printf("la partita e' cominciata!\n");
