@@ -128,9 +128,14 @@ def refereeThread(conn, msgQueue):
             break
         
         
+
+puntiA = 0
+puntiB = 0
+current_action = ''
 def msgQueueThread(msgQueue):
-    puntiA = 0
-    puntiB = 0
+    global puntiA
+    global puntiB
+    global current_action
     goal = 0
     miss = 0
     infortuni = 0
@@ -149,15 +154,19 @@ def msgQueueThread(msgQueue):
         print(f"{msg_non_num}")
         pattern_goal = re.compile("GOAL")
         match_goal = re.search(pattern_goal, msg)
+        with mutex:
+            current_action = msg_non_num
+        window.event_generate('<<action_performed>>')
         if(match_goal):
             players = re.findall(r'\d+',msg)
             playerstr = players[0]
             player = int(playerstr)
             goal += 1
-            if player < 5:
+            if squadre[player] == 'A':
                 puntiA += 1
             else:
                 puntiB += 1
+            window.event_generate('<<update_score>>')
             #events.write(f"punteggio attuale {puntiA}:{puntiB}\n")
         pattern_miss = re.compile("mancato")
         match_miss = re.search(pattern_miss,msg)
@@ -346,8 +355,13 @@ window.title("OneMoreMatch!")
 window.resizable(False, False)
 window.configure(background='#282828')
 window.bind('<<error_event>>', lambda e: error_screen())
+window.bind('<<update_score>>', lambda e: update_score())
+window.bind('<<action_performed>>', lambda e: perform_action())
 btn_play = None
 team_inserted = 0
+str_puntiA = StringVar()
+str_puntiB = StringVar()
+str_azioni = [StringVar()]*4
 
 winA = Toplevel(window)
 winA.geometry(f"400x360+{posizionex - 410}+{posizioney}")
@@ -467,8 +481,10 @@ def btn_reset_team(testo,btn,index):
     
 
 def btn_inizia_partita(testo,btn,index):
-    match_start(("127.0.0.1", 8080))
-    btn.set_state(NORMAL)
+    conn = ("127.0.0.1", 8080)
+    partita = Thread(target=match_start, args=(conn,))
+    partita.start()
+    btn.set_state(DISABLED)
 
 def on_closing(win):
     if win is winA:
@@ -523,10 +539,26 @@ def playerSelector(win):
             k += 1
             rely = (i*50)+(10*i)
     
+
+def perform_action():
+    global str_azioni
+    with mutex:
+        action = current_action
+    str_azioni[3].set(str_azioni[2].get())
+    str_azioni[2].set(str_azioni[1].get())
+    str_azioni[1].set(str_azioni[0].get())
+    str_azioni[0].set(action)
     
+
+def update_score():
+    global str_puntiA, str_puntiB
+    global puntiA, puntiB
+    str_puntiA.set(puntiA)
+    str_puntiB.set(puntiB)
             
 def mainWindow(win):
     global btn_play
+    global str_puntiA, str_puntiB
     win.protocol('WM_DELETE_WINDOW', lambda: on_closing(win))
     img = PhotoImage(master=win, file=r'logo_piccolo.png')
     panel = Label(master=win, image=img, bg='#282828', anchor='center')
@@ -539,6 +571,34 @@ def mainWindow(win):
     canvas.place(x=0,y=550)
     btn_play = CanvasButton(canvas,(larghezza_finestra//2)-50,0,btn_inizia_partita,testo='Start!')
     btn_play.set_state(DISABLED)
+    
+    lbl_punteggio = Label(master=win,bg='#282828',anchor='center', text='Punteggio', fg='white')
+    lbl_punteggio.place(relx=0.5,anchor='center',y=300)
+    
+    lbl_puntiA = Label(master=win, bg='#282828', anchor='center', textvariable=str_puntiA, fg='white')
+    lbl_puntiA.place(relx=0.5-0.1,anchor='center',y=320)
+    str_puntiA.set('0')
+    
+    lbl_column = Label(master=win, bg='#282828', anchor='center', text=':', fg='white')
+    lbl_column.place(relx=0.5,anchor='center', y=320)
+
+    lbl_puntiB = Label(master=win, bg='#282828', anchor='center', textvariable=str_puntiB, fg='white')
+    lbl_puntiB.place(relx=0.5+0.1,anchor='center',y=320)
+    str_puntiB.set('0')
+    
+    lbl_azione1 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[0], fg='white')
+    lbl_azione2 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[1], fg='white')
+    lbl_azione3 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[2], fg='white')
+    lbl_azione4 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[3], fg='white')
+    lbl_azione1.place(y=500,relx=0.5,anchor='center')
+    lbl_azione2.place(y=480,relx=0.5,anchor='center')
+    lbl_azione3.place(y=460,relx=0.5,anchor='center')
+    lbl_azione4.place(y=440,relx=0.5,anchor='center')
+    str_azioni[0].set('')
+    str_azioni[1].set('')
+    str_azioni[2].set('')
+    str_azioni[3].set('')
+
     win.mainloop()
 
 # MAIN

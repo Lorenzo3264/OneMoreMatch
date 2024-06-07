@@ -64,6 +64,7 @@ volatile short playerCount = TEAMSIZE;
 sem_t playerSemaphore;
 sem_t *eventSemaphore;
 sem_t *processSemaphore;
+sem_t* timeoutSemaphore;
 
 
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port);
@@ -360,6 +361,15 @@ void* playerThread(void* arg) {
 	printf("player %d thread: terminato\n", id);
 }
 
+void* timeoutEvent(void* argv) {
+	while (1) {
+		sem_wait(timeoutSemaphore);
+		for (int i = 0; i < 10; i++) {
+			tempoInfortunio[i] = -1;
+			tempoFallo[i] = -1;
+		}
+	}
+}
 
 void* eventManager(void* arg) {
 
@@ -475,8 +485,10 @@ void* eventManager(void* arg) {
 		recv(s_fd, buf, strlen(buf) + 1, 0);
 		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
+		sem_post(timeoutSemaphore)
 		pthread_mutex_lock(globalVar);
 
+		printf("event manager: ")
 		for (int i = 0; i < TEAMSIZE; i++) {
 			printf("%c%d=%d:%d, ", squadre[i], i, tempoInfortunio[i], tempoFallo[i]);
 		}
@@ -772,6 +784,7 @@ int main(int argc, char* argv[]) {
 	sem_init(&refServer, 1, 1);
 	eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 0);
 	processSemaphore = sem_open("pSem", O_CREAT | O_EXCL, 0644, 0);
+	timeoutSemaphore = sem_open("tSem", O_CREAT | O_EXCL, 0644, 0);
 	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 	//indici per inserire i giocatori nelle squadre
@@ -872,6 +885,7 @@ int main(int argc, char* argv[]) {
 						printf("main: processo figlio padre = %d\n", getppid());
 						eventSemaphore = sem_open("eSem", 0);
 						processSemaphore = sem_open("pSem", 0);
+						timeoutSemaphore = sem_open("tSem", 0);
 						refereeProcess(&clientSocket);
 						sem_unlink("eSem");
 						sem_close(eventSemaphore);
@@ -899,7 +913,8 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_unlock(&pallone);
 
 	printf("la partita e' cominciata!\n");
-	
+	pthread_t timeoutThread;
+	pthread_create(&timeoutThread, NULL, timeoutEvent, (void*)argv)
 	while (sem_wait(processSemaphore) != 0);
 
 
