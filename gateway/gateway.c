@@ -238,6 +238,28 @@ void* playerThread(void* arg) {
 				i = 0;
 				tempoFallo[altroPlayer] = atoi(time);
 
+				snprintf(buffer, BUFDIM, "i%d\0", id);
+				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+				writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+				recv(socketDribbling, buffer, BUFDIM, 0);
+				while (buffer[0] != 'a') {
+					serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+					snprintf(buffer, BUFDIM, "i%d\0", id);
+					writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+					recv(socketDribbling, buffer, BUFDIM, 0);
+				}
+
+				snprintf(buffer, BUFDIM, "f%d\0", altroPlayer);
+				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+				writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+				recv(socketDribbling, buffer, BUFDIM, 0);
+				while (buffer[0] != 'a') {
+					serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
+					snprintf(buffer, BUFDIM, "f%d\0", altroPlayer);
+					writeRetry(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT, buffer);
+					recv(socketDribbling, buffer, BUFDIM, 0);
+				}
+
 				/*
 					Non e' necessario inviare a dribbling la notifica dell'infortunio o fallo
 					perche' dribbling ha generato l'evento e gia' lo sa
@@ -303,7 +325,7 @@ void* playerThread(void* arg) {
 
 
 			//N--;
-			pthread_mutex_lock(globalVar); 
+			//pthread_mutex_lock(globalVar); 
 			for (int k = 0; k < TEAMSIZE; k++) {
 				printf("%c%d=%d:%d, ", squadre[k], k, tempoInfortunio[k],tempoFallo[k]);
 
@@ -343,7 +365,7 @@ void* playerThread(void* arg) {
 					}
 				}
 			}
-			pthread_mutex_unlock(globalVar);
+			//pthread_mutex_unlock(globalVar);
 
 
 
@@ -364,7 +386,8 @@ void* playerThread(void* arg) {
 void* timeoutEvent(void* argv) {
 	while (1) {
 		sem_wait(timeoutSemaphore);
-		for (int i = 0; i < 10; i++) {
+		printf("TimeouEvent thread: c'e' un timeout, azzero i tempi");
+		for (int i = 0; i < TEAMSIZE; i++) {
 			tempoInfortunio[i] = -1;
 			tempoFallo[i] = -1;
 		}
@@ -485,10 +508,10 @@ void* eventManager(void* arg) {
 		recv(s_fd, buf, strlen(buf) + 1, 0);
 		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
-		sem_post(timeoutSemaphore)
+		sem_post(timeoutSemaphore);
 		pthread_mutex_lock(globalVar);
 
-		printf("event manager: ")
+		printf("event manager: ");
 		for (int i = 0; i < TEAMSIZE; i++) {
 			printf("%c%d=%d:%d, ", squadre[i], i, tempoInfortunio[i], tempoFallo[i]);
 		}
@@ -701,7 +724,12 @@ int main(int argc, char* argv[]) {
 		NULL, sizeof(pthread_mutex_t), PROT_READ | PROT_WRITE,
 		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-	*N = 2048;
+	for (int i = 0; i < TEAMSIZE; i++) {
+		tempoFallo[i] = -1;
+		tempoInfortunio[i] = -1;
+	}
+
+	*N = 90;
 
 	//inizializzo il random number generator
 	time_t t;
@@ -889,6 +917,10 @@ int main(int argc, char* argv[]) {
 						refereeProcess(&clientSocket);
 						sem_unlink("eSem");
 						sem_close(eventSemaphore);
+						sem_unlink("pSem");
+						sem_close(processSemaphore);
+						sem_unlink("tSem");
+						sem_close(timeoutSemaphore);
 						exit(1);
 					}
 					printf("main: processo singolo di nuovo pid = %d\n", getpid());
@@ -914,7 +946,7 @@ int main(int argc, char* argv[]) {
 
 	printf("la partita e' cominciata!\n");
 	pthread_t timeoutThread;
-	pthread_create(&timeoutThread, NULL, timeoutEvent, (void*)argv)
+	pthread_create(&timeoutThread, NULL, timeoutEvent, (void*)argv);
 	while (sem_wait(processSemaphore) != 0);
 
 
@@ -953,6 +985,8 @@ int main(int argc, char* argv[]) {
 	sem_close(eventSemaphore);
 	sem_unlink("pSem");
 	sem_close(processSemaphore);
+	sem_unlink("tSem");
+	sem_close(timeoutSemaphore);
 	//if (clientSocket != -1) close(clientSocket);
 	return 0;
 }

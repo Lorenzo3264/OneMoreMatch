@@ -108,6 +108,21 @@ void* service(void* arg) {
 
 		exit(1);
 	}
+	if (buffer[0] == 'i') {
+		printf("service: inf player status update\n");
+		player = buffer[1] - '0';
+		stato[player] = 'i';
+		snprintf(buf, BUFDIM, "ack\0");
+		send(s_fd, buf, BUFDIM, 0);
+	}
+	if (buffer[0] == 'f') {
+		printf("service: fal player status update\n");
+		player = buffer[1] - '0';
+		stato[player] = 'f';
+		snprintf(buf, BUFDIM, "ack\0");
+		send(s_fd, buf, BUFDIM, 0);
+	}
+
 	int con = buffer[0] - '0';
 	if ((con < 0 || con > 9) && buffer[0] != 'a') {
 		printf("service: wrong buffer %s\n", buffer);
@@ -269,6 +284,7 @@ void* service(void* arg) {
 		stato[player] = 'a';
 		snprintf(buf, BUFDIM, "ack\0");
 		send(s_fd, buf, BUFDIM, 0);
+		
 		//close(s_fd);
 	}
 

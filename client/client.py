@@ -1,11 +1,13 @@
 import socket
 import sys
+import time
 from threading import Thread, Lock
 import re
 from queue import Queue
 from tkinter import font, messagebox
 from tkinter import *
 from PIL import Image, ImageTk
+import random
 
 # dobbiamo fare in modo che ci siano 11 thread/processi 10 per i giocatori e 1 per l'arbitro
 # tra i thred giocatori due sono i capitani e scelgono (casualmente o meno) i giocatori delle
@@ -60,9 +62,9 @@ def id_to_player(stringaIn):
             num = int(char)
             risultato.append(giocatori[char])
             if(squadre[num] == 'A'):
-                risultato.append(f" della squadra {squadraA}")
+                risultato.append(f" di {squadraA}")
             else:
-                risultato.append(f" della squadra {squadraB}")
+                risultato.append(f" di {squadraB}")
         else:
             risultato.append(char)
     
@@ -147,6 +149,7 @@ def msgQueueThread(msgQueue):
     log = open("log.txt","w")
     while stop:
         data = msgQueue.get()
+        time.sleep(0.5)
         msg_intero = str(data, "utf-8")
         msg_size = lunghezza_stringa_con_terminatore(msg_intero)
         msg = msg_intero[:msg_size]
@@ -338,6 +341,8 @@ class CanvasButton():
 
 window = Tk()
 
+window.wm_iconbitmap("logo_piccolo.ico")
+
 # Ottieni le dimensioni dello schermo
 larghezza_schermo = window.winfo_screenwidth()
 altezza_schermo = window.winfo_screenheight()
@@ -361,9 +366,10 @@ btn_play = None
 team_inserted = 0
 str_puntiA = StringVar()
 str_puntiB = StringVar()
-str_azioni = [StringVar()]*4
+str_azioni = [StringVar() for _ in range(4)]
 
 winA = Toplevel(window)
+winA.wm_iconbitmap("logo_piccolo.ico")
 winA.geometry(f"400x360+{posizionex - 410}+{posizioney}")
 winA.resizable(False, False)
 winA.configure(background='#282828')
@@ -373,6 +379,7 @@ btn_confirmA = None
 btn_resetA = None
 
 winB = Toplevel(window)
+winB.wm_iconbitmap("logo_piccolo.ico")
 winB.geometry(f"400x360+{posizionex + larghezza_finestra  + 10}+{posizioney}")
 winB.resizable(False, False)
 winB.configure(background='#282828')
@@ -538,12 +545,14 @@ def playerSelector(win):
             i += 1
             k += 1
             rely = (i*50)+(10*i)
-    
 
 def perform_action():
     global str_azioni
     with mutex:
         action = current_action
+    if action == "partitaTerminata":
+        action = "La partita finisce!"
+        messagebox.showinfo("Termine","La partita termina.\nPuoi verificare gli eventi nel file events.txt,\npuoi verificare le statistiche nel file log.txt")
     str_azioni[3].set(str_azioni[2].get())
     str_azioni[2].set(str_azioni[1].get())
     str_azioni[1].set(str_azioni[0].get())
@@ -604,8 +613,12 @@ def mainWindow(win):
 # MAIN
 
 if __name__ == '__main__':
-    teamA.append('0')
-    teamB.append('1')
+    captainA = str(random.randint(0, 9))
+    captainB = str(random.randint(0, 9))
+    while captainB == captainA:
+        captainB = str(random.randint(0, 9))
+    teamA.append(captainA)
+    teamB.append(captainB)
     winA.title(f"capitano {giocatori.get(teamA[0])} prepara il team")
     winB.title(f"capitano {giocatori.get(teamB[0])} prepara il team")
     playerSelector(winA)
