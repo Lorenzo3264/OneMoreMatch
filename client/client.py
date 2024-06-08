@@ -42,6 +42,7 @@ squadre = ['n','n','n','n','n','n','n','n','n','n']
 errore = False
 mutex = Lock()
 
+
 def associa_squadra(num, squadra):
     if num < 0 or num > 9:
         print("numero giocatore non consentito")
@@ -143,13 +144,14 @@ def msgQueueThread(msgQueue):
     infortuni = 0
     dribblingSuc = 0
     dribblingFal = 0
+    
     timeouts = 0
     stop = True
     events = open("events.txt","w")
     log = open("log.txt","w")
     while stop:
         data = msgQueue.get()
-        time.sleep(0.5)
+        time.sleep(sleep_time.get())
         msg_intero = str(data, "utf-8")
         msg_size = lunghezza_stringa_con_terminatore(msg_intero)
         msg = msg_intero[:msg_size]
@@ -362,10 +364,13 @@ window.configure(background='#282828')
 window.bind('<<error_event>>', lambda e: error_screen())
 window.bind('<<update_score>>', lambda e: update_score())
 window.bind('<<action_performed>>', lambda e: perform_action())
+
+chk_slow_mode = None
 btn_play = None
 team_inserted = 0
 str_puntiA = StringVar()
 str_puntiB = StringVar()
+sleep_time = DoubleVar()
 str_azioni = [StringVar() for _ in range(4)]
 
 winA = Toplevel(window)
@@ -488,9 +493,11 @@ def btn_reset_team(testo,btn,index):
     
 
 def btn_inizia_partita(testo,btn,index):
+    global chk_slow_mode
     conn = ("127.0.0.1", 8080)
     partita = Thread(target=match_start, args=(conn,))
     partita.start()
+    chk_slow_mode.config(state=DISABLED)
     btn.set_state(DISABLED)
 
 def on_closing(win):
@@ -568,6 +575,7 @@ def update_score():
 def mainWindow(win):
     global btn_play
     global str_puntiA, str_puntiB
+    global sleep_time, chk_slow_mode
     win.protocol('WM_DELETE_WINDOW', lambda: on_closing(win))
     img = PhotoImage(master=win, file=r'logo_piccolo.png')
     panel = Label(master=win, image=img, bg='#282828', anchor='center')
@@ -587,6 +595,8 @@ def mainWindow(win):
     lbl_puntiA = Label(master=win, bg='#282828', anchor='center', textvariable=str_puntiA, fg='white')
     lbl_puntiA.place(relx=0.5-0.1,anchor='center',y=320)
     str_puntiA.set('0')
+    lbl_squadraB = Label(master=win,bg='#282828', anchor='center', text=squadraA, fg='white')
+    lbl_squadraB.place(relx=0.5-0.25,anchor='center',y=320)
     
     lbl_column = Label(master=win, bg='#282828', anchor='center', text=':', fg='white')
     lbl_column.place(relx=0.5,anchor='center', y=320)
@@ -594,7 +604,9 @@ def mainWindow(win):
     lbl_puntiB = Label(master=win, bg='#282828', anchor='center', textvariable=str_puntiB, fg='white')
     lbl_puntiB.place(relx=0.5+0.1,anchor='center',y=320)
     str_puntiB.set('0')
-    
+    lbl_squadraB = Label(master=win,bg='#282828', anchor='center', text=squadraB, fg='white')
+    lbl_squadraB.place(relx=0.5+0.25,anchor='center',y=320)
+
     lbl_azione1 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[0], fg='white')
     lbl_azione2 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[1], fg='white')
     lbl_azione3 = Label(master=win, bg='#282828', anchor='center', textvariable=str_azioni[2], fg='white')
@@ -607,6 +619,9 @@ def mainWindow(win):
     str_azioni[1].set('')
     str_azioni[2].set('')
     str_azioni[3].set('')
+
+    chk_slow_mode = Checkbutton(window, text='slow mode',variable=sleep_time, onvalue=0.5, offvalue=0, bg='#282828', selectcolor="black", activebackground='#282828', activeforeground="black", fg='white')
+    chk_slow_mode.place(relx=0.01,rely=0.95)
 
     win.mainloop()
 
