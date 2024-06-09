@@ -63,9 +63,9 @@ def id_to_player(stringaIn):
             num = int(char)
             risultato.append(giocatori[char])
             if(squadre[num] == 'A'):
-                risultato.append(f" di {squadraA}")
+                risultato.append(f" del {squadraA}")
             else:
-                risultato.append(f" di {squadraB}")
+                risultato.append(f" del {squadraB}")
         else:
             risultato.append(char)
     
