@@ -22,7 +22,6 @@ void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 	struct addrinfo hints, * res;
 	int errcode;
 	void* ptr;
-
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET; // For IPv4
 	hints.ai_socktype = SOCK_STREAM;
@@ -52,7 +51,6 @@ void* service(void *arg){
     int player, opponent, tempoI, tempoP, client_fd, id;
 	struct sockaddr_in client_addr;
 	s_fd = *(int*)arg;
-
 	char ip[40];
 	resolve_hostname("gateway", ip, sizeof(ip));
 
@@ -63,7 +61,6 @@ void* service(void *arg){
 		send(s_fd, buf, BUFDIM, 0);
 		exit(1);
 	}
-
 
 	printf("service: from player buffer = %s\n", buffer);
 	player = buffer[0] - '0';
@@ -77,9 +74,6 @@ void* service(void *arg){
 	}
 
 	opponent = buffer[1] - '0';
-
-
-
 	tempoI = rand() % 15;
 	while(tempoI <= 5){
 		tempoI = rand() % 15;
@@ -102,29 +96,24 @@ void* service(void *arg){
 	snprintf(buffer, BUFDIM, "i%d%d\0", player, opponent);
 	send(client_fd, buffer, BUFDIM, 0);
 	printf("service: to referee buffer = %s\n");
-
-	//close(client_fd);
 	pthread_mutex_unlock(&synchro);
 }
 
 int main(int argc, char* argv[]) {
 	time_t t;
 	srand((unsigned)time(&t));
-
 	pthread_mutex_init(&synchro, NULL);
-
 	int serverSocket, client, len, id;
 	struct sockaddr_in serverAddr, clientAddr;
 	char buffer[BUFDIM];
 	len = sizeof(client);
 	pthread_t player;
 	char squadre[10];
-
 	char hostname[1023] = { '\0' };
-	gethostname(hostname, 1023);
 	char ip[40];
-	resolve_hostname(hostname, ip, sizeof(ip));
 
+	gethostname(hostname, 1023);
+	resolve_hostname(hostname, ip, sizeof(ip));
 	serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	int opt = 1;
@@ -138,19 +127,15 @@ int main(int argc, char* argv[]) {
 	serverAddr.sin_port = htons(PORT);
 	inet_aton(ip, &(serverAddr.sin_addr));
 	memset(&(serverAddr.sin_zero), '\0', 8);
-
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, QUEUE);
-
 	char buf[BUFDIM];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
 
 	int i = 0, j = 0;
-
 	while (i < 5 || j < 5){
-		
 		do {
 			client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 			recv(client, buffer, BUFDIM, 0);
@@ -164,8 +149,6 @@ int main(int argc, char* argv[]) {
 			}
 		} while (buffer[0] != 'A' && buffer[0] != 'B');
 
-		
-		
 		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
 		id = buffer[1] - '0';
 		if(buffer[0] == 'A'){

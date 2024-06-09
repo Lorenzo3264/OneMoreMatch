@@ -18,10 +18,8 @@
 #define QUEUE 2048
 
 volatile char squadre[10];
-
 pthread_mutex_t globalVar;
 volatile char stato[10];
-
 volatile short stop = -1;
 
 /*
@@ -130,7 +128,6 @@ void* service(void* arg) {
 		snprintf(buf, BUFDIM, "err\0");
 		if (send(s_fd, buf, BUFDIM, 0) < 0) perror("service: send error\n");
 		pthread_mutex_unlock(&globalVar);
-		//close(s_fd);
 		
 		pthread_exit(NULL);
 	}
@@ -167,7 +164,6 @@ void* service(void* arg) {
 		if (chance >= 0 && chance < 35) {
 			snprintf(buffer, BUFDIM, "f%d\0", opponent);
 			if(send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
-			//close(s_fd);
 
 			snprintf(buffer, BUFDIM, "d%d%df\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
@@ -197,12 +193,10 @@ void* service(void* arg) {
 				}
 			}
 			printf("service: sent message to referee: %s\n", buffer);
-			//close(c_fd);
 		}
 		if (chance >= 35 && chance < 85) {
 			snprintf(buffer, BUFDIM, "s%d\0", opponent);
 			send(s_fd, buffer, BUFDIM, 0);
-			//close(s_fd);
 
 			snprintf(buffer, BUFDIM, "d%d%dy\0", player, opponent);
 			printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
@@ -232,12 +226,10 @@ void* service(void* arg) {
 				}
 			}
 			printf("service: sent message to referee: %s\n", buffer);
-			//close(c_fd);
 		}
 		if (chance >= 85 && chance < 100) {
 			snprintf(buffer, BUFDIM, "i%d\0", opponent);
 			if (send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
-			//close(s_fd);
 			stato[player] = 'i';
 			stato[opponent] = 'f';
 			int t = timeout();
@@ -273,7 +265,6 @@ void* service(void* arg) {
 					}
 				}
 				printf("service: send message to referee = %s\n", buffer);
-				//close(c_fd);
 			}
 		}
 		
@@ -284,8 +275,6 @@ void* service(void* arg) {
 		stato[player] = 'a';
 		snprintf(buf, BUFDIM, "ack\0");
 		send(s_fd, buf, BUFDIM, 0);
-		
-		//close(s_fd);
 	}
 
 	pthread_mutex_unlock(&globalVar);
@@ -310,14 +299,11 @@ int main(int argc, char* argv[]) {
 
 	time_t t;
 	srand((unsigned)time(&t));
-
 	pthread_mutex_init(&globalVar, NULL);
-
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
 	char ip[40];
 	resolve_hostname(hostname, ip, sizeof(ip));
-
 	int serverSocket, client, len;
 	struct sockaddr_in serverAddr, clientAddr;
 	char buffer[BUFDIM];
@@ -337,10 +323,8 @@ int main(int argc, char* argv[]) {
 	serverAddr.sin_port = htons(PORT);
 	inet_aton(ip, &(serverAddr.sin_addr));
 	memset(&(serverAddr.sin_zero), '\0', 8);
-
 	bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, QUEUE);
-
 	char buf[BUFDIM];
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 	printf("main: Accepting as %s:%d...\n",buf,PORT);
@@ -384,20 +368,13 @@ int main(int argc, char* argv[]) {
 		printf("main: thread creato!\n");
 	}
 
-	
 	char refip[40];
 	resolve_hostname("gateway", refip, sizeof(refip));
-
 	struct sockaddr_in c_addr;
-
 	int c_fd;
-
 	c_fd = socket(AF_INET, SOCK_STREAM, 0);
-
 	c_addr.sin_family = AF_INET;
-
 	c_addr.sin_port = htons(REFEREEPORT);
-
 	inet_aton(refip, &c_addr.sin_addr);
 
 	if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
