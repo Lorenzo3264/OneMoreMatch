@@ -16,7 +16,6 @@
 #define QUEUE 2048
 
 volatile short stop = -1;
-
 pthread_mutex_t synchro;
 
 void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
@@ -52,12 +51,10 @@ void* service(void *arg){
 	char buffer[BUFDIM];
     int player, chance, client_fd;
 	struct sockaddr_in client_addr;
-	
-	
 	char ip[40];
-	resolve_hostname("gateway", ip, sizeof(ip));
 	char buf[BUFDIM];
 
+	resolve_hostname("gateway", ip, sizeof(ip));
 	recv(s_fd, buffer, BUFDIM, 0);
 	if (buffer[0] == 't') {
 		stop = 0;
@@ -66,8 +63,6 @@ void* service(void *arg){
 		exit(1);
 	}
 	
-	
-
 	printf("service: from player buffer = %s\n",buffer);
 	player = buffer[0] - '0';
 
@@ -85,11 +80,9 @@ void* service(void *arg){
 	chance = rand() % 100;
 	if(chance < 70){
 		//fallito
-		//  t%d(r)\0
         snprintf(buffer, BUFDIM, "t%df\0", player);
 	}else{
 		//goal
-		//  t%d(r)\0
         snprintf(buffer, BUFDIM, "t%dy\0", player);
 	}
 
@@ -103,15 +96,13 @@ void* service(void *arg){
 
 	send(client_fd, buffer, BUFDIM, 0);
 	printf("service: to referee buffer = %s\n", buffer);
-	
-	//close(client_fd);
 	pthread_mutex_unlock(&synchro);
 }
 
 int main(int argc, char* argv[]) {
 	time_t t;
-	srand((unsigned)time(&t));
 
+	srand((unsigned)time(&t));
 	pthread_mutex_init(&synchro,NULL);
 
     int serverSocket, client, len, id;
@@ -125,7 +116,6 @@ int main(int argc, char* argv[]) {
 	gethostname(hostname, 1023);
 	char ip[40];
 	resolve_hostname(hostname, ip, sizeof(ip));
-
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	int opt = 1;
@@ -139,7 +129,6 @@ int main(int argc, char* argv[]) {
 	serverAddr.sin_port = htons(PORT);
 	inet_aton(ip, &(serverAddr.sin_addr));
 	memset(&(serverAddr.sin_zero), '\0', 8);
-
     bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	listen(serverSocket, QUEUE);
 
@@ -149,7 +138,6 @@ int main(int argc, char* argv[]) {
 	printf("Accepting as %s:%d...\n", buf, PORT);
 
 	int i = 0, j = 0;
-
 	while (i < 5 || j < 5){
 		do {
 			client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
