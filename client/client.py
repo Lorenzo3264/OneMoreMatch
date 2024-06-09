@@ -501,6 +501,7 @@ def btn_inizia_partita(testo,btn,index):
     partita.start()
     chk_slow_mode.config(state=DISABLED)
     btn.set_state(DISABLED)
+    str_azioni[0].set('La partita sta per cominciare')
 
 def on_closing(win):
     if win is winA:
