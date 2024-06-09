@@ -382,6 +382,7 @@ teamA = []
 sentA = False
 btn_confirmA = None
 btn_resetA = None
+img_teamA = PhotoImage(master=winA, file=r'napoli.png')
 
 winB = Toplevel(window)
 winB.wm_iconbitmap("logo_piccolo.ico")
@@ -392,6 +393,7 @@ teamB = []
 sentB = False
 btn_confirmB = None
 btn_resetB = None
+img_teamB = PhotoImage(master=winB, file=r'juventus.png')
 
 buttons_winA = [None]*8
 buttons_winB = [None]*8
@@ -543,11 +545,15 @@ def playerSelector(win):
                 buttons_winA[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
                 btn_confirmA = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
                 btn_confirmA.set_state(DISABLED)
+                panel = Label(master=win, image=img_teamA, bg='#282828', anchor='center')
+                panel.place(x=255,y=120)
                 btn_resetA = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
             else:                
                 buttons_winB[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
                 btn_confirmB = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
                 btn_confirmB.set_state(DISABLED)
+                panel = Label(master=win, image=img_teamB, bg='#282828', anchor='center')
+                panel.place(x=255,y=120)
                 btn_resetB = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
             i += 1
             k += 1
@@ -634,8 +640,8 @@ if __name__ == '__main__':
         captainB = str(random.randint(0, 9))
     teamA.append(captainA)
     teamB.append(captainB)
-    winA.title(f"capitano {giocatori.get(teamA[0])} prepara il team")
-    winB.title(f"capitano {giocatori.get(teamB[0])} prepara il team")
+    winA.title(f"capitano {giocatori.get(teamA[0])} prepara il team {squadraA}")
+    winB.title(f"capitano {giocatori.get(teamB[0])} prepara il team {squadraB}")
     playerSelector(winA)
     playerSelector(winB)
     labelListA.lift()
