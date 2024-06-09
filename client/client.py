@@ -227,10 +227,8 @@ def captainThread(team,conn):
     for player in team:
         if team == teamA:
             playerinit(int(player),'A',conn)
-            #print(f"playerinit, player = {player}, team = 'A'\n")
         else:
             playerinit(int(player),'B',conn)
-            #print(f"playerinit, player = {player}, team = 'B'\n")
 
 # TKINTER
 class OMMButton(Button):
