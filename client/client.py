@@ -36,12 +36,10 @@ squadraB = "Juventus"
 #valori iniziali dei capitani
 captainA = '0' 
 captainB = '1'
-
 squadre = ['n','n','n','n','n','n','n','n','n','n']
-
 errore = False
-mutex = Lock()
 
+mutex = Lock()
 
 def associa_squadra(num, squadra):
     if num < 0 or num > 9:
@@ -50,7 +48,6 @@ def associa_squadra(num, squadra):
         print("squadra non consentita")
     else:
         squadre[num] = squadra
-
 
 def id_to_player(stringaIn):
     # Risultato iniziale come lista di caratteri
@@ -94,8 +91,6 @@ def playerThread(idg, sq, conn):
                 print("dovrebbe aprirsi una finestra")
                 window.event_generate('<<error_event>>')
         
-    
-
 def refereeThread(conn, msgQueue):
     global errore
     try:
@@ -111,8 +106,6 @@ def refereeThread(conn, msgQueue):
                 errore = True
                 window.event_generate('<<error_event>>')
         
-
-    
     stop = True
     while stop:
         try:
@@ -130,8 +123,6 @@ def refereeThread(conn, msgQueue):
             print("Errore nella ricezione dei dati:", e)
             break
         
-        
-
 puntiA = 0
 puntiB = 0
 current_action = ''
@@ -208,7 +199,6 @@ def msgQueueThread(msgQueue):
         f"Numero infortuni = {infortuni}\n"
         f"Timout tenuti = {timeouts}")
 
-
 def invia_giocatore(s,idg,sq):
     comando = f"{sq}{idg}"
     comando += '\0'
@@ -242,7 +232,6 @@ def captainThread(team,conn):
             playerinit(int(player),'B',conn)
             #print(f"playerinit, player = {player}, team = 'B'\n")
 
-
 # TKINTER
 class OMMButton(Button):
 
@@ -270,7 +259,6 @@ class CanvasButton():
     The x, y coordinates are relative to the top-left corner of the canvas.
     """
 
-
     def __init__(self, canvas, x, y,command, state=NORMAL, testo='',index=0):
         self.canvas = canvas
         self.root = self.canvas.winfo_toplevel()
@@ -290,7 +278,6 @@ class CanvasButton():
             new_testo = giocatori.get(testo)
         self.label = self.canvas.create_text((pos_x,pos_y), text=new_testo, font="MSGothic", fill="white")
         
-
         canvas.tag_bind([self.canvas_btn_img_obj], "<ButtonRelease-1>",
                         lambda event: (command(testo,self,index)))
         canvas.tag_bind(self.canvas_btn_img_obj, "<Button-1>", self.press)
@@ -336,13 +323,10 @@ class CanvasButton():
             self.canvas.itemconfigure(self.canvas_btn_img_obj, state = state)
             self.canvas.itemconfigure(self.label,state = state)
     
-
     def get_text(self):
         return self.testo
 
-
 window = Tk()
-
 window.wm_iconbitmap("logo_piccolo.ico")
 
 # Ottieni le dimensioni dello schermo
@@ -571,7 +555,6 @@ def perform_action():
     str_azioni[1].set(str_azioni[0].get())
     str_azioni[0].set(action)
     
-
 def update_score():
     global str_puntiA, str_puntiB
     global puntiA, puntiB
@@ -626,7 +609,7 @@ def mainWindow(win):
     str_azioni[2].set('')
     str_azioni[3].set('')
 
-    chk_slow_mode = Checkbutton(window, text='slow mode',variable=sleep_time, onvalue=0.5, offvalue=0, bg='#282828', selectcolor="black", activebackground='#282828', activeforeground="black", fg='white')
+    chk_slow_mode = Checkbutton(window, text='slow mode',variable=sleep_time, onvalue=0.75, offvalue=0, bg='#282828', selectcolor="black", activebackground='#282828', activeforeground="black", fg='white')
     chk_slow_mode.place(relx=0.01,rely=0.95)
 
     win.mainloop()
@@ -647,4 +630,3 @@ if __name__ == '__main__':
     labelListA.lift()
     labelListB.lift()
     mainWindow(window)
-    
