@@ -78,7 +78,7 @@ void* service(void *arg){
 	send(s_fd, buf, BUFDIM, 0);
 
 	chance = rand() % 100;
-	if(chance < 70){
+	if(chance < 65){
 		//fallito
         snprintf(buffer, BUFDIM, "t%df\0", player);
 	}else{

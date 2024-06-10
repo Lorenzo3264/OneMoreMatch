@@ -62,7 +62,7 @@ def id_to_player(stringaIn):
             if(squadre[num] == 'A'):
                 risultato.append(f" del {squadraA}")
             else:
-                risultato.append(f" del {squadraB}")
+                risultato.append(f" della {squadraB}")
         else:
             risultato.append(char)
     
@@ -481,7 +481,6 @@ def btn_inizia_partita(testo,btn,index):
     conn = ("127.0.0.1", 8080)
     partita = Thread(target=match_start, args=(conn,))
     partita.start()
-    chk_slow_mode.config(state=DISABLED)
     btn.set_state(DISABLED)
     str_azioni[0].set('La partita sta per cominciare')
 
@@ -608,7 +607,8 @@ def mainWindow(win):
     str_azioni[2].set('')
     str_azioni[3].set('')
 
-    chk_slow_mode = Checkbutton(window, text='slow mode',variable=sleep_time, onvalue=0.75, offvalue=0, bg='#282828', selectcolor="black", activebackground='#282828', activeforeground="black", fg='white')
+    sleep_time.set(0.3)
+    chk_slow_mode = Checkbutton(window, text='slow mode',variable=sleep_time, onvalue=1, offvalue=0.3, bg='#282828', selectcolor="black", activebackground='#282828', activeforeground="black", fg='white')
     chk_slow_mode.place(relx=0.01,rely=0.95)
 
     win.mainloop()

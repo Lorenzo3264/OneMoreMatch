@@ -679,7 +679,7 @@ int main(int argc, char* argv[]) {
 		tempoInfortunio[i] = -1;
 	}
 
-	*N = 90;
+	*N = 60;
 
 	//inizializzo il random number generator
 	time_t t;
