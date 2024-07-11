@@ -108,7 +108,6 @@ int main(int argc, char* argv[]) {
 	char buffer[BUFDIM];
 	len = sizeof(client);
 	pthread_t player;
-	char squadre[10];
 	char hostname[1023] = { '\0' };
 	char ip[40];
 
@@ -133,33 +132,6 @@ int main(int argc, char* argv[]) {
 	inet_ntop(AF_INET, &serverAddr.sin_addr, buf, sizeof(buf));
 
 	printf("Accepting as %s:%d...\n", buf, PORT);
-
-	int i = 0, j = 0;
-	while (i < 5 || j < 5){
-		do {
-			client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
-			recv(client, buffer, BUFDIM, 0);
-			if (buffer[0] != 'A' && buffer[0] != 'B') {
-				snprintf(buf, BUFDIM, "err\0");
-				send(client, buf, BUFDIM, 0);
-			}
-			else {
-				snprintf(buf, BUFDIM, "ack\0");
-				send(client, buf, BUFDIM, 0);
-			}
-		} while (buffer[0] != 'A' && buffer[0] != 'B');
-
-		printf("main: creazione squadre: %c%c\n", buffer[0], buffer[1]);
-		id = buffer[1] - '0';
-		if(buffer[0] == 'A'){
-			squadre[id] = 'A';
-			i++;
-		}
-		if(buffer[0] == 'B'){
-			squadre[id] = 'B';
-			j++;
-		}
-	}
 
 	while(stop == -1){
 		printf("main: waiting for player...\n");
