@@ -73,6 +73,9 @@ void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int
 int resolve_hostname(const char* hostname, char* ip, size_t ip_len);
 void writeRetry(int* socket, struct sockaddr_in* addr, const char* ip, int port, char* buffer);
 
+//pid del referee, necessario per il segnale di timeout
+pid_t refPid;
+
 //definizione del comportamento del thread giocatore
 void* playerThread(void* arg) {
 	int id = *(int*)arg; //identificativo del giocatore
@@ -155,7 +158,7 @@ void* playerThread(void* arg) {
 
 			//gestisco un eventuale errore
 			while ((altroPlayer > 9 || altroPlayer < 0) || 
-				(squadra == squadre[altroPlayer] || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0))
+				(squadra == squadre[altroPlayer] || tempoInfortunio[altroPlayer] > 0 || tempoFallo[altroPlayer] > 0))
 			{
 				printf("player %d thread: oppnent wrong id=%d, retrying...\n",id,altroPlayer);
 				serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
@@ -177,7 +180,6 @@ void* playerThread(void* arg) {
 				writeRetry(&socketInfortunio, &addrInfortunio, ipInfortunio, INFORTUNIOPORT, buffer);
 				printf("player %d thread: 5.1 buffer = %s\n", id, buffer);
 				recv(socketInfortunio, buffer, BUFDIM, 0);
-				sem_wait(eventSemaphore); //attende che l'arbitro gestisca l'evento
 
 				/*
 					formato messaggio infortunio: IXXXPXXX\0
@@ -206,7 +208,7 @@ void* playerThread(void* arg) {
 				i = 0;
 				tempoFallo[altroPlayer] = atoi(time);
 
-				//TODO: verificare la necessita' di un timeout
+				sem_wait(eventSemaphore); //attende che l'arbitro gestisca l'evento
 
 				while (squadre[activePlayer] != squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0){
 					activePlayer = rand() % TEAMSIZE;
@@ -411,6 +413,17 @@ void* eventManager(void* arg) {
 		recv(s_fd, buf, strlen(buf) + 1, 0);
 		if (strncmp(buf, "ack", 3)) perror("event manager: errore ack da client");
 		pthread_mutex_unlock(&eventMutex);
+
+		int tim = checkTimeout();
+		if (tim == 1) {
+			for (int i = 0; i < 10; i++) {
+				tempoFallo[i] = -1;
+				tempoInfortunio[i] = -1;
+			}
+			strcpy(buf, "A causa delle recenti vicissitudini viene stabilito un timeout!\0");
+			send(s_fd, buf, strlen(buf) + 1, 0);
+			recv(s_fd, buf, strlen(buf) + 1, 0);
+		}
 		
 		azione = -1;
 		break;
@@ -595,6 +608,53 @@ void writeRetry(int *socket, struct sockaddr_in *addr, const char* ip, int port,
 	}
 }
 
+int checkTimeout() {
+	int acc = 0, j = 0, k = 0, ret = 0;
+	int squadraA[5];
+	int squadraB[5];
+	for(int i=0;i<10;i++){
+		if (squadre[i] = 'A') {
+			squadraA[j] = i;
+			j++;
+		}
+		else {
+			squadraB[k] = i;
+			k++;
+		}
+	}
+	for (int i = 0; i < 5; i++) {
+		if (tempoFallo[squadraA[i]] > 0 || tempoInfortunio[squadraA[i]] > 0) acc++;
+	}
+	if (acc == 5) {
+		ret = 1;
+		kill(getpid(), SIGUSR1);
+		kill(refPid, SIGUSR2);
+	}
+	acc = 0;
+	for (int i = 0; i < 5; i++) {
+		if (tempoFallo[squadraB[i]] > 0 || tempoInfortunio[squadraB[i]] > 0) acc++;
+	}
+	if (acc == 5) {
+		ret = 1;
+		kill(getpid(), SIGUSR1);
+		kill(refPid, SIGUSR2);
+	}
+	return ret();
+}
+
+//handler per il segnale di timeout
+void handler(int sig) {
+	if (sig == SIGUSR1) {
+		for (int i = 0; i < 10; i++) {
+			tempoFallo[i] = -1;
+			tempoInfortunio[i] = -1;
+		}
+	}
+	else if(sig == SIGUSR2){
+		printf("referee process: timeout!\n");
+	}
+}
+
 int main(int argc, char* argv[]) {
 
 	//inizializzo il random number generator
@@ -621,7 +681,7 @@ int main(int argc, char* argv[]) {
 	}
 
 
-	signal(SIGUSR1, SIG_IGN);
+	signal(SIGINT, SIG_IGN);
 
 	sigset_t sigSet;
 	sigemptyset(&sigSet);
@@ -634,6 +694,9 @@ int main(int argc, char* argv[]) {
 		if (pid < 0) perror("fork error"), exit(1);
 		if (pid == 0) {
 			//definisco variabili per le socket
+
+			signal(SIGUSR1, handler);
+			signal(SIGUSR2, handler);
 
 			printf("pid %d: Hello World!\n", getpid());
 
@@ -686,7 +749,8 @@ int main(int argc, char* argv[]) {
 						close(clientSocket);
 					}
 					else {
-						close(clientSocket)
+						i--;
+						close(clientSocket);
 					}
 					playerCheck++;
 				}
@@ -697,7 +761,7 @@ int main(int argc, char* argv[]) {
 			}
 
 			close(mySocket);
-			//kill(getppid(), SIGUSR1);
+			//kill(getppid(), SIGINT);
 			//printf("pid %d: allowing new match!\n", getpid());
 
 			for (int i = 0; i < 8; i++) {
@@ -750,10 +814,7 @@ int main(int argc, char* argv[]) {
 			timeoutSemaphore = sem_open("tSem", O_CREAT | O_EXCL, 0644, 0);
 			pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
-			//indici per inserire i giocatori nelle squadre
-			int i = 0;
-			int j = 0;
-			short ref = 0;
+			
 
 			//array di richieste di accesso per i giocatori
 			int players[TEAMSIZE];
@@ -772,28 +833,26 @@ int main(int argc, char* argv[]) {
 			}
 
 			for (int k = 0; k < 10; k++) printf("pid %d: received matrix row %d: %c%c\n", getpid(), k, idBuf[k][0], idBuf[k][1]);
-			scanf("%d", &i);
+
+			//indici per inserire i giocatori nelle squadre
+			int i = 0;
+			int j = 0;
+			short ref = 0;
 
 			//URGE GRANDI CAMBIAMENTI
-			while (i < 5 || j < 5 || ref != 1) {
+			for (int k = 0; k < 10; k++) {
 				printf("pid %d: index i=%d j=%d ref=%d\n", getpid(), i, j, ref);
-				//clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
 
-				recv(clientSocket, buffer, BUFDIM, 0);
-				printf("pid %d: client buffer = %s\n", getpid(), buffer);
 
 				/*
 					Qui bisogna interpretare il formato del messaggio.
 					esempio messaggio 'A3' indicano la squadra (che puo' essere A o B)
 					e id giocatore (da 0 a 9)
 				*/
-				i++;
-				j++;
-				ref = 1;
-				/*
+				
 				//inserisco giocatore nella squadra A
-				if (buffer[0] == 'A' && i < 5) {
-					players[i + j] = buffer[1] - '0';
+				if (idBuf[k][0] == 'A' && i < 5) {
+					players[i + j] = idBuf[k][1] - '0';
 
 					//metto la squadra corretta all'interno dell'array globale
 					pthread_mutex_lock(globalVar);
@@ -804,8 +863,8 @@ int main(int argc, char* argv[]) {
 					i++;
 				}
 				else {
-					if (buffer[0] == 'B' && j < 5) {
-						players[i + j] = buffer[1] - '0';
+					if (idBuf[k][0] == 'B' && j < 5) {
+						players[i + j] = idBuf[k][1] - '0';
 
 						//metto la squadra corretta all'interno dell'array globale
 						pthread_mutex_lock(globalVar);
@@ -815,34 +874,30 @@ int main(int argc, char* argv[]) {
 						pthread_create(&squadraB[j], NULL, playerThread, (void*)&players[i + j]);
 						j++;
 					}
-					else {
-						if (buffer[0] == 's') {
-							//creato il processo dell'arbitro, gestisce la comunicazione col client.
-							if (fork() == 0) {
-
-								//inizializzazione semafori nel nuovo processo
-								eventSemaphore = sem_open("eSem", 0);
-								processSemaphore = sem_open("pSem", 0);
-								timeoutSemaphore = sem_open("tSem", 0);
-								refereeProcess(&clientSocket);
-
-								//non necessari ma irrobustisce il programma
-								sem_unlink("eSem");
-								sem_close(eventSemaphore);
-								sem_unlink("pSem");
-								sem_close(processSemaphore);
-								sem_unlink("tSem");
-								sem_close(timeoutSemaphore);
-								exit(1);
-							}
-							ref = 1;
-							printf("main: referee started\n");
-						}
-					}
 				}
-				*/
+				
 			}
-			scanf("%d", &i);
+
+			//creato il processo dell'arbitro, gestisce la comunicazione col client.
+			if ((refPid = fork()) == 0) {
+
+				//inizializzazione semafori nel nuovo processo
+				eventSemaphore = sem_open("eSem", 0);
+				processSemaphore = sem_open("pSem", 0);
+				timeoutSemaphore = sem_open("tSem", 0);
+				refereeProcess(&refereeSocket);
+
+				//non necessari ma irrobustisce il programma
+				sem_unlink("eSem");
+				sem_close(eventSemaphore);
+				sem_unlink("pSem");
+				sem_close(processSemaphore);
+				sem_unlink("tSem");
+				sem_close(timeoutSemaphore);
+				exit(1);
+			}
+			printf("main: referee started\n");
+
 			//attende che il referee e i giocatori siano pronti
 			sem_wait(&refServer);
 			sem_wait(&playerSemaphore);

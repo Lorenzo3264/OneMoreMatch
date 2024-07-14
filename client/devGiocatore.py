@@ -28,7 +28,7 @@ if __name__ == '__main__':
 			i += 1
 			pid=s.recv(10)
 			pidstr=pid.decode()
-			print(f"Sei entrato nella partita numero {pidstr}\n")
+			print(f"{string} Sei entrato nella partita numero {pidstr}\n")
 			s.close()
 		except socket.error as err:
 			print(f"non ci sono partite disponibili: {err}, sto uscendo... \n")
