@@ -15,6 +15,7 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <fcntl.h> 
+#include <signal.h>
 
 #define PORT 8080
 #define REFEREEPORT 8088
@@ -619,159 +620,260 @@ int main(int argc, char* argv[]) {
 		printf("main: retrying resolve hostname\n");
 	}
 
-	//definisco variabili per le socket
-	struct sockaddr_in addrTiro, addrInfortunio, addrDribbling;
-	int socketTiro, socketInfortunio, socketDribbling;
-	int mySocket, clientSocket, len;
-	struct sockaddr_in myaddr, client;
 
-	serverInit(&mySocket, &myaddr, ip, PORT);
+	signal(SIGUSR1, SIG_IGN);
 
-	len = sizeof(client);
+	sigset_t sigSet;
+	sigemptyset(&sigSet);
+	sigaddset(&sigSet, SIGUSR1);
+	sigprocmask(SIG_BLOCK, &sigSet, NULL);
 
-	bind(mySocket, (struct sockaddr*)&myaddr, sizeof(myaddr));
-	listen(mySocket, 12);
+	while (1) {
+		
+		pid_t pid = fork();
+		if (pid < 0) perror("fork error"), exit(1);
+		if (pid == 0) {
+			//definisco variabili per le socket
 
-	inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
-	printf("Accepting as %s with port %d...\n", buffer, PORT);
+			printf("pid %d: Hello World!\n", getpid());
 
-	//thread dei giocatori
-	pthread_t squadraA[5];
-	pthread_t squadraB[5];
+			int mySocket, clientSocket, len, refereeSocket;
+			struct sockaddr_in myaddr, client;
 
-	//inizializzazione delle variabili e mutex in memoria condivisa
-	N = (int*)mmap(
-		NULL, sizeof(int), PROT_READ | PROT_WRITE,
-		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+			printf("pid %d: starting...\n", getpid());
 
-	tempoFallo = (int*)mmap(
-		NULL, TEAMSIZE*sizeof(int), PROT_READ | PROT_WRITE,
-		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+			serverInit(&mySocket, &myaddr, ip, PORT);
 
-	tempoInfortunio = (int*)mmap(
-		NULL, TEAMSIZE*sizeof(int), PROT_READ | PROT_WRITE,
-		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+			len = sizeof(client);
 
-	globalVar = (pthread_mutex_t*)mmap(
-		NULL, sizeof(pthread_mutex_t), PROT_READ | PROT_WRITE,
-		MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-	for (int i = 0; i < TEAMSIZE; i++) {
-		tempoFallo[i] = -1;
-		tempoInfortunio[i] = -1;
-	}
+			printf("pid %d: socket ready.\n", getpid());
+			bind(mySocket, (struct sockaddr*)&myaddr, sizeof(myaddr));
+			listen(mySocket, 12);
 
-	*N = 60;
+			inet_ntop(AF_INET, &myaddr.sin_addr, buffer, sizeof(buffer));
+			printf("pid %d: Accepting as %s with port %d...\n", getpid(), buffer, PORT);
 
-	//inizializzazione di semafori e mutex
-	pthread_mutex_init(&pallone, NULL);
-	pthread_mutex_init(globalVar, NULL);
-	pthread_mutex_init(&eventMutex, NULL);
-	sem_init(&playerSemaphore, 0, 1);
-	sem_init(&refServer, 1, 1);
-	eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 0);
-	processSemaphore = sem_open("pSem", O_CREAT | O_EXCL, 0644, 0);
-	timeoutSemaphore = sem_open("tSem", O_CREAT | O_EXCL, 0644, 0);
-	pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
-
-	//indici per inserire i giocatori nelle squadre
-	int i = 0;
-	int j = 0;
-	short ref = 0;
-
-	//array di richieste di accesso per i giocatori
-	int players[TEAMSIZE];
-	
-	//URGE GRANDI CAMBIAMENTI
-	while (i < 5 || j < 5 || ref != 1) {
-
-		printf("main: index i=%d j=%d ref=%d\n", i, j, ref);
-		clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
-		recv(clientSocket, buffer, BUFDIM, 0);
-		printf("main: client buffer = %s\n", buffer);
-
-		/*
-			Qui bisogna interpretare il formato del messaggio. 
-			esempio messaggio 'A3' indicano la squadra (che puo' essere A o B)
-			e id giocatore (da 0 a 9)
-		*/
-
-		//inserisco giocatore nella squadra A
-		if (buffer[0] == 'A' && i<5) {
-			players[i + j] = buffer[1] - '0';
-
-			//metto la squadra corretta all'interno dell'array globale
-			pthread_mutex_lock(globalVar);
-			squadre[players[i + j]] = 'A';
-			pthread_mutex_unlock(globalVar);
-			
-			pthread_create(&squadraA[i], NULL, playerThread, (void*)&players[i+j]);
-			i++;
-		}
-		else{
-			if (buffer[0] == 'B' && j < 5) {
-				players[i + j] = buffer[1] - '0';
-
-				//metto la squadra corretta all'interno dell'array globale
-				pthread_mutex_lock(globalVar);
-				squadre[players[i + j]] = 'B';
-				pthread_mutex_unlock(globalVar);
-
-				pthread_create(&squadraB[j], NULL, playerThread, (void*)&players[i+j]);
-				j++;
-			}
-			else {
-				if (buffer[0] == 's') {
-					//creato il processo dell'arbitro, gestisce la comunicazione col client.
-					if (fork() == 0) {
-
-						//inizializzazione semafori nel nuovo processo
-						eventSemaphore = sem_open("eSem", 0);
-						processSemaphore = sem_open("pSem", 0);
-						timeoutSemaphore = sem_open("tSem", 0);
-						refereeProcess(&clientSocket);
-
-						//non necessari ma irrobustisce il programma
-						sem_unlink("eSem");
-						sem_close(eventSemaphore);
-						sem_unlink("pSem");
-						sem_close(processSemaphore);
-						sem_unlink("tSem");
-						sem_close(timeoutSemaphore);
-						exit(1);
+			int refCheck = 0;
+			int playerCheck = 0;
+			printf("pid %d: Waiting for players...\n",getpid());
+			char playerBuf[8][128];
+			for (int i = 0; i < 9; i++) {
+				clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
+				recv(clientSocket, buffer, BUFDIM, 0);
+				int cmp = strncmp(buffer, "referee", 7);
+				printf("la stringa '%s', confrontata con 'referee', risulta cmp=%d\n", buffer, cmp);
+				if (cmp == 0) {
+					if (refCheck == 1) {
+						strcpy(buffer, "wait\0");
+						send(clientSocket, buffer, BUFDIM, 0);
+						close(clientSocket);
+						i--;
+						continue;
 					}
-					ref = 1;
-					printf("main: referee started\n");
+					else {
+						printf("pid %d: referee accolto\n", getpid());
+						refereeSocket = clientSocket;
+						refCheck = 1;
+						}
 				}
+				else {
+					if (playerCheck < 8) {
+						strcpy(playerBuf[i], buffer);
+						printf("pid %d recv: %s\n", getpid(), buffer);
+						snprintf(buffer, BUFDIM, "%d\0", getpid());
+						send(clientSocket, buffer, BUFDIM, 0);
+						close(clientSocket);
+					}
+					else {
+						close(clientSocket)
+					}
+					playerCheck++;
+				}
+					
+				
+				
+				
 			}
+
+			close(mySocket);
+			//kill(getppid(), SIGUSR1);
+			//printf("pid %d: allowing new match!\n", getpid());
+
+			for (int i = 0; i < 8; i++) {
+				strcpy(buffer, playerBuf[i]);
+				printf("pid %d: matrix row %d: %s\n", getpid(), i, buffer);
+				send(refereeSocket, buffer, BUFDIM, 0);
+				recv(refereeSocket, buffer, BUFDIM, 0);
+			}
+			strcpy(buffer, "end\0");
+			send(refereeSocket, buffer, BUFDIM, 0);
+			recv(refereeSocket, buffer, BUFDIM, 0);
+			
+			printf("pid %d: sockets received...\n", getpid());
+			//thread dei giocatori
+			pthread_t squadraA[5];
+			pthread_t squadraB[5];
+
+			//inizializzazione delle variabili e mutex in memoria condivisa
+			N = (int*)mmap(
+				NULL, sizeof(int), PROT_READ | PROT_WRITE,
+				MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+			tempoFallo = (int*)mmap(
+				NULL, TEAMSIZE * sizeof(int), PROT_READ | PROT_WRITE,
+				MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+			tempoInfortunio = (int*)mmap(
+				NULL, TEAMSIZE * sizeof(int), PROT_READ | PROT_WRITE,
+				MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+			globalVar = (pthread_mutex_t*)mmap(
+				NULL, sizeof(pthread_mutex_t), PROT_READ | PROT_WRITE,
+				MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+			for (int i = 0; i < TEAMSIZE; i++) {
+				tempoFallo[i] = -1;
+				tempoInfortunio[i] = -1;
+			}
+
+			*N = 60;
+
+			//inizializzazione di semafori e mutex
+			pthread_mutex_init(&pallone, NULL);
+			pthread_mutex_init(globalVar, NULL);
+			pthread_mutex_init(&eventMutex, NULL);
+			sem_init(&playerSemaphore, 0, 1);
+			sem_init(&refServer, 1, 1);
+			eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 0);
+			processSemaphore = sem_open("pSem", O_CREAT | O_EXCL, 0644, 0);
+			timeoutSemaphore = sem_open("tSem", O_CREAT | O_EXCL, 0644, 0);
+			pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
+
+			//indici per inserire i giocatori nelle squadre
+			int i = 0;
+			int j = 0;
+			short ref = 0;
+
+			//array di richieste di accesso per i giocatori
+			int players[TEAMSIZE];
+
+			printf("pid %d: startup complete, accepting player numbers...\n", getpid());
+
+			char idBuf[10][2];
+			for (int k = 0; k < 10; k++) {
+				printf("pid %d: processing player %d",getpid(),k);
+				if(recv(refereeSocket, buffer, BUFDIM, 0)<0) perror("recieve error"), exit(1);
+				printf(" being %s\n", buffer);
+				idBuf[k][0] = buffer[0];
+				idBuf[k][1] = buffer[1];
+				strcpy(buffer, "ack\0");
+				send(refereeSocket, buffer, BUFDIM, 0);
+			}
+
+			for (int k = 0; k < 10; k++) printf("pid %d: received matrix row %d: %c%c\n", getpid(), k, idBuf[k][0], idBuf[k][1]);
+			scanf("%d", &i);
+
+			//URGE GRANDI CAMBIAMENTI
+			while (i < 5 || j < 5 || ref != 1) {
+				printf("pid %d: index i=%d j=%d ref=%d\n", getpid(), i, j, ref);
+				//clientSocket = accept(mySocket, (struct sockaddr*)&client, &len);
+
+				recv(clientSocket, buffer, BUFDIM, 0);
+				printf("pid %d: client buffer = %s\n", getpid(), buffer);
+
+				/*
+					Qui bisogna interpretare il formato del messaggio.
+					esempio messaggio 'A3' indicano la squadra (che puo' essere A o B)
+					e id giocatore (da 0 a 9)
+				*/
+				i++;
+				j++;
+				ref = 1;
+				/*
+				//inserisco giocatore nella squadra A
+				if (buffer[0] == 'A' && i < 5) {
+					players[i + j] = buffer[1] - '0';
+
+					//metto la squadra corretta all'interno dell'array globale
+					pthread_mutex_lock(globalVar);
+					squadre[players[i + j]] = 'A';
+					pthread_mutex_unlock(globalVar);
+
+					pthread_create(&squadraA[i], NULL, playerThread, (void*)&players[i + j]);
+					i++;
+				}
+				else {
+					if (buffer[0] == 'B' && j < 5) {
+						players[i + j] = buffer[1] - '0';
+
+						//metto la squadra corretta all'interno dell'array globale
+						pthread_mutex_lock(globalVar);
+						squadre[players[i + j]] = 'B';
+						pthread_mutex_unlock(globalVar);
+
+						pthread_create(&squadraB[j], NULL, playerThread, (void*)&players[i + j]);
+						j++;
+					}
+					else {
+						if (buffer[0] == 's') {
+							//creato il processo dell'arbitro, gestisce la comunicazione col client.
+							if (fork() == 0) {
+
+								//inizializzazione semafori nel nuovo processo
+								eventSemaphore = sem_open("eSem", 0);
+								processSemaphore = sem_open("pSem", 0);
+								timeoutSemaphore = sem_open("tSem", 0);
+								refereeProcess(&clientSocket);
+
+								//non necessari ma irrobustisce il programma
+								sem_unlink("eSem");
+								sem_close(eventSemaphore);
+								sem_unlink("pSem");
+								sem_close(processSemaphore);
+								sem_unlink("tSem");
+								sem_close(timeoutSemaphore);
+								exit(1);
+							}
+							ref = 1;
+							printf("main: referee started\n");
+						}
+					}
+				}
+				*/
+			}
+			scanf("%d", &i);
+			//attende che il referee e i giocatori siano pronti
+			sem_wait(&refServer);
+			sem_wait(&playerSemaphore);
+
+			//determina il primo giocatore ad avere la palla
+			activePlayer = rand() % TEAMSIZE;
+
+			//comincia la partita
+			pthread_mutex_unlock(&pallone);
+
+			printf("la partita e' cominciata!\n");
+			pthread_t timeoutThread;
+			pthread_create(&timeoutThread, NULL, timeoutEvent, (void*)argv);
+
+			//attende la fine della partita
+			while (sem_wait(processSemaphore) != 0);
+
+			//chiude e libera i semafori
+			sem_destroy(&refServer);
+			sem_destroy(&playerSemaphore);
+			sem_unlink("eSem");
+			sem_close(eventSemaphore);
+			sem_unlink("pSem");
+			sem_close(processSemaphore);
+			sem_unlink("tSem");
+			sem_close(timeoutSemaphore);
 		}
+		sigwait(&sigSet, NULL);
+		printf("ricevuto il segnale\n");
 	}
 
-	//attende che il referee e i giocatori siano pronti
-	sem_wait(&refServer);
-	sem_wait(&playerSemaphore);
-
-	//determina il primo giocatore ad avere la palla
-	activePlayer = rand() % TEAMSIZE;
-
-	//comincia la partita
-	pthread_mutex_unlock(&pallone);
-
-	printf("la partita e' cominciata!\n");
-	pthread_t timeoutThread;
-	pthread_create(&timeoutThread, NULL, timeoutEvent, (void*)argv);
-
-	//attende la fine della partita
-	while (sem_wait(processSemaphore) != 0);
-
-	//chiude e libera i semafori
-	sem_destroy(&refServer);
-	sem_destroy(&playerSemaphore);
-	sem_unlink("eSem");
-	sem_close(eventSemaphore);
-	sem_unlink("pSem");
-	sem_close(processSemaphore);
-	sem_unlink("tSem");
-	sem_close(timeoutSemaphore);
+	
 	return 0;
 }

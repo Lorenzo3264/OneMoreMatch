@@ -12,7 +12,7 @@ services:
         deploy:
           resources:
             limits:
-              cpus: '0.75'
+              cpus: '0.1'
               memory: 50M
         tty: true
         
@@ -31,6 +31,7 @@ services:
             - 8080:8080
         networks:
             - omm
+        stop_grace_period: 1s
 
     dribbling:
         hostname: dribbling
@@ -46,6 +47,7 @@ services:
             - omm
         ports: 
             - 8033:8033
+        stop_grace_period: 1s
 
     infortunio:
         hostname: infortunio
@@ -61,6 +63,7 @@ services:
             - omm
         ports: 
             - 8041:8041
+        stop_grace_period: 1s
 
     tiro:
         hostname: tiro
@@ -76,3 +79,4 @@ services:
             - omm
         ports: 
             - 8077:8077
+        stop_grace_period: 1s
