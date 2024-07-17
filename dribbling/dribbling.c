@@ -63,6 +63,9 @@ void* service(void* arg) {
 		rimane attivo finche' il giocatore non termina l'evento
 	*/
 
+	time_t t;
+	srand(((unsigned)time(&t)) * getpid());
+
 	sigset_t set;
 	sigemptyset(&set);
 	sigaddset(&set, SIGPIPE);
@@ -109,6 +112,13 @@ void* service(void* arg) {
 
 	printf("service: player action\n");
 	player = buffer[0] - '0';
+
+	struct sockaddr_in pV4Addr;
+	socklen_t len = sizeof(pV4Addr);
+	if (getsockname(s_fd, (struct sockaddr*)&pV4Addr, &len) == -1)
+		perror("getsockname");
+	else
+		printf("player %d port number %d\n", player, ntohs(pV4Addr.sin_port));
 		
 	/*
 		probabilita' fallimento = 35%
@@ -178,8 +188,9 @@ int main(int argc, char* argv[]) {
 		printf("main: waiting for player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: connection accepted!\n");
-		pthread_create(&player, NULL, service, (void*)&client);
-		printf("main: thread creato!\n");
+		if (fork() == 0) service((void*)&client), exit(0);
+		//pthread_create(&player, NULL, service, (void*)&client);
+		printf("main: thread creato! con porta %d\n",ntohs(clientAddr.sin_port));
 	}
 
 	close(client);

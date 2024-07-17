@@ -46,6 +46,10 @@ void resolve_hostname(const char* hostname, char* ip, size_t ip_len) {
 
 void* service(void *arg){
 	int s_fd = *(int*)arg;
+
+	time_t t;
+	srand(((unsigned)time(&t)) * getpid());
+
 	pthread_mutex_lock(&synchro);
 	char buffer[BUFDIM], buf[BUFDIM];
     int player, opponent, tempoI, tempoP, client_fd, id;
@@ -124,7 +128,8 @@ int main(int argc, char* argv[]) {
 		printf("main: waiting for player...\n");
 		client = accept(serverSocket, (struct sockaddr*)&clientAddr, &len);
 		printf("main: player found!\n");
-		pthread_create(&player, NULL, service, (void*)&client);
+		if (fork() == 0) service((void*)&client), exit(0);
+		//pthread_create(&player, NULL, service, (void*)&client);
 	}
 	printf("main: closing...\n");
 	sleep(1);

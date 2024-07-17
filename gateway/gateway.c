@@ -134,6 +134,8 @@ void* playerThread(void* arg) {
 		pthread_mutex_lock(&pallone); //attende di ricevere possesso del pallone
 		while (activePlayer == id && *N > 0) { //controlla se il possesso del pallone e' legale
 			
+			printf("giocatore %d inizia il turno nella partita %d\n", id, getpid());
+
 			//informo il servizio Dribbling dell'evento
 			serviceInit(&socketDribbling, &addrDribbling, ipDribbling, DRIBBLINGPORT);
 			
@@ -208,7 +210,9 @@ void* playerThread(void* arg) {
 
 				snprintf(buffer, BUFDIM, "i%d%d\0",id,altroPlayer);
 				write(pipe_fd[1], buffer, BUFDIM);
+				printf("attendo evento infortunio di partita %d\n", getpid());
 				read(event_pipe[0], buffer, BUFDIM);
+				printf("completato evento infortunio di partita %d\n", getpid());
 
 				while (squadre[activePlayer] != squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0){
 					activePlayer = rand() % TEAMSIZE;
@@ -222,7 +226,9 @@ void* playerThread(void* arg) {
 
 				snprintf(buffer, BUFDIM, "d%d%df\0",id,altroPlayer);
 				write(pipe_fd[1], buffer, BUFDIM);
+				printf("attendo evento scarto di partita %d\n", getpid());
 				read(event_pipe[0], buffer, BUFDIM);
+				printf("completato evento scarto di partita %d\n", getpid());
 
 				//il giocatore ha perso la palla a un giocatore avversario
 
@@ -232,7 +238,9 @@ void* playerThread(void* arg) {
 
 				snprintf(buffer, BUFDIM, "d%d%dy\0",id,altroPlayer);
 				write(pipe_fd[1], buffer, BUFDIM);
+				printf("attendo evento dribbling di partita %d\n", getpid());
 				read(event_pipe[0], buffer, BUFDIM);
+				printf("completato evento dribbling di partita %d\n", getpid());
 
 				//inizializzata chance di tiro
 				chance = rand() % 100;
@@ -253,7 +261,9 @@ void* playerThread(void* arg) {
 					}
 
 					write(pipe_fd[1], buffer, BUFDIM);
+					printf("attendo evento tiro di partita %d\n", getpid());
 					read(event_pipe[0], buffer, BUFDIM);
+					printf("completato evento tiro di partita %d\n", getpid());
 
 					while (squadre[activePlayer] == squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0) {
 						activePlayer = rand() % TEAMSIZE;
@@ -288,6 +298,8 @@ void* playerThread(void* arg) {
 			
 			
 			sched_yield(); //permette di operare ad altri thread o processi
+
+			printf("giocatore %d finisce il turno nella partita %d\n", id, getpid());
 		}
 
 		nDribbling = 0;
@@ -478,14 +490,15 @@ void refereeProcess(int* arg) {
 			printf("referee process %d: partita terminata...\n",*N);
 			snprintf(buf, BUFDIM, "partitaTerminata\0");
 			send(s_fd, buf, strlen(buf) + 1, 0);
+			printf("LA PARTITA NUMERO %d TERMINA!\n", getppid());
 			kill(getppid(), SIGKILL);
 			close(event_pipe[1]);
 			exit(1);
 		}
 		my_event ev;
-		printf("referee process %d: waiting for event\n",*N);
+		printf("referee process %d partita %d: waiting for event\n",*N,getppid());
 		read(pipe_fd[0], buf, BUFDIM);
-		printf("referee process %d: event received\n",*N);
+		printf("referee process %d partita %d: event received\n",*N,getppid());
 		ev.sock = s_fd;
 		strcpy(ev.buff, buf);
 		pthread_create(&eventReq, NULL, eventManager, (void*)&ev);
@@ -754,6 +767,8 @@ int main(int argc, char* argv[]) {
 					}
 					else {
 						i--;
+						snprintf(buffer, BUFDIM, "err\0");
+						send(clientSocket, buffer, BUFDIM, 0);
 						close(clientSocket);
 					}
 					playerCheck++;
@@ -779,6 +794,8 @@ int main(int argc, char* argv[]) {
 			strcpy(buffer, "end\0");
 			send(refereeSocket, buffer, BUFDIM, 0);
 			recv(refereeSocket, buffer, BUFDIM, 0);
+			snprintf(buffer, BUFDIM, "%d\0", getpid());
+			send(refereeSocket, buffer, BUFDIM, 0);
 			
 			printf("pid %d: sockets received...\n", getpid());
 			//thread dei giocatori

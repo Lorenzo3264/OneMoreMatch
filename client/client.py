@@ -17,6 +17,8 @@ import random
 
 #ONEMOREMATCH
 
+matchNumber = 0;
+
 giocatori = {
     '0':"Unidraulico",
     '1':"Duein",
@@ -135,8 +137,8 @@ def msgQueueThread(msgQueue):
     
     timeouts = 0
     stop = True
-    events = open("events.txt","w")
-    log = open("log.txt","w")
+    events = open(f"events_{matchNumber}.txt","w")
+    log = open(f"log_{matchNumber}.txt","w")
     while stop:
         data = msgQueue.get()
         time.sleep(sleep_time.get())
@@ -568,7 +570,7 @@ def perform_action():
         action = current_action
     if action == "partitaTerminata":
         action = "La partita finisce!"
-        messagebox.showinfo("Termine","La partita termina.\nPuoi verificare gli eventi nel file events.txt,\npuoi verificare le statistiche nel file log.txt")
+        messagebox.showinfo("Termine",f"La partita termina.\nPuoi verificare gli eventi nel file events_{matchNumber}.txt,\npuoi verificare le statistiche nel file log_{matchNumber}.txt")
     str_azioni[3].set(str_azioni[2].get())
     str_azioni[2].set(str_azioni[1].get())
     str_azioni[1].set(str_azioni[0].get())
@@ -655,7 +657,7 @@ if __name__ == '__main__':
         s.send(string.encode())
         while string!="end":
             data = s.recv(1024)
-            msg_intero = str(data, "ISO-8859-1")
+            msg_intero = str(data, "latin-1")
             msg_size = lunghezza_stringa_con_terminatore(msg_intero)
             string = msg_intero[:msg_size]
             if string == "wait":
@@ -666,7 +668,11 @@ if __name__ == '__main__':
                 i += 1
             data=b"ack"
             s.send(data)
-                
+        data = s.recv(1024)
+        msg_intero = str(data, "latin-1")
+        msg_size = lunghezza_stringa_con_terminatore(msg_intero)
+        string = msg_intero[:msg_size]
+        matchNumber = int(string)
     except socket.error as err:
         print(f"qualcosa e' andato storto err: {err}, sto uscendo... \n")
         error_screen("Connessione col server fallita, riavviare il programma e riprovare")

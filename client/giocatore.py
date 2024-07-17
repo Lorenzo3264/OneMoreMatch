@@ -32,7 +32,10 @@ if __name__ == '__main__':
 				msg_intero = str(data, "latin-1")
 				msg_size = lunghezza_stringa_con_terminatore(msg_intero)
 				pid = msg_intero[:msg_size]
-				print(f"Sei entrato nella partita numero {pid}\n")
+				if pid != "err":
+					print(f"Sei entrato nella partita numero {pid}\n")
+				else:
+					print("coda piena, aspetta l'arrivo di un arbitro e riprova...")
 			except socket.error as err:
 				print(f"non ci sono partite disponibili: {err}, sto uscendo... \n")
 			exit(0)
