@@ -8,6 +8,8 @@
 	- Installare Docker con estensione compose.
 - Istruzioni di lancio:
 	- Avviare il server lanciando `docker compose up -d` da terminale nella cartella del repository,
-	- avviare successivamente il client dalla sua cartella (quindi `cd client` dal repository) eseguendo `python client.py`
+	- Lanciare i client giocatori dalla sua cartella (quindi `cd client` dal repository) attraverso l'uso di `python giocatore.py`
+	- (OPZIONALE) puoi lanciarne otto con un solo script `python devGiocatore.py`
+	- Avviare successivamente il client arbitro dalla sua cartella (quindi `cd client` dal repository) eseguendo `python client.py`
 
  Se dovessero verificarsi errori durante il lancio seguire le istruzioni a schermo.
