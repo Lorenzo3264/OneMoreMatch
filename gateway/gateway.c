@@ -59,19 +59,17 @@ volatile int activePlayer = -1;
 volatile short playerCount = TEAMSIZE; //variabile per preparare i giocatori
 
 //semafori per la sincronizzazione dei thread
-sem_t refServer;
 sem_t playerSemaphore;
 
-//semafori per la sincronizzazione dei processi
-sem_t *eventSemaphore;
-sem_t *processSemaphore;
-sem_t *timeoutSemaphore;
+int pipe_fd[2];
+int event_pipe[2];
 
 //funzioni di supporto
 void serviceInit(int* serviceSocket, struct sockaddr_in* serviceAddr, const char* ip, int port);
 void serverInit(int* serverSocket, struct sockaddr_in* serverAddr, char* ip, int port);
 int resolve_hostname(const char* hostname, char* ip, size_t ip_len);
 void writeRetry(int* socket, struct sockaddr_in* addr, const char* ip, int port, char* buffer);
+int checkTimeout();
 
 //pid del referee, necessario per il segnale di timeout
 pid_t refPid;
@@ -208,7 +206,9 @@ void* playerThread(void* arg) {
 				i = 0;
 				tempoFallo[altroPlayer] = atoi(time);
 
-				sem_wait(eventSemaphore); //attende che l'arbitro gestisca l'evento
+				snprintf(buffer, BUFDIM, "i%d%d\0",id,altroPlayer);
+				write(pipe_fd[1], buffer, BUFDIM);
+				read(event_pipe[0], buffer, BUFDIM);
 
 				while (squadre[activePlayer] != squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0){
 					activePlayer = rand() % TEAMSIZE;
@@ -219,13 +219,20 @@ void* playerThread(void* arg) {
 				break;
 			case 'f':
 				activePlayer = altroPlayer;
-				sem_wait(eventSemaphore); //attende che l'arbitro gestisca l'evento
+
+				snprintf(buffer, BUFDIM, "d%d%df\0",id,altroPlayer);
+				write(pipe_fd[1], buffer, BUFDIM);
+				read(event_pipe[0], buffer, BUFDIM);
+
 				//il giocatore ha perso la palla a un giocatore avversario
 
 				break;
 			case 's':
 				//non perde la palla (tenta un tiro?)
-				sem_wait(eventSemaphore); //attende che l'arbitro gestisca l'evento
+
+				snprintf(buffer, BUFDIM, "d%d%dy\0",id,altroPlayer);
+				write(pipe_fd[1], buffer, BUFDIM);
+				read(event_pipe[0], buffer, BUFDIM);
 
 				//inizializzata chance di tiro
 				chance = rand() % 100;
@@ -238,13 +245,15 @@ void* playerThread(void* arg) {
 					writeRetry(&socketTiro, &addrTiro, ipTiro, TIROPORT, buffer);
 					recv(socketTiro, buffer, BUFDIM, 0);
 					//gestione errori
-					while (buffer[0] != 'a') {
+					while (strcmp(buffer,"err") == 0) {
 						serviceInit(&socketTiro, &addrTiro, ipTiro, TIROPORT);
 						snprintf(buffer, BUFDIM, "%d\0", id);
 						writeRetry(&socketTiro, &addrTiro, ipTiro, TIROPORT, buffer);
 						recv(socketTiro, buffer, BUFDIM, 0);
 					}
-					sem_wait(eventSemaphore); //attende che l'arbitro gestisca l'evento
+
+					write(pipe_fd[1], buffer, BUFDIM);
+					read(event_pipe[0], buffer, BUFDIM);
 
 					while (squadre[activePlayer] == squadra || tempoInfortunio[activePlayer] > 0 || tempoFallo[activePlayer] > 0) {
 						activePlayer = rand() % TEAMSIZE;
@@ -290,17 +299,6 @@ void* playerThread(void* arg) {
 	printf("player %d thread: terminato\n", id);
 }
 
-//thread per la gestione del timeout, presente nel processo main
-void* timeoutEvent(void* argv) {
-	while (1) {
-		sem_wait(timeoutSemaphore); //attende che l'arbitro dichiari timeout
-		printf("TimeouEvent thread: c'e' un timeout, azzero i tempi");
-		for (int i = 0; i < TEAMSIZE; i++) {
-			tempoInfortunio[i] = -1;
-			tempoFallo[i] = -1;
-		}
-	}
-}
 
 //thread per la gestione degli eventi, presente nel processo arbitro
 /*
@@ -310,12 +308,16 @@ void* timeoutEvent(void* argv) {
 */
 void* eventManager(void* arg) {
 
+	typedef struct ref_event {
+		int sock;
+		char buff[BUFDIM];
+	} my_event;
+
 	//inizializzazione delle variabili
 	int* sockets;
 	sockets = (int*)arg;
-	int s_fd = sockets[0];
-	int serviceSocket = sockets[1];
-	free(sockets); //liberazione di memoria, causa malloc prima della generazione del thread
+	my_event ev = *(my_event*)arg;
+	int s_fd = ev.sock;
 	char buf[BUFDIM];
 	int player,opponent;
 	char azione;
@@ -323,7 +325,8 @@ void* eventManager(void* arg) {
 	
 	buf[0] = '\0';//inizializzo la stringa
 	
-	recv(serviceSocket, buf, BUFDIM, 0);
+	strcpy(buf, ev.buff);
+	printf("event manager: received %s from pipe\n", buf);
 	if (buf[0] == '\0') {
 		printf("event manager: received nothing from buffer\n");
 		pthread_exit(NULL);
@@ -381,7 +384,7 @@ void* eventManager(void* arg) {
 		opponent = buf[2] - '0';
 		if (opponent > 9 || opponent < 0 || squadre[opponent] == squadre[player])
 		{
-			printf("event manager %d: opponent wrong id, opp=%d player=%d\n",*N,opponent,player);
+			printf("event manager %d: opponent wrong id, opp=%c%d player=%c%d\n", *N, squadre[opponent], opponent, squadre[player], player);
 			*N = *N + 1;
 			pthread_exit(NULL);
 		}
@@ -431,7 +434,8 @@ void* eventManager(void* arg) {
 		printf("event manager: caso non gestito\n");
 		break;
 	}
-	sem_post(eventSemaphore);//informa il giocatore che l'evento e' stato gestito
+	strcpy(buf, "akc\0");
+	write(event_pipe[1], buf, BUFDIM);
 }
 
 
@@ -443,6 +447,11 @@ void* eventManager(void* arg) {
 */
 void refereeProcess(int* arg) {
 
+	typedef struct ref_event {
+		int sock;
+		char buff[BUFDIM];
+	} my_event;
+
 	//risoluzione indirizzo ip
 	char hostname[1023] = { '\0' };
 	gethostname(hostname, 1023);
@@ -453,15 +462,11 @@ void refereeProcess(int* arg) {
 	//definizione e inizializzazione delle veriabili
 	char buf[BUFDIM];
 	int s_fd = *arg; //socket file descriptor del client/arbitro
-	int eventSocket, serviceSocket, len, player, opponent;
-	struct sockaddr_in eventAddr, serviceAddr;
+	int serviceSocket, len, player, opponent;
+	struct sockaddr_in serviceAddr;
 
-	serverInit(&eventSocket, &eventAddr, ip, REFEREEPORT);
-	bind(eventSocket, (struct sockaddr*)&eventAddr, sizeof(eventAddr));
-	listen(eventSocket, *N);
-	len = sizeof(serviceAddr);
-
-	sem_post(&refServer); //informa il main che il referee e' pronto
+	recv(s_fd, buf, BUFDIM, 0);
+	printf("referee process: received %s\n", buf);
 	
 	strcpy(buf, "La partita e' cominciata!\n");
 	send(s_fd, buf, strlen(buf) + 1, 0);
@@ -473,21 +478,17 @@ void refereeProcess(int* arg) {
 			printf("referee process %d: partita terminata...\n",*N);
 			snprintf(buf, BUFDIM, "partitaTerminata\0");
 			send(s_fd, buf, strlen(buf) + 1, 0);
-			sem_post(processSemaphore);
-			sem_unlink("eSem");
-			sem_close(eventSemaphore);
-			sem_unlink("pSem");
-			sem_close(processSemaphore);
+			kill(getppid(), SIGKILL);
+			close(event_pipe[1]);
 			exit(1);
 		}
-
+		my_event ev;
 		printf("referee process %d: waiting for event\n",*N);
-		serviceSocket = accept(eventSocket, (struct sockaddr*)&serviceAddr, &len);
+		read(pipe_fd[0], buf, BUFDIM);
 		printf("referee process %d: event received\n",*N);
-		sockets = (int*)malloc(2 * sizeof(int));
-		sockets[0] = s_fd;
-		sockets[1] = serviceSocket;
-		pthread_create(&eventReq, NULL, eventManager, (void*)sockets);
+		ev.sock = s_fd;
+		strcpy(ev.buff, buf);
+		pthread_create(&eventReq, NULL, eventManager, (void*)&ev);
 		pthread_join(eventReq, NULL);
 		*N = *N - 1;
 	}
@@ -613,7 +614,7 @@ int checkTimeout() {
 	int squadraA[5];
 	int squadraB[5];
 	for(int i=0;i<10;i++){
-		if (squadre[i] = 'A') {
+		if (squadre[i] == 'A') {
 			squadraA[j] = i;
 			j++;
 		}
@@ -639,7 +640,7 @@ int checkTimeout() {
 		kill(getpid(), SIGUSR1);
 		kill(refPid, SIGUSR2);
 	}
-	return ret();
+	return ret;
 }
 
 //handler per il segnale di timeout
@@ -683,23 +684,26 @@ int main(int argc, char* argv[]) {
 
 	signal(SIGINT, SIG_IGN);
 
-	sigset_t sigSet;
-	sigemptyset(&sigSet);
-	sigaddset(&sigSet, SIGUSR1);
-	sigprocmask(SIG_BLOCK, &sigSet, NULL);
+	int pipe_check[2];
 
 	while (1) {
-		
+		printf("pid %d: sto per avere un figlio!\n", getpid());
+		if (pipe(pipe_check) < 0) perror("pipe check error"), exit(1);
 		pid_t pid = fork();
 		if (pid < 0) perror("fork error"), exit(1);
 		if (pid == 0) {
-			//definisco variabili per le socket
+			
+			close(pipe_check[0]);
 
 			signal(SIGUSR1, handler);
 			signal(SIGUSR2, handler);
 
+			if (pipe(pipe_fd) < 0) perror("pipe error"), exit(1);
+			if (pipe(event_pipe) < 0) perror("pipe error"), exit(1);
+
 			printf("pid %d: Hello World!\n", getpid());
 
+			//definisco variabili per le socket
 			int mySocket, clientSocket, len, refereeSocket;
 			struct sockaddr_in myaddr, client;
 
@@ -761,7 +765,9 @@ int main(int argc, char* argv[]) {
 			}
 
 			close(mySocket);
-			//kill(getppid(), SIGINT);
+			write(pipe_check[1], buffer, BUFDIM);
+			close(pipe_check[1]);
+			printf("signal sent\n");
 			//printf("pid %d: allowing new match!\n", getpid());
 
 			for (int i = 0; i < 8; i++) {
@@ -808,10 +814,6 @@ int main(int argc, char* argv[]) {
 			pthread_mutex_init(globalVar, NULL);
 			pthread_mutex_init(&eventMutex, NULL);
 			sem_init(&playerSemaphore, 0, 1);
-			sem_init(&refServer, 1, 1);
-			eventSemaphore = sem_open("eSem", O_CREAT | O_EXCL, 0644, 0);
-			processSemaphore = sem_open("pSem", O_CREAT | O_EXCL, 0644, 0);
-			timeoutSemaphore = sem_open("tSem", O_CREAT | O_EXCL, 0644, 0);
 			pthread_mutex_lock(&pallone); //i giocatori aspettano l'inizio della partita
 
 			
@@ -878,28 +880,25 @@ int main(int argc, char* argv[]) {
 				
 			}
 
+			for (int k = 0; k < 10; k++) {
+				printf("player: %c%d\n", squadre[k], k);
+			}
+
 			//creato il processo dell'arbitro, gestisce la comunicazione col client.
 			if ((refPid = fork()) == 0) {
+				close(pipe_fd[1]);
+				close(event_pipe[0]);
+				for (int k = 0; k < 10; k++) {
+					printf("referee got player: %c%d\n", squadre[k], k);
+				}
 
-				//inizializzazione semafori nel nuovo processo
-				eventSemaphore = sem_open("eSem", 0);
-				processSemaphore = sem_open("pSem", 0);
-				timeoutSemaphore = sem_open("tSem", 0);
 				refereeProcess(&refereeSocket);
-
-				//non necessari ma irrobustisce il programma
-				sem_unlink("eSem");
-				sem_close(eventSemaphore);
-				sem_unlink("pSem");
-				sem_close(processSemaphore);
-				sem_unlink("tSem");
-				sem_close(timeoutSemaphore);
-				exit(1);
 			}
 			printf("main: referee started\n");
+			close(pipe_fd[0]);
+			close(event_pipe[1]);
 
 			//attende che il referee e i giocatori siano pronti
-			sem_wait(&refServer);
 			sem_wait(&playerSemaphore);
 
 			//determina il primo giocatore ad avere la palla
@@ -909,24 +908,18 @@ int main(int argc, char* argv[]) {
 			pthread_mutex_unlock(&pallone);
 
 			printf("la partita e' cominciata!\n");
-			pthread_t timeoutThread;
-			pthread_create(&timeoutThread, NULL, timeoutEvent, (void*)argv);
 
-			//attende la fine della partita
-			while (sem_wait(processSemaphore) != 0);
+			while (1) pause();
 
-			//chiude e libera i semafori
-			sem_destroy(&refServer);
+			//chiude e libera i semafori e pipe
 			sem_destroy(&playerSemaphore);
-			sem_unlink("eSem");
-			sem_close(eventSemaphore);
-			sem_unlink("pSem");
-			sem_close(processSemaphore);
-			sem_unlink("tSem");
-			sem_close(timeoutSemaphore);
+			close(event_pipe[0]);
 		}
-		sigwait(&sigSet, NULL);
-		printf("ricevuto il segnale\n");
+		close(pipe_check[1]);
+		printf("preparazione partita, attendere...\n");
+		read(pipe_check[0], buffer, BUFDIM);
+		close(pipe_check[0]);
+		printf("ricevuto il segnale %s\n",buffer);
 	}
 
 	

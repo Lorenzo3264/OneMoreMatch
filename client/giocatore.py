@@ -3,6 +3,14 @@ import sys
 
 # MAIN
 
+def lunghezza_stringa_con_terminatore(stringa):
+    lunghezza = 0
+    for carattere in stringa:
+        if carattere == '\0':
+            break
+        lunghezza += 1
+    return lunghezza
+
 if __name__ == '__main__':
 	string="referee"
 	print("benvenuto giocatore, inserisci il tuo nome!")
@@ -20,9 +28,11 @@ if __name__ == '__main__':
 				s = socket.socket()
 				s.connect(conn)
 				s.send(string.encode())
-				pid=s.recv(1024)
-				pidstr=pid.decode()
-				print(f"Sei entrato nella partita numero {pidstr}\n")
+				data=s.recv(1024)
+				msg_intero = str(data, "latin-1")
+				msg_size = lunghezza_stringa_con_terminatore(msg_intero)
+				pid = msg_intero[:msg_size]
+				print(f"Sei entrato nella partita numero {pid}\n")
 			except socket.error as err:
 				print(f"non ci sono partite disponibili: {err}, sto uscendo... \n")
 			exit(0)

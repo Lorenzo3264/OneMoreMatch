@@ -74,8 +74,6 @@ void* service(void *arg){
 		pthread_mutex_unlock(&synchro);
 		pthread_exit(NULL);
 	}
-	snprintf(buf, BUFDIM, "ack\0");
-	send(s_fd, buf, BUFDIM, 0);
 
 	chance = rand() % 100;
 	if(chance < 65){
@@ -85,17 +83,8 @@ void* service(void *arg){
 		//goal
         snprintf(buffer, BUFDIM, "t%dy\0", player);
 	}
-
-    client_fd = socket(AF_INET, SOCK_STREAM, 0);
-	client_addr.sin_family = AF_INET;
-	client_addr.sin_port = htons(REFEREEPORT);
-	inet_aton(ip, &client_addr.sin_addr);
-    if (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))) {
-		printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
-	}
-
-	send(client_fd, buffer, BUFDIM, 0);
-	printf("service: to referee buffer = %s\n", buffer);
+	send(s_fd, buffer, BUFDIM, 0);
+	printf("service: to player buffer = %s\n", buffer);
 	pthread_mutex_unlock(&synchro);
 }
 

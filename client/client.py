@@ -107,7 +107,7 @@ def refereeThread(s, msgQueue):
     while stop:
         try:
             # Riceve i dati dal server
-            data = s.recv(2048)
+            data = s.recv(1024)
             msgQueue.put(data);
             ack = "ack\0"
             s.send(ack.encode())
@@ -236,12 +236,14 @@ def captainThread(team,sock):
         for player in team:
             if team == teamA:
                 #playerinit(int(player),'A',sock)
+                associa_squadra(int(player),'A')
                 comando = f"A{int(player)}"
                 comando += '\0'
                 sock.send(comando.encode())
                 sock.recv(1024)
             else:
                 #playerinit(int(player),'B',sock)
+                associa_squadra(int(player),'B')
                 comando = f"B{int(player)}"
                 comando += '\0'
                 sock.send(comando.encode())

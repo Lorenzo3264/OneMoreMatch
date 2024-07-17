@@ -87,16 +87,7 @@ void* service(void* arg) {
 	recv(s_fd, buffer, BUFDIM, 0);
 	if (buffer[0] == 't') {
 
-		c_fd = socket(AF_INET, SOCK_STREAM, 0);
-		c_addr.sin_family = AF_INET;
-		c_addr.sin_port = htons(REFEREEPORT);
-		inet_aton(ip, &c_addr.sin_addr);
-		if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-			perror("connection to referee failed, retrying...");
-		}
-		snprintf(buffer, BUFDIM, "end\0");
-		send(c_fd, buffer, BUFDIM, 0);
-
+		
 		snprintf(buf, BUFDIM, "ack\0");
 		send(s_fd, buf, BUFDIM, 0);
 
@@ -135,73 +126,16 @@ void* service(void* arg) {
 	if (chance >= 0 && chance < 35) {
 		snprintf(buffer, BUFDIM, "f%d\0", opponent);
 		if(send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
-
-		snprintf(buffer, BUFDIM, "d%d%df\0", player, opponent);
-		printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
-
-		c_fd = socket(AF_INET, SOCK_STREAM, 0);
-		c_addr.sin_family = AF_INET;
-		c_addr.sin_port = htons(REFEREEPORT);
-		inet_aton(ip, &c_addr.sin_addr);
-		if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-			perror("connect failed to referee\n");
-		}
-		if (send(c_fd, buffer, BUFDIM, 0) < 0) {
-			switch (errno) {
-			case EPIPE:
-				int result = -1;
-				for (int i = 0; i < 5; i++) {
-					if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-						perror("connection to referee failed, retrying...");
-					}
-					else {
-						result = send(c_fd, buffer, BUFDIM, 0);
-					}
-					if (result != -1) i = 5;
-				}
-				if (result == -1) perror("too many retries");
-				break;
-			}
-		}
-		printf("service: sent message to referee: %s\n", buffer);
 	}
 	if (chance >= 35 && chance < 85) {
 		snprintf(buffer, BUFDIM, "s%d\0", opponent);
 		send(s_fd, buffer, BUFDIM, 0);
-
-		snprintf(buffer, BUFDIM, "d%d%dy\0", player, opponent);
-		printf("service: connecting to referee %s:%d...\n", ip, REFEREEPORT);
-
-		c_fd = socket(AF_INET, SOCK_STREAM, 0);
-		c_addr.sin_family = AF_INET;
-		c_addr.sin_port = htons(REFEREEPORT);
-		inet_aton(ip, &c_addr.sin_addr);
-		if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-			perror("connect failed to referee\n");
-		}
-		if (send(c_fd, buffer, BUFDIM, 0) < 0) {
-			switch (errno) {
-			case EPIPE:
-				int result = -1;
-				for (int i = 0; i < 5; i++) {
-					if (connect(c_fd, (struct sockaddr*)&c_addr, sizeof(c_addr))) {
-						perror("connection to referee failed, retrying...");
-					}
-					else {
-						result = send(c_fd, buffer, BUFDIM, 0);
-					}
-					if (result != -1) i = 5;
-				}
-				if (result == -1) perror("too many retries");
-				break;
-			}
-		}
-		printf("service: sent message to referee: %s\n", buffer);
 	}
 	if (chance >= 85 && chance < 100) {
 		snprintf(buffer, BUFDIM, "i%d\0", opponent);
 		if (send(s_fd, buffer, BUFDIM, 0) < 0) perror("service: write error\n");
 	}
+	close(s_fd);
 	pthread_mutex_unlock(&globalVar);
 }
 

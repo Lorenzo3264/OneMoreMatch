@@ -50,7 +50,6 @@ void* service(void *arg){
 	char buffer[BUFDIM], buf[BUFDIM];
     int player, opponent, tempoI, tempoP, client_fd, id;
 	struct sockaddr_in client_addr;
-	s_fd = *(int*)arg;
 	char ip[40];
 	resolve_hostname("gateway", ip, sizeof(ip));
 
@@ -84,18 +83,6 @@ void* service(void *arg){
 	snprintf(buffer, BUFDIM, "I%dP%d\0", tempoI, tempoP);
 	send(s_fd, buffer, BUFDIM, 0);
 	printf("service: to player buffer = %s\n", buffer);
-
-	client_fd = socket(AF_INET, SOCK_STREAM, 0);
-	client_addr.sin_family = AF_INET;
-	client_addr.sin_port = htons(REFEREEPORT);
-	inet_aton(ip, &client_addr.sin_addr);
-    if (connect(client_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))) {
-		printf("connect() failed to %s:%d\n", ip, REFEREEPORT);
-	}
-
-	snprintf(buffer, BUFDIM, "i%d%d\0", player, opponent);
-	send(client_fd, buffer, BUFDIM, 0);
-	printf("service: to referee buffer = %s\n");
 	pthread_mutex_unlock(&synchro);
 }
 
