@@ -17,6 +17,8 @@ import random
 
 #ONEMOREMATCH
 
+matchNumber = 0;
+
 giocatori = {
     '0':"Unidraulico",
     '1':"Duein",
@@ -77,12 +79,11 @@ def lunghezza_stringa_con_terminatore(stringa):
         lunghezza += 1
     return lunghezza
 
-def playerThread(idg, sq, conn):
+def playerThread(idg, sq, s):
     global errore
     try:
-        s = socket.socket()
-        s.connect(conn)
-        invia_giocatore(s,idg,sq)
+        with mutex:
+            invia_giocatore(s,idg,sq)
     except socket.error as err:
         print(f"qualcosa e' andato storto err: {err}, sto uscendo... \n")
         with mutex:
@@ -91,12 +92,10 @@ def playerThread(idg, sq, conn):
                 print("dovrebbe aprirsi una finestra")
                 window.event_generate('<<error_event>>')
         
-def refereeThread(conn, msgQueue):
+def refereeThread(s, msgQueue):
     global errore
     try:
-        s = socket.socket()
-        s.connect(conn)
-        comando = "sono l'arbitro"
+        comando = "referee"
         comando += "\0"
         s.send(comando.encode())
     except socket.error as err:
@@ -110,7 +109,7 @@ def refereeThread(conn, msgQueue):
     while stop:
         try:
             # Riceve i dati dal server
-            data = s.recv(2048)
+            data = s.recv(1024)
             msgQueue.put(data);
             ack = "ack\0"
             s.send(ack.encode())
@@ -138,8 +137,8 @@ def msgQueueThread(msgQueue):
     
     timeouts = 0
     stop = True
-    events = open("events.txt","w")
-    log = open("log.txt","w")
+    events = open(f"events_{matchNumber}.txt","w")
+    log = open(f"log_{matchNumber}.txt","w")
     while stop:
         data = msgQueue.get()
         time.sleep(sleep_time.get())
@@ -205,30 +204,52 @@ def invia_giocatore(s,idg,sq):
     invia_comandi(s,comando)
 
 def invia_comandi(s, comando):
+    ack=True
     comando += "\0"
-    s.send(comando.encode())
+    while ack:
+        s.send(comando.encode())
+        print(f"socket: inviato il comando {comando}\n")
+        data = s.recv(1024)
+        data = unicode(data,errors="ignore")
+        datastr = data.decode()
+        print(f"data={data} and datastr={datastr}")
+        ack = False
+        if data == b'ack':
+            ack = False
 
-def playerinit(num,sq,conn):
+
+def playerinit(num,sq,sock):
     associa_squadra(num, sq)
-    th = Thread(target=playerThread, args=(num,sq,conn,))
+    th = Thread(target=playerThread, args=(num,sq,sock,))
     th.start()
     #th.join()
 
-def match_start(conn):
+def match_start(sock):
     msgQueue = Queue()
-    ref = Thread(target=refereeThread, args=(conn, msgQueue,))
+    ref = Thread(target=refereeThread, args=(sock, msgQueue,))
     msgQueueTh = Thread(target=msgQueueThread, args=(msgQueue,))
     msgQueueTh.start()
     ref.start()
     msgQueueTh.join()
     ref.join()
 
-def captainThread(team,conn):
-    for player in team:
-        if team == teamA:
-            playerinit(int(player),'A',conn)
-        else:
-            playerinit(int(player),'B',conn)
+def captainThread(team,sock):
+    with mutex:
+        for player in team:
+            if team == teamA:
+                #playerinit(int(player),'A',sock)
+                associa_squadra(int(player),'A')
+                comando = f"A{int(player)}"
+                comando += '\0'
+                sock.send(comando.encode())
+                sock.recv(1024)
+            else:
+                #playerinit(int(player),'B',sock)
+                associa_squadra(int(player),'B')
+                comando = f"B{int(player)}"
+                comando += '\0'
+                sock.send(comando.encode())
+                sock.recv(1024)
 
 # TKINTER
 class OMMButton(Button):
@@ -257,7 +278,7 @@ class CanvasButton():
     The x, y coordinates are relative to the top-left corner of the canvas.
     """
 
-    def __init__(self, canvas, x, y,command, state=NORMAL, testo='',index=0):
+    def __init__(self, canvas, x, y,command, state=NORMAL, testo='',index=0,sock=None):
         self.canvas = canvas
         self.root = self.canvas.winfo_toplevel()
         self.btn_image = PhotoImage(file=r"buttonPlayerActive.png", master=self.root)
@@ -277,12 +298,12 @@ class CanvasButton():
         self.label = self.canvas.create_text((pos_x,pos_y), text=new_testo, font="MSGothic", fill="white")
         
         canvas.tag_bind([self.canvas_btn_img_obj], "<ButtonRelease-1>",
-                        lambda event: (command(testo,self,index)))
+                        lambda event: (command(testo,self,index,sock)))
         canvas.tag_bind(self.canvas_btn_img_obj, "<Button-1>", self.press)
         canvas.tag_bind(self.canvas_btn_img_obj, '<Enter>', self.enter)
         canvas.tag_bind(self.canvas_btn_img_obj, '<Leave>', self.leave)
         canvas.tag_bind([self.label], "<ButtonRelease-1>",
-                        lambda event: (command(testo,self,index)))
+                        lambda event: (command(testo,self,index,sock)))
         canvas.tag_bind(self.label, "<Button-1>", self.press)
         canvas.tag_bind(self.label, '<Enter>', self.enter)
         canvas.tag_bind(self.label, '<Leave>', self.leave)
@@ -343,7 +364,7 @@ window.geometry(f"{larghezza_finestra}x{altezza_finestra}+{posizionex}+{posizion
 window.title("OneMoreMatch!")
 window.resizable(False, False)
 window.configure(background='#282828')
-window.bind('<<error_event>>', lambda e: error_screen())
+window.bind('<<error_event>>', lambda e: error_screen("Connessione col server fallita, riavviare il programma e riprovare"))
 window.bind('<<update_score>>', lambda e: update_score())
 window.bind('<<action_performed>>', lambda e: perform_action())
 
@@ -387,7 +408,7 @@ labelListA.place(x=230,y=10)
 labelListB = Label(master=winB, textvariable=listB, bg='#282828', fg='white', anchor='w', justify=LEFT)
 labelListB.place(x=230,y=10)
 
-def btn_inserisci_player(player, btn, index):
+def btn_inserisci_player(player, btn, index, sock):
     win = btn.getRoot()
     if winA.winfo_exists():
         buttons_winA[index].set_state(DISABLED)
@@ -416,27 +437,21 @@ def btn_inserisci_player(player, btn, index):
         for btn in buttons_winB:
             btn.set_state(DISABLED)
 
-def btn_conferma(testo,btn,index):
+def btn_conferma(testo,btn,index, sock):
+    print("btn_conferma premuto!\n")
     win = btn.getRoot()
-    conn = ("127.0.0.1", 8080)
     global sentA, sentB
     if win is winA:
-        for player in teamA:
-            print(f"giocatore A: {giocatori.get(player)}\n")
         if len(teamA) == 5:
-            print(f"team pieno")
-            cap = Thread(target=captainThread, args=(teamA,conn))
+            cap = Thread(target=captainThread, args=(teamA,sock))
             cap.start()
             sentA = True
             btn.set_state(DISABLED)
             btn_resetA.set_state(DISABLED)
             cap.join()
     else:
-        for player in teamB:
-            print(f"giocatore B: {giocatori.get(player)}\n")
         if len(teamB) == 5:
-            print(f"team pieno")
-            cap = Thread(target=captainThread, args=(teamB,conn))
+            cap = Thread(target=captainThread, args=(teamB,sock))
             cap.start()
             sentB = True
             btn.set_state(DISABLED)
@@ -445,7 +460,7 @@ def btn_conferma(testo,btn,index):
     if sentA and sentB:
         btn_play.set_state(NORMAL)
 
-def btn_reset_team(testo,btn,index):
+def btn_reset_team(testo,btn,index,sock):
     win = btn.getRoot()
     global teamA
     global teamB
@@ -476,10 +491,9 @@ def btn_reset_team(testo,btn,index):
         btn.set_state(NORMAL)
     
 
-def btn_inizia_partita(testo,btn,index):
+def btn_inizia_partita(testo,btn,index,sock):
     global chk_slow_mode
-    conn = ("127.0.0.1", 8080)
-    partita = Thread(target=match_start, args=(conn,))
+    partita = Thread(target=match_start, args=(sock,))
     partita.start()
     btn.set_state(DISABLED)
     str_azioni[0].set('La partita sta per cominciare')
@@ -500,11 +514,11 @@ def on_closing(win):
             win.destroy()
             exit(1)
 
-def error_screen():
-    messagebox.showwarning("attenzione","Connessione col server fallita, riavviare il programma e riprovare")
+def error_screen(message):
+    messagebox.showwarning("attenzione",message)
     exit(1)
 
-def playerSelector(win):
+def playerSelector(win,s):
     global btn_confirmB, btn_resetB
     global btn_confirmA, btn_resetA
     win.protocol('WM_DELETE_WINDOW', lambda: on_closing(win))
@@ -517,26 +531,35 @@ def playerSelector(win):
     relx=0
     rely=0
     
+    if win is winA:                
+        btn_confirmA = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!',sock=s)
+        btn_confirmA.set_state(DISABLED)
+        panel = Label(master=win, image=img_teamA, bg='#282828', anchor='center')
+        panel.place(x=255,y=120)
+        btn_resetA = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
+    else:
+        btn_confirmB = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!',sock=s)
+        btn_confirmB.set_state(DISABLED)
+        panel = Label(master=win, image=img_teamB, bg='#282828', anchor='center')
+        panel.place(x=255,y=120)
+        btn_resetB = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
+
+    for item in giocatori:
+        print(f"{item} : {giocatori[item]}")
+    print (f"capitanoA={captainA}, capitanoB={captainB}")
     for idPlayer in giocatori.keys():
+        print(idPlayer)
         if idPlayer != captainA and idPlayer != captainB:
             if i > 3:
                 relx = 110
                 rely = 0
                 i = 0
-            if win is winA:                
+            if win is winA:
+                print(f"k={k}\n")
                 buttons_winA[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
-                btn_confirmA = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
-                btn_confirmA.set_state(DISABLED)
-                panel = Label(master=win, image=img_teamA, bg='#282828', anchor='center')
-                panel.place(x=255,y=120)
-                btn_resetA = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
-            else:                
+            else:              
+                print(f"k={k}\n")
                 buttons_winB[k] = CanvasButton(canvas,relx,rely,btn_inserisci_player,testo=idPlayer,index=k)
-                btn_confirmB = CanvasButton(canvas,260,240,btn_conferma,testo='Conferma!')
-                btn_confirmB.set_state(DISABLED)
-                panel = Label(master=win, image=img_teamB, bg='#282828', anchor='center')
-                panel.place(x=255,y=120)
-                btn_resetB = CanvasButton(canvas,55,240,btn_reset_team,testo='Resetta')
             i += 1
             k += 1
             rely = (i*50)+(10*i)
@@ -547,7 +570,7 @@ def perform_action():
         action = current_action
     if action == "partitaTerminata":
         action = "La partita finisce!"
-        messagebox.showinfo("Termine","La partita termina.\nPuoi verificare gli eventi nel file events.txt,\npuoi verificare le statistiche nel file log.txt")
+        messagebox.showinfo("Termine",f"La partita termina.\nPuoi verificare gli eventi nel file events_{matchNumber}.txt,\npuoi verificare le statistiche nel file log_{matchNumber}.txt")
     str_azioni[3].set(str_azioni[2].get())
     str_azioni[2].set(str_azioni[1].get())
     str_azioni[1].set(str_azioni[0].get())
@@ -559,7 +582,7 @@ def update_score():
     str_puntiA.set(puntiA)
     str_puntiB.set(puntiB)
             
-def mainWindow(win):
+def mainWindow(win,sock):
     global btn_play
     global str_puntiA, str_puntiB
     global sleep_time, chk_slow_mode
@@ -573,7 +596,7 @@ def mainWindow(win):
     label.place(relx=0.5,y=275,anchor='center')
     canvas = Canvas(win, bg='#282828',height=100,width=600,bd=0,highlightthickness=0,relief='ridge')
     canvas.place(x=0,y=550)
-    btn_play = CanvasButton(canvas,(larghezza_finestra//2)-50,0,btn_inizia_partita,testo='Start!')
+    btn_play = CanvasButton(canvas,(larghezza_finestra//2)-50,0,btn_inizia_partita,testo='Start!',sock=s)
     btn_play.set_state(DISABLED)
     
     lbl_punteggio = Label(master=win,bg='#282828',anchor='center', text='Punteggio', fg='white')
@@ -618,14 +641,48 @@ def mainWindow(win):
 if __name__ == '__main__':
     captainA = str(random.randint(0, 9))
     captainB = str(random.randint(0, 9))
+    giocatori['0']=giocatori[captainA]
+    captainA='0'
+    giocatori['1']=giocatori[captainB]
+    captainB='1'
     while captainB == captainA:
         captainB = str(random.randint(0, 9))
+    i=2
+    conn = ("127.0.0.1", 8080)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(conn)
+        string="referee"
+        string += '\0'
+        s.send(string.encode())
+        while string!="end":
+            data = s.recv(1024)
+            msg_intero = str(data, "latin-1")
+            msg_size = lunghezza_stringa_con_terminatore(msg_intero)
+            string = msg_intero[:msg_size]
+            if string == "wait":
+                error_screen("attendere per la partita successiva e riprovare")
+            if string != "end":        
+                giocatori[str(i)] = string
+                print(f"elemento {str(i)} del dizionario {giocatori[str(i)]}")
+                i += 1
+            data=b"ack"
+            s.send(data)
+        data = s.recv(1024)
+        msg_intero = str(data, "latin-1")
+        msg_size = lunghezza_stringa_con_terminatore(msg_intero)
+        string = msg_intero[:msg_size]
+        matchNumber = int(string)
+    except socket.error as err:
+        print(f"qualcosa e' andato storto err: {err}, sto uscendo... \n")
+        error_screen("Connessione col server fallita, riavviare il programma e riprovare")
     teamA.append(captainA)
     teamB.append(captainB)
     winA.title(f"capitano {giocatori.get(teamA[0])} prepara il team {squadraA}")
     winB.title(f"capitano {giocatori.get(teamB[0])} prepara il team {squadraB}")
-    playerSelector(winA)
-    playerSelector(winB)
+    playerSelector(winA,s)
+    playerSelector(winB,s)
     labelListA.lift()
     labelListB.lift()
-    mainWindow(window)
+
+    mainWindow(window,s)
