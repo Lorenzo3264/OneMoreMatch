@@ -115,7 +115,7 @@ def refereeThread(s, msgQueue):
             s.send(ack.encode())
             if not data:
                 # Il server ha chiuso la connessione
-                print("Connessione chiusa dal server. Partita terminata?")
+                print("Connessione chiusa dal server...")
                 msgQueue.put(b"partitaTerminata")
                 break
         except Exception as e:
